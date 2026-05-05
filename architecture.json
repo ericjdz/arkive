@@ -1,0 +1,88 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "archlearn",
+    "description": "A living architecture document for AI-built projects.",
+    "created": "2026-05-05T00:00:00.000Z",
+    "lastUpdated": "2026-05-05T00:00:00.000Z"
+  },
+  "stack": {
+    "language": ["TypeScript"],
+    "runtime": ["Node.js"],
+    "framework": ["Vitest", "Tsup"],
+    "database": [],
+    "infrastructure": ["npm"]
+  },
+  "services": [
+    {
+      "id": "cli",
+      "name": "CLI",
+      "type": "backend",
+      "technology": "Commander + Node.js",
+      "description": "Package entrypoint for init, serve, status, export, and learn commands.",
+      "dependencies": ["templates", "schema"]
+    },
+    {
+      "id": "templates",
+      "name": "Templates",
+      "type": "other",
+      "technology": "Handlebars",
+      "description": "Scaffolding templates rendered during init.",
+      "dependencies": []
+    },
+    {
+      "id": "schema",
+      "name": "Architecture Schema",
+      "type": "other",
+      "technology": "Zod",
+      "description": "Validates architecture.json structure.",
+      "dependencies": []
+    }
+  ],
+  "connections": [
+    {
+      "from": "cli",
+      "to": "templates",
+      "protocol": "filesystem",
+      "description": "CLI reads and renders templates during project initialization."
+    },
+    {
+      "from": "cli",
+      "to": "schema",
+      "protocol": "filesystem",
+      "description": "CLI uses schema validation when creating and updating architecture.json."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "d1",
+      "topic": "Packaging surface",
+      "decision": "Bundle the CLI in dist/ and publish templates and agent instructions alongside it.",
+      "rationale": "Keeps the installed package self-contained for init and agent setup.",
+      "alternatives": [
+        {
+          "name": "Ship only source files",
+          "whyNot": "Would require a build step after install and make the package harder to use."
+        }
+      ],
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "relatedServices": ["cli", "templates"]
+    }
+  ],
+  "dataFlows": [
+    {
+      "name": "Project initialization",
+      "steps": [
+        { "actor": "user", "action": "Runs archlearn init" },
+        { "actor": "cli", "action": "Renders templates and writes project files" }
+      ]
+    }
+  ],
+  "history": [
+    {
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "action": "initial_scaffold",
+      "summary": "Architecture document created"
+    }
+  ]
+}

@@ -4,10 +4,14 @@ const emitDeclarations: Plugin = {
   name: "emit-declarations",
   async buildEnd() {
     const { execSync } = await import("node:child_process");
-    execSync(
-      'npx tsc --ignoreConfig --emitDeclarationOnly --noCheck --declaration --declarationMap --module ES2022 --target ES2022 --moduleResolution bundler --lib ES2022 --esModuleInterop --skipLibCheck --forceConsistentCasingInFileNames --resolveJsonModule --types node --rootDir src src/index.ts src/schema/index.ts src/cli/index.ts src/server/index.ts --outDir dist',
-      { stdio: "inherit" }
-    );
+    try {
+      execSync(
+        'npx tsc --ignoreConfig --emitDeclarationOnly --noCheck --declaration --declarationMap --module ES2022 --target ES2022 --moduleResolution bundler --lib ES2022 --esModuleInterop --skipLibCheck --forceConsistentCasingInFileNames --resolveJsonModule --types node --rootDir src src/index.ts src/schema/index.ts src/cli/index.ts src/server/index.ts --outDir dist',
+        { stdio: "inherit" }
+      );
+    } catch {
+      console.warn("Skipping declaration emit; tsc unavailable or incomplete.");
+    }
   },
 };
 
