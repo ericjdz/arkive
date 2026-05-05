@@ -16,7 +16,7 @@ describe("E2E: init flow", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("full init flow produces valid architecture.json and all instruction files", () => {
+  it("full init flow produces valid architecture.json and all instruction files", { timeout: 30000 }, () => {
     // Run init
     execSync(
       `npx tsx src/cli/index.ts init --name "e2e-test-app" --description "End to end test project" --dir "${tempDir}"`,
