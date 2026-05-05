@@ -1,17 +1,27 @@
 ---
 name: architecture-tracker
-description: Maintain the living architecture document as you build. This is the core skill — always active.
+description: Maintain the living architecture document as you build. This is the core skill — always active when architecture.json exists.
+trigger: Always active when architecture.json exists in the project root. Activates on session start and after any major change.
 ---
 
 # Architecture Tracker
 
-## The Rule
+## Operating Mode
 
-**Before any major change**: Read `architecture.json`.
-**After any major change**: Update `architecture.json`.
-**On every session start**: Read `architecture.json` first.
+**MCP-first, file-fallback.** Choose your write path:
 
-The architecture document is your memory. Not the context window. Not the chat history. The file.
+| Condition | Read via | Write via |
+|---|---|---|
+| archlearn MCP server is connected | MCP resources (`architecture://overview`, etc.) | MCP tools (`update_architecture`, `record_decision`) |
+| MCP not available | Read `architecture.json` directly | Edit `architecture.json` directly, validate manually |
+
+To check if MCP is available: attempt to read `architecture://overview`. If it succeeds, use MCP for all reads/writes.
+
+## The Rules
+
+1. **On every session start**: Read `architecture.json` (or MCP `architecture://overview`) FIRST. This is your memory across sessions. Do NOT re-derive architecture from the codebase if this file exists.
+2. **Before any major change**: Re-read to align your changes with existing architecture.
+3. **After any major change**: Update `architecture.json` using the post-change sequence below.
 
 ## What Counts as a Major Change
 
@@ -21,27 +31,36 @@ The architecture document is your memory. Not the context window. Not the chat h
 - Adopting a new library or framework for a significant function
 - Refactoring that changes module boundaries or data flow
 
-## How to Update
+## Post-Change Sequence (MUST follow this order)
 
-### Services
+### Via MCP tools:
+1. Call `update_architecture` with new/changed services, connections, data flows, and stack entries. To remove stale entries, use `removeServiceIds`, `removeConnectionKeys`, or `removeDataFlowNames` fields.
+2. Call `record_decision` for EVERY architectural choice made — MUST include at least one rejected alternative with `whyNot`
+3. Optionally call `check_drift` to verify consistency
 
-Add or update entries in the `services` array:
+### Via direct file editing:
+1. Read `architecture.json`
+2. Add/update entries in `services`, `connections`, `dataFlows`, `stack`
+3. Add decision entries to `decisions` with `id`, `topic`, `decision`, `rationale`, `alternatives` (min 1), `timestamp`, `relatedServices`
+4. Append to `history` with `timestamp`, `action`, `summary`
+5. Update `project.lastUpdated` to current ISO 8601 timestamp
+6. Write the complete valid JSON back
 
+## Schema Quick Reference
+
+### Service
 ```json
 {
-  "id": "unique-kebab-case-id",
+  "id": "kebab-case-id",
   "name": "Human Readable Name",
   "type": "frontend|backend|database|cache|queue|gateway|cdn|storage|auth|search|monitoring|other",
-  "technology": "The specific technology (e.g., 'Next.js', 'PostgreSQL', 'Redis')",
+  "technology": "Specific tech (e.g., 'Next.js', 'PostgreSQL')",
   "description": "What this service does in one sentence",
   "dependencies": ["ids-of-services-this-depends-on"]
 }
 ```
 
-### Connections
-
-Add entries to `connections` when services communicate:
-
+### Connection
 ```json
 {
   "from": "service-id-that-initiates",
@@ -51,10 +70,7 @@ Add entries to `connections` when services communicate:
 }
 ```
 
-### Decisions (CRITICAL)
-
-Every time you choose a technology, pattern, or approach, record it in `decisions`:
-
+### Decision (CRITICAL — never skip)
 ```json
 {
   "id": "dec-NNN",
@@ -62,44 +78,46 @@ Every time you choose a technology, pattern, or approach, record it in `decision
   "decision": "What you chose",
   "rationale": "WHY you chose it — specific to this project's needs",
   "alternatives": [
-    { "name": "Alternative A", "whyNot": "Why this was rejected" },
-    { "name": "Alternative B", "whyNot": "Why this was rejected" }
+    { "name": "Alternative A", "whyNot": "Why this was rejected" }
   ],
-  "timestamp": "ISO 8601 timestamp",
+  "timestamp": "ISO 8601",
   "relatedServices": ["service-ids-affected"]
 }
 ```
 
-**Do not skip alternatives.** The learning value of this tool depends on understanding what was NOT chosen and why.
-
-### Data Flows
-
-Document important user-facing flows:
-
+### Data Flow
 ```json
 {
-  "name": "What the user is doing (e.g., 'User sends a message')",
+  "name": "What the user is doing",
   "steps": [
     { "actor": "service-id", "action": "What happens at this step" }
   ]
 }
 ```
 
-### History
-
-Append to `history` on every update:
-
+### History (append on every update)
 ```json
 {
   "timestamp": "ISO 8601",
-  "action": "what_happened (e.g., 'added_service', 'architecture_decision', 'refactor')",
-  "summary": "One-line summary of the change"
+  "action": "added_service|architecture_decision|refactor|reconciliation|...",
+  "summary": "One-line summary"
 }
 ```
 
-### Always
+## Validation Rules
 
-Update `project.lastUpdated` with the current timestamp on every change.
+- Every `connection.from` and `connection.to` MUST reference an existing `service.id`
+- Every `service.dependencies[]` entry MUST reference an existing `service.id`
+- Every decision MUST include at least one rejected alternative with `whyNot`
+- All timestamps MUST be ISO 8601
+- MUST update `project.lastUpdated` on every change
+
+## MUST NOT
+
+- Do NOT update `architecture.json` for non-architectural changes (typos, formatting, variable renames, test-only changes, comment edits)
+- Do NOT create decisions without rejected alternatives — decisions without alternatives are defaults, not decisions
+- Do NOT leave orphaned references (connections pointing to removed services)
+- Do NOT re-derive the architecture from code if `architecture.json` exists — trust the document
 
 ## Reference
 

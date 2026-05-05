@@ -1,62 +1,53 @@
-# Learning Mode
+---
+name: learning-mode
+description: Socratic quizzing after architecture updates. Optional — activates when user opts in.
+trigger: User runs `archlearn learn`, or says "enable learning mode", or `.archlearn/learning-progress.json` exists.
+---
 
-## When This Skill Activates
+# Learning Mode (Optional)
 
-This skill activates when the user has toggled Learning Mode on (via `archlearn learn` or the web viewer toggle). Check for the presence of `.archlearn/learning-progress.json` in the project root — if it exists, Learning Mode is active.
+## Activation
 
-## Behavior
+Learning Mode is **opt-in**. It activates when:
+- User runs `npx archlearn learn` (opens viewer with quiz interface)
+- User says "enable learning mode" in conversation
+- `.archlearn/learning-progress.json` exists in the project root
+
+## Behavior (when active)
 
 After every architecture update (any change to `architecture.json`), you MUST:
 
-1. **Identify what changed**: Compare the update to the previous state. What services, decisions, connections, or data flows were added or modified?
+1. **Identify what changed**: What services, decisions, connections, or data flows were added or modified?
 
-2. **Generate a comprehension question**: Based on the change, ask the user ONE question that tests whether they understand the architectural decision or structure. Use the question templates in `references/question-templates.md`.
+2. **Generate ONE comprehension question**: Use the templates in `references/question-templates.md`. Priority order:
+   - Questions about NEW decisions (highest — user just accepted an AI decision)
+   - Questions about modified data flows
+   - Questions about new service dependencies
+   - Questions about connection protocols
 
 3. **Wait for the user's answer**: Do NOT proceed with the next task until the user answers.
 
-4. **Evaluate the answer**: 
-   - If correct: Acknowledge, explain briefly why it's right, mark the concept as mastered in `.archlearn/learning-progress.json`, and proceed.
-   - If incorrect: Explain the correct answer with context from the decision rationale or data flow steps. Ask if they'd like to try another question on the same concept or move on.
+4. **Evaluate**:
+   - Correct: Acknowledge, explain briefly why, proceed
+   - Incorrect: Explain the correct answer with context from the decision rationale. Ask if they want to try another question or move on.
 
-5. **Update progress**: Write the result to `.archlearn/learning-progress.json`.
-
-## Question Selection Priority
-
-1. Questions about NEW decisions (highest priority — the user just accepted an AI decision)
-2. Questions about modified data flows
-3. Questions about new service dependencies
-4. Questions about connection protocols
+5. **Track progress**: If `.archlearn/learning-progress.json` exists, update it with the result.
 
 ## Progress Check
 
 Before generating a question, check `.archlearn/learning-progress.json`:
-- If the user has already mastered the relevant concept, skip the question
-- Report progress: "You've demonstrated understanding of X/Y concepts"
+- If user has mastered the relevant concept, skip the question
+- Report: "You've demonstrated understanding of X/Y concepts"
 
-## Example Interaction
+## Disabling
 
-```
-Agent: I've updated the architecture to use Redis for session caching.
-
-📝 Learning Mode Question:
-Why is Redis a better choice for session caching than PostgreSQL in this architecture?
-
-A) Redis stores data in-memory for sub-millisecond reads
-B) Redis is a relational database
-C) PostgreSQL doesn't support key-value storage
-D) Redis is the only database that supports TTL
-
-User: A
-
-✅ Correct! Redis's in-memory storage model makes it ideal for session data
-that needs fast reads and can tolerate data loss on restart.
-
-Progress: 8/14 concepts mastered
-```
-
-## Disabling Learning Mode
-
-The user can disable Learning Mode at any time by:
-- Running `archlearn serve` (without `learn`)
+User can disable Learning Mode by:
+- Saying "disable learning mode"
 - Deleting `.archlearn/learning-progress.json`
-- Saying "disable learning mode" in conversation
+- Running `archlearn serve` (without `learn`)
+
+## MUST NOT
+
+- Do NOT activate Learning Mode unless user has explicitly opted in
+- Do NOT block the user's workflow if they want to skip a question
+- Do NOT ask questions about concepts already mastered

@@ -1,6 +1,7 @@
 ---
 name: reconciliation
-description: Detect drift between architecture.json and the actual codebase. Run periodically or when things feel out of sync.
+description: Detect drift between architecture.json and the actual codebase.
+trigger: User says "check drift", "reconcile", "is the architecture up to date", or when returning to a project after a break.
 ---
 
 # Reconciliation — Drift Detection
@@ -8,48 +9,49 @@ description: Detect drift between architecture.json and the actual codebase. Run
 ## When to Use
 
 - When returning to a project after a break
-- When multiple developers (or AI agents) have made changes
+- When multiple developers or AI agents have made changes
 - When you suspect the architecture doc is out of date
 - Periodically as a health check
 
 ## How to Reconcile
 
-### Step 1: Read architecture.json
+### Option A: Via CLI (recommended)
 
-Load the current architecture document.
+Run: `npx archlearn reconcile`
 
-### Step 2: Scan the Codebase
+This scans `package.json` and source imports under `src/`, then reports mismatches against `architecture.json`.
 
-Check these files for ground truth:
+### Option B: Via MCP tool
 
-- `package.json` / `requirements.txt` / `go.mod` → actual dependencies
-- `docker-compose.yml` / `Dockerfile` → actual services and infrastructure
-- Import statements across source files → actual service connections
-- Config files (`.env`, `nginx.conf`, database configs) → actual infrastructure
-- API route definitions → actual endpoints and protocols
+Call the `check_drift` tool. It returns the same report as the CLI command.
 
-### Step 3: Compare and Report
+### Option C: Manual scan
 
-For each mismatch, report:
-- **What the doc says** vs **what the code shows**
-- **Severity**: Critical (service missing), Warning (dependency mismatch), Info (minor drift)
-- **Suggested fix**: What to update in architecture.json
+If neither CLI nor MCP is available:
 
-### Step 4: Update
+1. Read `architecture.json`
+2. Check these files for ground truth:
+   - `package.json` / `requirements.txt` / `go.mod` → actual dependencies vs `stack`
+   - Import statements across source files → actual connections vs `connections`
+3. For each mismatch, note:
+   - What the doc says vs what the code shows
+   - Severity: Critical (service missing), Warning (dependency mismatch), Info (minor drift)
 
-After reviewing the report, update architecture.json to reflect reality. Add a history entry:
+**Current scanner limitations:** The automated scanner checks `package.json` dependencies and `src/` import statements. It does NOT currently scan Docker, nginx, env files, or infrastructure configs. For those, do a manual review.
+
+## After Reconciliation
+
+Update `architecture.json` to reflect reality. MUST append a history entry:
 
 ```json
 {
-  "timestamp": "now",
+  "timestamp": "ISO 8601 now",
   "action": "reconciliation",
   "summary": "Reconciled architecture.json with codebase — fixed N mismatches"
 }
 ```
 
-## Common Drift Patterns
+## MUST NOT
 
-- Dependency added to package.json but not reflected in stack
-- New API route added but no service/connection entry
-- Service renamed in code but old name in architecture.json
-- Infrastructure change (e.g., switched from Vercel to AWS) not recorded
+- Do NOT silently fix drift without reporting what changed
+- Do NOT remove entries from architecture.json without verifying they are truly gone from the codebase
