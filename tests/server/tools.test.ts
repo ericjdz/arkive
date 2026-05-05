@@ -94,6 +94,145 @@ describe("MCP tool handlers", () => {
       });
       expect(result.isError).toBe(true);
     });
+
+    it("removes a service and cleans up related connections and dependencies", async () => {
+      const arch = createEmptyArchitecture("remove-service-test", "Remove service test");
+      arch.services = [
+        {
+          id: "web",
+          name: "Web",
+          type: "frontend",
+          technology: "Next.js",
+          description: "UI",
+          dependencies: ["api"],
+        },
+        {
+          id: "api",
+          name: "API",
+          type: "backend",
+          technology: "Node.js",
+          description: "Backend",
+          dependencies: [],
+        },
+      ];
+      arch.connections = [
+        {
+          from: "web",
+          to: "api",
+          protocol: "HTTP",
+          description: "Web calls API",
+        },
+        {
+          from: "api",
+          to: "web",
+          protocol: "Webhook",
+          description: "API notifies Web",
+        },
+      ];
+      writeArchitecture(tempDir, arch);
+
+      const result = await handleUpdateArchitecture(tempDir, {
+        summary: "Remove API",
+        removeServiceIds: ["api"],
+      });
+      expect(result.isError).toBeFalsy();
+
+      const reread = readArchitecture(tempDir);
+      if (!reread.success) throw new Error(reread.error);
+      expect(reread.data.services.map((s) => s.id)).toEqual(["web"]);
+      expect(reread.data.connections).toHaveLength(0);
+      expect(reread.data.services[0].dependencies).toEqual([]);
+    });
+
+    it("removes a connection by key", async () => {
+      const arch = createEmptyArchitecture("remove-connection-test", "Remove connection test");
+      arch.services = [
+        {
+          id: "web",
+          name: "Web",
+          type: "frontend",
+          technology: "Next.js",
+          description: "UI",
+          dependencies: [],
+        },
+        {
+          id: "api",
+          name: "API",
+          type: "backend",
+          technology: "Node.js",
+          description: "Backend",
+          dependencies: [],
+        },
+      ];
+      arch.connections = [
+        { from: "web", to: "api", protocol: "HTTP", description: "keep" },
+        { from: "api", to: "web", protocol: "Webhook", description: "remove" },
+      ];
+      writeArchitecture(tempDir, arch);
+
+      await handleUpdateArchitecture(tempDir, {
+        summary: "Remove connection",
+        removeConnectionKeys: ["api->web:Webhook"],
+      });
+
+      const reread = readArchitecture(tempDir);
+      if (!reread.success) throw new Error(reread.error);
+      expect(reread.data.connections.map((c) => `${c.from}->${c.to}:${c.protocol}`)).toEqual([
+        "web->api:HTTP",
+      ]);
+    });
+
+    it("removes a data flow by name", async () => {
+      const arch = createEmptyArchitecture("remove-dataflow-test", "Remove data flow test");
+      arch.dataFlows = [
+        { name: "Keep", steps: [{ actor: "user", action: "Do keep" }] },
+        { name: "Remove", steps: [{ actor: "user", action: "Do remove" }] },
+      ];
+      writeArchitecture(tempDir, arch);
+
+      await handleUpdateArchitecture(tempDir, {
+        summary: "Remove data flow",
+        removeDataFlowNames: ["Remove"],
+      });
+
+      const reread = readArchitecture(tempDir);
+      if (!reread.success) throw new Error(reread.error);
+      expect(reread.data.dataFlows.map((f) => f.name)).toEqual(["Keep"]);
+    });
+
+    it("removes first and then adds new entries in the same call", async () => {
+      const arch = createEmptyArchitecture("remove-add-test", "Remove add test");
+      arch.services = [
+        {
+          id: "old-api",
+          name: "Old API",
+          type: "backend",
+          technology: "Express",
+          description: "Old backend",
+          dependencies: [],
+        },
+      ];
+      writeArchitecture(tempDir, arch);
+
+      await handleUpdateArchitecture(tempDir, {
+        summary: "Replace API",
+        removeServiceIds: ["old-api"],
+        services: [
+          {
+            id: "new-api",
+            name: "New API",
+            type: "backend",
+            technology: "Fastify",
+            description: "New backend",
+            dependencies: [],
+          },
+        ],
+      });
+
+      const reread = readArchitecture(tempDir);
+      if (!reread.success) throw new Error(reread.error);
+      expect(reread.data.services.map((s) => s.id)).toEqual(["new-api"]);
+    });
   });
 
   describe("record_decision", () => {

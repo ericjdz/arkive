@@ -11,6 +11,9 @@ import type { Architecture, Decision } from "../schema/types.js";
 
 export const UpdateArchitectureInputSchema = z.object({
   summary: z.string().min(1).describe("One-line summary of what changed (added to history)"),
+  removeServiceIds: z.array(z.string()).optional().describe("Service IDs to remove"),
+  removeConnectionKeys: z.array(z.string()).optional().describe("Connection keys to remove (format: 'from->to:protocol')"),
+  removeDataFlowNames: z.array(z.string()).optional().describe("Data flow names to remove"),
   services: z.array(ServiceSchema).optional(),
   connections: z.array(ConnectionSchema).optional(),
   dataFlows: z.array(DataFlowSchema).optional(),
@@ -108,6 +111,29 @@ export async function handleUpdateArchitecture(
 
   const arch: Architecture = read.data;
   const now = new Date().toISOString();
+
+  if (input.removeServiceIds) {
+    const toRemove = new Set(input.removeServiceIds);
+    arch.services = arch.services.filter((s) => !toRemove.has(s.id));
+    arch.connections = arch.connections.filter(
+      (c) => !toRemove.has(c.from) && !toRemove.has(c.to)
+    );
+    for (const s of arch.services) {
+      s.dependencies = s.dependencies.filter((d) => !toRemove.has(d));
+    }
+  }
+
+  if (input.removeConnectionKeys) {
+    const toRemove = new Set(input.removeConnectionKeys);
+    const connKey = (c: { from: string; to: string; protocol: string }) =>
+      `${c.from}->${c.to}:${c.protocol}`;
+    arch.connections = arch.connections.filter((c) => !toRemove.has(connKey(c)));
+  }
+
+  if (input.removeDataFlowNames) {
+    const toRemove = new Set(input.removeDataFlowNames);
+    arch.dataFlows = arch.dataFlows.filter((f) => !toRemove.has(f.name));
+  }
 
   if (input.services) {
     const byId = new Map(arch.services.map((s) => [s.id, s]));

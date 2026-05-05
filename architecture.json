@@ -83,6 +83,11 @@
       "timestamp": "2026-05-05T00:00:00.000Z",
       "action": "initial_scaffold",
       "summary": "Architecture document created"
+    },
+    {
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "action": "update_architecture_tool_semantics",
+      "summary": "Added remove semantics to MCP update_architecture tool"
     }
   ]
 }
