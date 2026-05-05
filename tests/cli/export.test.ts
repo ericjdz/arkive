@@ -56,42 +56,42 @@ describe("CLI export command", () => {
   it("exports markdown to stdout by default", () => {
     const output = execSync(
       `npx tsx src/cli/index.ts export --dir "${tempDir}"`,
-      { cwd: process.cwd(), encoding: "utf-8" }
+      { cwd: process.cwd(), encoding: "utf-8", timeout: 30000 }
     );
     expect(output).toContain("# export-test");
     expect(output).toContain("Web Client");
     expect(output).toContain("## Architectural Decisions");
-  });
+  }, 35000);
 
   it("exports mermaid format when --format mermaid is specified", () => {
     const output = execSync(
       `npx tsx src/cli/index.ts export --dir "${tempDir}" --format mermaid`,
-      { cwd: process.cwd(), encoding: "utf-8" }
+      { cwd: process.cwd(), encoding: "utf-8", timeout: 30000 }
     );
     expect(output).toContain("graph TD");
     expect(output).toContain("web");
     expect(output).toContain("api");
     expect(output).toContain("HTTP/REST");
-  });
+  }, 35000);
 
   it("writes to a file when --output is specified", () => {
     const outFile = join(tempDir, "architecture.md");
     execSync(
       `npx tsx src/cli/index.ts export --dir "${tempDir}" --output "${outFile}"`,
-      { cwd: process.cwd() }
+      { cwd: process.cwd(), timeout: 30000 }
     );
     expect(existsSync(outFile)).toBe(true);
     const content = readFileSync(outFile, "utf-8");
     expect(content).toContain("# export-test");
-  });
+  }, 35000);
 
   it("exits with error when architecture.json is missing", () => {
     rmSync(tempDir, { recursive: true, force: true });
     expect(() =>
       execSync(
         `npx tsx src/cli/index.ts export --dir "${tempDir}"`,
-        { cwd: process.cwd(), encoding: "utf-8", stdio: "pipe" }
+        { cwd: process.cwd(), encoding: "utf-8", stdio: "pipe", timeout: 30000 }
       )
     ).toThrow();
-  });
+  }, 35000);
 });

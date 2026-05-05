@@ -6,6 +6,7 @@ export default defineConfig({
     environment: "node",
     environmentMatchGlobs: [
       ["tests/viewer/**", "jsdom"],
+      ["tests\\viewer\\**", "jsdom"],
     ],
   },
 });
