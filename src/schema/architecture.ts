@@ -82,7 +82,13 @@ export const StackSchema = z.object({
 export const ArchitectureSchema = z.object({
   version: z.string().default("1.0.0"),
   project: ProjectSchema,
-  stack: StackSchema.default({}),
+  stack: StackSchema.default({
+    language: [],
+    runtime: [],
+    framework: [],
+    database: [],
+    infrastructure: [],
+  }),
   services: z.array(ServiceSchema).default([]),
   connections: z.array(ConnectionSchema).default([]),
   decisions: z.array(DecisionSchema).default([]),

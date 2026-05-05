@@ -10,7 +10,7 @@ describe("Architecture Schema", () => {
 
   it("rejects architecture missing project name", () => {
     const arch = createEmptyArchitecture("test-project", "A test project");
-    // @ts-expect-error - intentionally breaking the schema
+    // Setting name to empty string — valid TS but rejected by Zod min(1)
     arch.project.name = "";
     const result = validateArchitecture(arch);
     expect(result.success).toBe(false);
