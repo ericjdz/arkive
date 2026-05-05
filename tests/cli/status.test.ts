@@ -20,7 +20,9 @@ describe("CLI status command", () => {
   it("returns ok=false when architecture.json is missing", async () => {
     const result = await runStatus({ dir: tempDir });
     expect(result.ok).toBe(false);
-    expect(result.error).toContain("not found");
+    if (!result.ok) {
+      expect(result.error).toContain("not found");
+    }
   });
 
   it("returns counts and lastUpdated when architecture exists", async () => {

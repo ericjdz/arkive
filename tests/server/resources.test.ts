@@ -65,7 +65,7 @@ describe("MCP resource handlers", () => {
     const entry = result.contents[0];
     expect(entry.uri).toBe("architecture://overview");
     expect(entry.mimeType).toBe("application/json");
-    const body = JSON.parse(entry.text as string);
+    const body = JSON.parse((entry as { text: string }).text);
     expect(body.project.name).toBe("res-test");
     expect(body.counts).toEqual({
       services: 1,
@@ -78,7 +78,7 @@ describe("MCP resource handlers", () => {
 
   it("readServices returns services + connections", async () => {
     const result = await readServices(tempDir, new URL("architecture://services"));
-    const body = JSON.parse(result.contents[0].text as string);
+    const body = JSON.parse((result.contents[0] as { text: string }).text);
     expect(body.services).toHaveLength(1);
     expect(body.services[0].id).toBe("web");
     expect(body.connections).toEqual([]);
@@ -86,21 +86,21 @@ describe("MCP resource handlers", () => {
 
   it("readDecisions returns the decisions array", async () => {
     const result = await readDecisions(tempDir, new URL("architecture://decisions"));
-    const body = JSON.parse(result.contents[0].text as string);
+    const body = JSON.parse((result.contents[0] as { text: string }).text);
     expect(body.decisions).toHaveLength(1);
     expect(body.decisions[0].id).toBe("dec-001");
   });
 
   it("readDataflows returns the dataFlows array", async () => {
     const result = await readDataflows(tempDir, new URL("architecture://dataflows"));
-    const body = JSON.parse(result.contents[0].text as string);
+    const body = JSON.parse((result.contents[0] as { text: string }).text);
     expect(body.dataFlows).toHaveLength(1);
     expect(body.dataFlows[0].name).toBe("Login");
   });
 
   it("readHistory returns the history array", async () => {
     const result = await readHistory(tempDir, new URL("architecture://history"));
-    const body = JSON.parse(result.contents[0].text as string);
+    const body = JSON.parse((result.contents[0] as { text: string }).text);
     expect(body.history).toHaveLength(1);
     expect(body.history[0].action).toBe("initial_scaffold");
   });

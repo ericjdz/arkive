@@ -65,7 +65,8 @@ export const ARCHITECTURE_TOOLS: ToolDescriptor[] = [
 ];
 
 interface CallToolResult {
-  content: Array<{ type: string; text: string }>;
+  [x: string]: unknown;
+  content: Array<{ type: "text"; text: string }>;
   isError?: boolean;
 }
 
@@ -215,20 +216,29 @@ export function registerTools(server: McpServer, dir: string): void {
     "update_architecture",
     ARCHITECTURE_TOOLS[0].description,
     UpdateArchitectureInputSchema.shape,
-    async (args) => handleUpdateArchitecture(dir, args as unknown as z.infer<typeof UpdateArchitectureInputSchema>)
+    async (args) => {
+      const result = await handleUpdateArchitecture(dir, args as unknown as z.infer<typeof UpdateArchitectureInputSchema>);
+      return result;
+    }
   );
 
   server.tool(
     "record_decision",
     ARCHITECTURE_TOOLS[1].description,
     RecordDecisionInputSchema.shape,
-    async (args) => handleRecordDecision(dir, args as unknown as z.infer<typeof RecordDecisionInputSchema>)
+    async (args) => {
+      const result = await handleRecordDecision(dir, args as unknown as z.infer<typeof RecordDecisionInputSchema>);
+      return result;
+    }
   );
 
   server.tool(
     "check_drift",
     ARCHITECTURE_TOOLS[2].description,
     CheckDriftInputSchema.shape,
-    async () => handleCheckDrift(dir)
+    async () => {
+      const result = await handleCheckDrift(dir);
+      return result;
+    }
   );
 }
