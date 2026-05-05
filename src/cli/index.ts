@@ -34,9 +34,10 @@ program
   .description("Start the MCP server + web viewer")
   .option("-d, --dir <path>", "Project directory containing architecture.json", ".")
   .option("-p, --port <port>", "HTTP port for the web viewer", "4567")
+  .option("--stdio", "Run MCP server over stdio only (no HTTP viewer)")
   .action(async (options) => {
     const dir = resolve(options.dir);
-    await serveProject({ dir, port: parseInt(options.port, 10) });
+    await serveProject({ dir, port: parseInt(options.port, 10), stdio: options.stdio ?? false });
   });
 
 program

@@ -1,14 +1,19 @@
 import { existsSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createServer, type Server } from "node:http";
 import express from "express";
 import { architecturePath, readArchitecture } from "../../io/architecture-file.js";
 import { startStdioServer } from "../../server/index.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 export interface ServeOptions {
   dir: string;
   port?: number;
   open?: boolean;
+  stdio?: boolean;
 }
 
 export function createViewerServer(dir: string): { app: express.Express; server: Server } {
@@ -30,7 +35,7 @@ export function createViewerServer(dir: string): { app: express.Express; server:
     res.json(result.data);
   });
 
-  const viewerDir = resolve(__dirname, "../../viewer");
+  const viewerDir = resolve(__dirname, "../viewer");
   if (existsSync(viewerDir)) {
     app.use(express.static(viewerDir));
     app.use((_req, res) => {
@@ -54,6 +59,11 @@ export async function serveProject(options: ServeOptions): Promise<void> {
       `architecture.json not found at ${archPath}. Run \`archlearn init\` first.\n`
     );
     process.exit(1);
+  }
+
+  if (options.stdio) {
+    await startStdioServer({ dir: options.dir });
+    return;
   }
 
   const port = options.port ?? 4567;
