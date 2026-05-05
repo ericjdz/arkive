@@ -33,8 +33,10 @@ npx @ericjdz/arkive learn
 After `init`, your repo gains:
 
 - `architecture.json` — the living architecture document
-- `CLAUDE.md`, `AGENTS.md` — instructions for AI agents
+- A small tracking block injected into your existing `CLAUDE.md` and `AGENTS.md` (created if missing)
 - `.cursor/rules/architecture-tracker.mdc` — Cursor auto-apply rule
+
+arkive extends your existing instruction files — it never overwrites them. Use `--standalone` to generate full instruction files instead.
 
 Your AI agent will now read and maintain `architecture.json` automatically.
 
@@ -53,7 +55,9 @@ Your AI agent will now read and maintain `architecture.json` automatically.
 
 | Command | Action |
 |---|---|
-| `npx @ericjdz/arkive init` | Scaffold `architecture.json` and instruction files into a project |
+| `npx @ericjdz/arkive init` | Scaffold `architecture.json` and inject tracking block into instruction files |
+| `npx @ericjdz/arkive init --standalone` | Generate full `AGENTS.md`/`CLAUDE.md` files (for platforms without MCP) |
+| `npx @ericjdz/arkive install <platform>` | Register MCP server in your AI platform config |
 | `npx @ericjdz/arkive serve` | Start the MCP server and open the web viewer |
 | `npx @ericjdz/arkive serve --stdio` | Run the MCP server in stdio mode (for direct agent integration) |
 | `npx @ericjdz/arkive status` | Show architecture health (last updated, drift warnings, coverage) |

@@ -2,11 +2,13 @@ import { writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join, basename } from "node:path";
 import { createEmptyArchitecture } from "../../schema/validate.js";
 import { renderTemplate } from "../../templates/render.js";
+import { injectArkiveBlock } from "./inject.js";
 
 export interface InitOptions {
   name?: string;
   dir: string;
   description?: string;
+  standalone?: boolean;
 }
 
 export function initProject(options: InitOptions): void {
@@ -28,22 +30,36 @@ export function initProject(options: InitOptions): void {
 
   const templateContext = { projectName, architectureFile };
 
-  const claudePath = join(projectDir, "CLAUDE.md");
-  if (!existsSync(claudePath)) {
-    const claudeContent = renderTemplate("CLAUDE.md.hbs", templateContext);
-    writeFileSync(claudePath, claudeContent, "utf-8");
-    console.log("Created CLAUDE.md");
-  } else {
-    console.log("CLAUDE.md already exists, skipping");
-  }
+  if (options.standalone) {
+    const claudePath = join(projectDir, "CLAUDE.md");
+    if (!existsSync(claudePath)) {
+      const claudeContent = renderTemplate("CLAUDE.md.hbs", templateContext);
+      writeFileSync(claudePath, claudeContent, "utf-8");
+      console.log("Created CLAUDE.md (standalone)");
+    } else {
+      console.log("CLAUDE.md already exists, skipping");
+    }
 
-  const agentsPath = join(projectDir, "AGENTS.md");
-  if (!existsSync(agentsPath)) {
-    const agentsContent = renderTemplate("AGENTS.md.hbs", templateContext);
-    writeFileSync(agentsPath, agentsContent, "utf-8");
-    console.log("Created AGENTS.md");
+    const agentsPath = join(projectDir, "AGENTS.md");
+    if (!existsSync(agentsPath)) {
+      const agentsContent = renderTemplate("AGENTS.md.hbs", templateContext);
+      writeFileSync(agentsPath, agentsContent, "utf-8");
+      console.log("Created AGENTS.md (standalone)");
+    } else {
+      console.log("AGENTS.md already exists, skipping");
+    }
   } else {
-    console.log("AGENTS.md already exists, skipping");
+    const block = renderTemplate("arkive-block.md.hbs", templateContext);
+
+    const claudePath = join(projectDir, "CLAUDE.md");
+    const claudeExisted = existsSync(claudePath);
+    injectArkiveBlock(claudePath, block);
+    console.log(claudeExisted ? "Updated CLAUDE.md (injected arkive block)" : "Created CLAUDE.md");
+
+    const agentsPath = join(projectDir, "AGENTS.md");
+    const agentsExisted = existsSync(agentsPath);
+    injectArkiveBlock(agentsPath, block);
+    console.log(agentsExisted ? "Updated AGENTS.md (injected arkive block)" : "Created AGENTS.md");
   }
 
   const cursorDir = join(projectDir, ".cursor", "rules");

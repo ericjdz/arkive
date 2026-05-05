@@ -40,15 +40,15 @@ describe("E2E: init flow", () => {
     const claudePath = join(tempDir, "CLAUDE.md");
     expect(existsSync(claudePath)).toBe(true);
     const claudeContent = readFileSync(claudePath, "utf-8");
-    expect(claudeContent).toContain("e2e-test-app");
+    expect(claudeContent).toContain("<!-- arkive:start -->");
     expect(claudeContent).toContain("architecture.json");
-    expect(claudeContent).toContain("The Three Rules");
+    expect(claudeContent).toContain("<!-- arkive:end -->");
 
     // Verify AGENTS.md
     const agentsPath = join(tempDir, "AGENTS.md");
     expect(existsSync(agentsPath)).toBe(true);
     const agentsContent = readFileSync(agentsPath, "utf-8");
-    expect(agentsContent).toContain("e2e-test-app");
+    expect(agentsContent).toContain("<!-- arkive:start -->");
 
     // Verify Cursor rule
     const cursorPath = join(tempDir, ".cursor", "rules", "architecture-tracker.mdc");

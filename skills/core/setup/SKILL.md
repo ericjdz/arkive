@@ -18,9 +18,10 @@ Run: `npx @ericjdz/arkive init --name <project-name>`
 
 This creates:
 - `architecture.json` — the living architecture document
-- `CLAUDE.md` — instructions for Claude Code agents
-- `AGENTS.md` — instructions for Codex/OpenCode/Copilot agents
+- A small tracking block injected into existing `CLAUDE.md` and `AGENTS.md` (created if missing)
 - `.cursor/rules/architecture-tracker.mdc` — Cursor auto-apply rule
+
+> **Note:** By default, `init` injects a small tracking block into existing AGENTS.md/CLAUDE.md files without overwriting them. Use `--standalone` to generate full instruction files instead (for platforms without MCP/skills support).
 
 ### 2. Populate from existing code (if project already has code)
 

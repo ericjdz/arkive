@@ -15,7 +15,7 @@ const program = new Command();
 program
   .name("arkive")
   .description("Architecture learning tool for AI-assisted development")
-  .version("0.1.2");
+  .version("0.1.3");
 
 program
   .command("init")
@@ -23,6 +23,7 @@ program
   .option("-n, --name <name>", "Project name (defaults to directory name)")
   .option("-d, --dir <path>", "Target directory (defaults to current directory)", ".")
   .option("--description <text>", "Project description")
+  .option("--standalone", "Generate full AGENTS.md/CLAUDE.md files instead of injecting a block")
   .option("--mcp <platform>", `Also register MCP server for: ${Object.keys(PLATFORMS).join(", ")}`)
   .action((options) => {
     const dir = resolve(options.dir);
@@ -30,6 +31,7 @@ program
       name: options.name,
       dir,
       description: options.description,
+      standalone: options.standalone ?? false,
     });
     if (options.mcp) {
       if (!PLATFORMS[options.mcp as PlatformName]) {
