@@ -2,6 +2,7 @@
 import { Command } from "commander";
 import { resolve } from "node:path";
 import { initProject } from "./commands/init.js";
+import { exportArchitecture } from "./commands/export.js";
 import { serveProject } from "./commands/serve.js";
 import { statusCommand } from "./commands/status.js";
 
@@ -43,6 +44,21 @@ program
   .action(async (options) => {
     const dir = resolve(options.dir);
     await statusCommand({ dir });
+  });
+
+program
+  .command("export")
+  .description("Export architecture as markdown or Mermaid diagram")
+  .option("-d, --dir <path>", "Project directory containing architecture.json", ".")
+  .option("-f, --format <format>", "Output format: markdown or mermaid", "markdown")
+  .option("-o, --output <file>", "Write to file instead of stdout")
+  .action((options) => {
+    const dir = resolve(options.dir);
+    exportArchitecture({
+      dir,
+      format: options.format as "markdown" | "mermaid",
+      output: options.output ? resolve(options.output) : undefined,
+    });
   });
 
 program.parse();
