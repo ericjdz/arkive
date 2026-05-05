@@ -11,7 +11,7 @@ describe("Template Rendering", () => {
     const result = renderTemplate("CLAUDE.md.hbs", context);
     expect(result).toContain("my-app");
     expect(result).toContain("architecture.json");
-    expect(result).toContain("Before making any major change");
+    expect(result).toContain("Before any major change");
   });
 
   it("renders AGENTS.md template with project name", () => {

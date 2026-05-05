@@ -1,29 +1,102 @@
 # Architecture-Tracked Project: {{projectName}}
 
-This project uses a living architecture document (`{{architectureFile}}`) that you MUST maintain.
+This project uses a living architecture document, `{{architectureFile}}`. You — the AI coding agent — are responsible for keeping it in sync with the code.
 
-## Rules
+> **archlearn is installed.** You have access to an MCP server (`archlearn serve --stdio`) and web viewer. Use MCP tools when available; fall back to direct file editing when not.
 
-1. **Before making any major change**: Read `{{architectureFile}}` to understand the current system architecture.
-2. **After making any major change**: Update `{{architectureFile}}` to reflect what changed and why.
-3. **On session start**: Read `{{architectureFile}}` first to onboard to this project.
+## The Three Rules
 
-## What counts as a "major change"
+1. **On every session start**: Read `{{architectureFile}}` first. It is your memory across sessions, compaction, and model switches. Do not re-derive the architecture from the codebase if this file exists.
+2. **Before any major change**: Re-read `{{architectureFile}}` to align your changes with the existing system.
+3. **After any major change**: Update `{{architectureFile}}` to reflect what changed and why (see "How to Update" below).
 
-- Adding/removing a service, database, or external dependency
-- Changing how services communicate (protocols, APIs)
-- Adding/modifying infrastructure (hosting, CI/CD, caching)
-- Choosing a new library or framework for a significant function
-- Refactoring that changes module boundaries
+## What Counts as a Major Change
 
-## How to update architecture.json
+- Adding, removing, or replacing a service, database, or external API
+- Changing how services communicate (new protocols, new endpoints)
+- Adding or modifying infrastructure (hosting, CI/CD, caching, CDN, queues)
+- Adopting a new framework or major library for a significant function
+- Refactoring that changes module boundaries or data flow
 
-When updating, include:
-- **services**: Add/modify service entries with id, name, type, technology, description, dependencies
-- **connections**: Add/modify connections between services with protocol and description
-- **decisions**: Record WHY you made architectural choices, with alternatives you considered and why you rejected them
-- **dataFlows**: Document important user-facing flows step by step
-- **history**: Append an entry with timestamp, action, and summary of what changed
-- **stack**: Update language, runtime, framework, database, infrastructure arrays if they changed
+## How to Update
 
-Always update `project.lastUpdated` with the current timestamp.
+### MCP tools (preferred — if archlearn MCP server is connected):
+- `update_architecture` — add, modify, or remove services, connections, data flows, and stack entries
+- `record_decision` — record an architectural decision with rationale and rejected alternatives
+- `check_drift` — verify architecture.json matches the codebase
+
+### Direct file editing (fallback — if MCP is not available):
+1. Read `{{architectureFile}}`
+2. Add/update entries in `services`, `connections`, `dataFlows`, `stack`
+3. Add decision entries to `decisions` — MUST include at least one rejected alternative with `whyNot`
+4. Append to `history` with `timestamp`, `action`, `summary`
+5. Update `project.lastUpdated` to current ISO 8601 timestamp
+6. Write the complete valid JSON back
+
+## Schema Reference
+
+### Service
+```json
+{
+  "id": "kebab-case-id",
+  "name": "Human Readable Name",
+  "type": "frontend|backend|database|cache|queue|gateway|cdn|storage|auth|search|monitoring|other",
+  "technology": "Specific tech (e.g., 'Next.js', 'PostgreSQL')",
+  "description": "What this service does in one sentence",
+  "dependencies": ["ids-of-services-this-depends-on"]
+}
+```
+
+### Connection
+```json
+{
+  "from": "service-id-that-initiates",
+  "to": "service-id-that-receives",
+  "protocol": "HTTP/REST|GraphQL|WebSocket|gRPC|TCP/SQL|AMQP|...",
+  "description": "What data flows through this connection"
+}
+```
+
+### Decision (the most important — never skip)
+```json
+{
+  "id": "dec-NNN",
+  "topic": "What the decision is about",
+  "decision": "What you chose",
+  "rationale": "WHY you chose it — specific to this project's needs",
+  "alternatives": [
+    { "name": "Alternative A", "whyNot": "Why this was rejected" }
+  ],
+  "timestamp": "<ISO 8601>",
+  "relatedServices": ["service-ids-affected"]
+}
+```
+
+Always include at least one rejected alternative. Decisions without alternatives are not decisions — they are defaults.
+
+### History entry (append on every change)
+```json
+{
+  "timestamp": "<ISO 8601>",
+  "action": "added_service|architecture_decision|refactor|reconciliation|...",
+  "summary": "One-line summary"
+}
+```
+
+## Validation Rules
+
+1. Every `connection.from` and `connection.to` must reference an existing `service.id`.
+2. Every `service.dependencies[]` entry must reference an existing `service.id`.
+3. All timestamps must be ISO 8601.
+4. Update `project.lastUpdated` on every change.
+
+## CLI Commands
+
+| Command | Action |
+|---|---|
+| `npx archlearn serve` | Start MCP server + web viewer |
+| `npx archlearn serve --stdio` | MCP server only (for agent integration) |
+| `npx archlearn status` | Architecture health check |
+| `npx archlearn reconcile` | Detect drift between doc and code |
+| `npx archlearn export <format>` | Export as markdown, mermaid, png, svg |
+| `npx archlearn learn` | Web viewer in Learning Mode |

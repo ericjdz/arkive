@@ -5,11 +5,21 @@ alwaysApply: true
 
 # Architecture Tracking
 
-This project uses `{{architectureFile}}` as a living architecture document.
+This project uses `{{architectureFile}}` as a living architecture document. archlearn MCP server is available.
 
-**On every session**: Read `{{architectureFile}}` first.
-**After major changes**: Update `{{architectureFile}}` with what changed and why.
+## Rules
 
-Major changes: adding/removing services, changing protocols, new frameworks, infrastructure changes, module boundary refactors.
+1. **On session start**: Read `{{architectureFile}}` first — it is your cross-session memory.
+2. **Before major changes**: Re-read `{{architectureFile}}` to align changes with existing architecture.
+3. **After major changes**: Update via MCP tools (`update_architecture`, `record_decision`) or edit `{{architectureFile}}` directly.
 
-Always record decisions with rationale and rejected alternatives.
+## Major Changes
+
+Adding/removing services · changing protocols · new frameworks · infrastructure changes · module boundary refactors.
+
+## Requirements
+
+- Every decision MUST include at least one rejected alternative with `whyNot`.
+- Every connection MUST reference existing service IDs.
+- Always update `project.lastUpdated` and append to `history`.
+- Use `npx archlearn reconcile` to detect drift.

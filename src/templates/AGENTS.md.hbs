@@ -1,19 +1,47 @@
 # Architecture-Tracked Project: {{projectName}}
 
-This project uses a living architecture document (`{{architectureFile}}`).
+This project uses a living architecture document, `{{architectureFile}}`. You — the AI coding agent (Codex, OpenCode, Copilot, or any AGENTS.md-aware tool) — are responsible for keeping it in sync with the code.
 
-## Instructions for AI Agents
+> **archlearn is installed.** MCP server available via `npx archlearn serve --stdio`. Use MCP tools when connected; edit `{{architectureFile}}` directly when not.
 
-1. **On session start**: Read `{{architectureFile}}` to understand the current system architecture before doing anything else.
-2. **Before major changes**: Re-read `{{architectureFile}}` to ensure your changes align with the existing architecture.
-3. **After major changes**: Update `{{architectureFile}}` to reflect what changed and why.
+## Rules
 
-Major changes include: adding/removing services, changing communication protocols, modifying infrastructure, adopting new frameworks, or refactoring module boundaries.
+1. **On every session start**: Read `{{architectureFile}}` first. It is your cross-session memory.
+2. **Before any major change**: Re-read `{{architectureFile}}`.
+3. **After any major change**: Update `{{architectureFile}}` and append a `history` entry.
 
-When updating, always:
-- Add new services to the `services` array with id, name, type, technology, description, and dependencies
-- Add connections between services to the `connections` array
-- Record architectural decisions in the `decisions` array with rationale and rejected alternatives
-- Document user-facing flows in `dataFlows`
-- Append to `history` with a summary of what changed
-- Update `project.lastUpdated`
+## Major Changes
+
+Add/remove a service, database, or external API · change communication protocols · modify infrastructure · adopt a new framework · refactor module boundaries.
+
+## How to Update
+
+**MCP tools (preferred):** `update_architecture`, `record_decision`, `check_drift`
+**Fallback:** Edit `{{architectureFile}}` directly — add services/connections/decisions/dataFlows, append history, update `project.lastUpdated`.
+
+## Schema (compact)
+
+- **Service**: `{ id, name, type, technology, description, dependencies[] }`
+  - `type`: `frontend | backend | database | cache | queue | gateway | cdn | storage | auth | search | monitoring | other`
+- **Connection**: `{ from, to, protocol, description }`
+- **Decision**: `{ id, topic, decision, rationale, alternatives[{name, whyNot}], timestamp, relatedServices[] }`
+  - MUST include at least one rejected alternative with `whyNot`
+- **DataFlow**: `{ name, steps[{actor, action}] }`
+- **History entry**: `{ timestamp, action, summary }`
+
+## Validation Rules
+
+- Every `connection.from`/`to` must reference an existing `service.id`.
+- Every `service.dependencies[]` entry must reference an existing `service.id`.
+- Every decision must include at least one rejected alternative with `whyNot`.
+- All timestamps are ISO 8601.
+- Update `project.lastUpdated` on every change.
+
+## CLI Commands
+
+- `npx archlearn serve` — MCP server + web viewer
+- `npx archlearn serve --stdio` — MCP server only (agent integration)
+- `npx archlearn status` — architecture health check
+- `npx archlearn reconcile` — detect drift
+- `npx archlearn export <format>` — export (markdown, mermaid, png, svg)
+- `npx archlearn learn` — web viewer in Learning Mode
