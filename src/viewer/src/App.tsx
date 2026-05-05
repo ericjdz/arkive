@@ -8,6 +8,7 @@ import { DataFlowView } from "./views/DataFlowView.js";
 import { DecisionLogView } from "./views/DecisionLogView.js";
 import { TreeView } from "./views/TreeView.js";
 import { StackView } from "./views/StackView.js";
+import { LearningView } from "./views/LearningView.js";
 
 export function App() {
   const {
@@ -19,7 +20,10 @@ export function App() {
     searchResults,
     refresh,
   } = useArchitecture();
-  const [activeView, setActiveView] = useState<ViewId>("topology");
+  const [activeView, setActiveView] = useState<ViewId>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("mode") === "learning" ? "learning" : "topology";
+  });
 
   if (loading) {
     return (
@@ -122,6 +126,12 @@ export function App() {
         )}
         {activeView === "stack" && (
           <StackView stack={data.stack} decisions={data.decisions} />
+        )}
+        {activeView === "learning" && (
+          <LearningView
+            architecture={data}
+            initialProgress={null}
+          />
         )}
       </main>
     </div>

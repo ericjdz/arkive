@@ -3,7 +3,7 @@ import type { Architecture } from "../../../schema/types.js";
 import type { Question, LearningProgress } from "../../../learning/types.js";
 import { generateAllQuestions } from "../../../learning/questions.js";
 import { extractConcepts } from "../../../learning/concepts.js";
-import { recordAnswer, mergeNewConcepts, createInitialProgress } from "../../../learning/progress.js";
+import { recordAnswer, mergeNewConcepts, createInitialProgress } from "../../../learning/progress.shared.js";
 
 interface UseLearningResult {
   questions: Question[];

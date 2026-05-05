@@ -1,4 +1,4 @@
-export type ViewId = "topology" | "dataflow" | "decisions" | "tree" | "stack";
+export type ViewId = "topology" | "dataflow" | "decisions" | "tree" | "stack" | "learning";
 
 interface ViewSwitcherProps {
   activeView: ViewId;
@@ -11,6 +11,7 @@ const VIEWS: { id: ViewId; label: string; icon: string }[] = [
   { id: "decisions", label: "Decisions", icon: "⚖️" },
   { id: "tree", label: "Tree", icon: "🌳" },
   { id: "stack", label: "Stack", icon: "📦" },
+  { id: "learning", label: "Learning", icon: "🧠" },
 ];
 
 export function ViewSwitcher({ activeView, onViewChange }: ViewSwitcherProps) {
