@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { resolve } from "node:path";
 import { initProject } from "./commands/init.js";
 import { exportArchitecture } from "./commands/export.js";
+import { createLearnCommand } from "./commands/learn.js";
 import { serveProject } from "./commands/serve.js";
 import { statusCommand } from "./commands/status.js";
 
@@ -61,5 +62,7 @@ program
       output: options.output ? resolve(options.output) : undefined,
     });
   });
+
+program.addCommand(createLearnCommand());
 
 program.parse();
