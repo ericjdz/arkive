@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { initProject } from "./commands/init.js";
 import { exportArchitecture } from "./commands/export.js";
 import { createLearnCommand } from "./commands/learn.js";
+import { reconcileCommand } from "./commands/reconcile.js";
 import { serveProject } from "./commands/serve.js";
 import { statusCommand } from "./commands/status.js";
 
@@ -47,6 +48,15 @@ program
   .action(async (options) => {
     const dir = resolve(options.dir);
     await statusCommand({ dir });
+  });
+
+program
+  .command("reconcile")
+  .description("Detect drift between architecture.json and codebase")
+  .option("-d, --dir <path>", "Project directory containing architecture.json", ".")
+  .action(async (options) => {
+    const dir = resolve(options.dir);
+    await reconcileCommand({ dir });
   });
 
 program
