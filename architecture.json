@@ -9,7 +9,7 @@
   "stack": {
     "language": ["TypeScript"],
     "runtime": ["Node.js"],
-    "framework": ["Vitest", "Tsup"],
+    "framework": ["React", "Vite", "React Flow", "D3", "MCP SDK (@modelcontextprotocol/sdk)", "Vitest", "Tsup"],
     "database": [],
     "infrastructure": ["npm"]
   },
@@ -20,7 +20,7 @@
       "type": "backend",
       "technology": "Commander + Node.js",
       "description": "Package entrypoint for init, serve, status, export, and learn commands.",
-      "dependencies": ["templates", "schema"]
+      "dependencies": ["templates", "schema", "mcp-server", "scanner"]
     },
     {
       "id": "templates",
@@ -37,6 +37,38 @@
       "technology": "Zod",
       "description": "Validates architecture.json structure.",
       "dependencies": []
+    },
+    {
+      "id": "mcp-server",
+      "name": "MCP Server",
+      "type": "backend",
+      "technology": "@modelcontextprotocol/sdk",
+      "description": "MCP server exposing architecture tools and resources over stdio/HTTP",
+      "dependencies": ["schema"]
+    },
+    {
+      "id": "viewer",
+      "name": "Viewer",
+      "type": "frontend",
+      "technology": "React + Vite + React Flow + D3",
+      "description": "Interactive web viewer with 6 views: topology, data flow, decisions, components, stack, learning mode",
+      "dependencies": ["mcp-server"]
+    },
+    {
+      "id": "scanner",
+      "name": "Scanner",
+      "type": "other",
+      "technology": "TypeScript",
+      "description": "Static analysis scanner that reads package.json and source imports to detect drift",
+      "dependencies": ["schema"]
+    },
+    {
+      "id": "learning",
+      "name": "Learning Mode",
+      "type": "other",
+      "technology": "TypeScript",
+      "description": "Learning mode with Socratic quizzing and progress tracking",
+      "dependencies": ["schema"]
     }
   ],
   "connections": [
@@ -51,6 +83,30 @@
       "to": "schema",
       "protocol": "filesystem",
       "description": "CLI uses schema validation when creating and updating architecture.json."
+    },
+    {
+      "from": "cli",
+      "to": "mcp-server",
+      "protocol": "stdio/HTTP",
+      "description": "CLI starts MCP server via serve command"
+    },
+    {
+      "from": "cli",
+      "to": "scanner",
+      "protocol": "function call",
+      "description": "CLI invokes scanner for reconcile and status commands"
+    },
+    {
+      "from": "viewer",
+      "to": "mcp-server",
+      "protocol": "HTTP",
+      "description": "Viewer fetches architecture data from MCP server"
+    },
+    {
+      "from": "mcp-server",
+      "to": "schema",
+      "protocol": "function call",
+      "description": "MCP server validates architecture changes via Zod schema"
     }
   ],
   "decisions": [
@@ -67,6 +123,52 @@
       ],
       "timestamp": "2026-05-05T00:00:00.000Z",
       "relatedServices": ["cli", "templates"]
+    },
+    {
+      "id": "dec-002",
+      "topic": "MCP + viewer in one package",
+      "decision": "Bundle MCP server and web viewer in a single npm package",
+      "rationale": "Users want one install command, not two packages to coordinate",
+      "alternatives": [
+        {
+          "name": "Separate @archlearn/server and @archlearn/viewer packages",
+          "whyNot": "Adds coordination complexity and goes against user's stated preference for unified tooling"
+        }
+      ],
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "relatedServices": ["mcp-server", "viewer", "cli"]
+    },
+    {
+      "id": "dec-003",
+      "topic": "React version for viewer",
+      "decision": "Force React 19 via Vite aliases to deduplicate with root project",
+      "rationale": "Viewer nested in src/viewer/ caused React 18 vs 19 duplicate, breaking hooks. Vite alias + dedupe resolves it.",
+      "alternatives": [
+        {
+          "name": "Pin viewer to React 18 independently",
+          "whyNot": "Would still cause duplicate React instances since root has React 19"
+        }
+      ],
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "relatedServices": ["viewer"]
+    },
+    {
+      "id": "dec-004",
+      "topic": "MCP transport modes",
+      "decision": "Support both stdio (--stdio flag) and HTTP modes in serve command",
+      "rationale": "stdio is required for Claude Code plugin integration; HTTP is needed for the web viewer",
+      "alternatives": [
+        {
+          "name": "stdio only",
+          "whyNot": "Would prevent serving the web viewer"
+        },
+        {
+          "name": "HTTP only",
+          "whyNot": "Claude Code plugins require stdio transport"
+        }
+      ],
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "relatedServices": ["mcp-server", "cli"]
     }
   ],
   "dataFlows": [
@@ -75,6 +177,25 @@
       "steps": [
         { "actor": "user", "action": "Runs archlearn init" },
         { "actor": "cli", "action": "Renders templates and writes project files" }
+      ]
+    },
+    {
+      "name": "Architecture update via MCP",
+      "steps": [
+        { "actor": "ai-agent", "action": "Calls update_architecture MCP tool with changes" },
+        { "actor": "mcp-server", "action": "Validates changes against Zod schema" },
+        { "actor": "mcp-server", "action": "Merges changes into architecture.json" },
+        { "actor": "mcp-server", "action": "Returns success confirmation" }
+      ]
+    },
+    {
+      "name": "Drift detection",
+      "steps": [
+        { "actor": "user", "action": "Runs archlearn reconcile" },
+        { "actor": "cli", "action": "Invokes scanner on project directory" },
+        { "actor": "scanner", "action": "Reads package.json and source imports" },
+        { "actor": "scanner", "action": "Compares against architecture.json" },
+        { "actor": "cli", "action": "Reports mismatches to user" }
       ]
     }
   ],
@@ -88,6 +209,11 @@
       "timestamp": "2026-05-05T00:00:00.000Z",
       "action": "update_architecture_tool_semantics",
       "summary": "Added remove semantics to MCP update_architecture tool"
+    },
+    {
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "action": "dogfood_update",
+      "summary": "Updated architecture.json to reflect full system: added MCP server, viewer, scanner, learning mode services and all connections"
     }
   ]
 }
