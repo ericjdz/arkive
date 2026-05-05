@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { resolve } from "node:path";
 import { initProject } from "./commands/init.js";
 import { serveProject } from "./commands/serve.js";
+import { statusCommand } from "./commands/status.js";
 
 const program = new Command();
 
@@ -33,6 +34,15 @@ program
   .action(async (options) => {
     const dir = resolve(options.dir);
     await serveProject({ dir });
+  });
+
+program
+  .command("status")
+  .description("Show architecture health: counts, last updated, drift warnings")
+  .option("-d, --dir <path>", "Project directory containing architecture.json", ".")
+  .action(async (options) => {
+    const dir = resolve(options.dir);
+    await statusCommand({ dir });
   });
 
 program.parse();
