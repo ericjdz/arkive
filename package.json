@@ -11,7 +11,7 @@
     "archlearn": "./dist/cli/index.js"
   },
   "scripts": {
-    "build": "tsup src/cli/index.ts --format esm --dts --outDir dist/cli",
+    "build": "tsup src/cli/index.ts --format esm --outDir dist/cli && node -e \"const fs=require('fs');const path=require('path');['CLAUDE.md.hbs','AGENTS.md.hbs','cursor-rule.mdc.hbs'].forEach(f=>fs.copyFileSync(path.join('src','templates',f),path.join('dist','cli',f)))\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit"
