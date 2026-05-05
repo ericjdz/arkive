@@ -42,7 +42,7 @@ describe("E2E: init flow", () => {
     const claudeContent = readFileSync(claudePath, "utf-8");
     expect(claudeContent).toContain("e2e-test-app");
     expect(claudeContent).toContain("architecture.json");
-    expect(claudeContent).toContain("Before making any major change");
+    expect(claudeContent).toContain("The Three Rules");
 
     // Verify AGENTS.md
     const agentsPath = join(tempDir, "AGENTS.md");
