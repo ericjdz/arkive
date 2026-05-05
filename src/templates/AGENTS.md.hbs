@@ -1,0 +1,19 @@
+# Architecture-Tracked Project: {{projectName}}
+
+This project uses a living architecture document (`{{architectureFile}}`).
+
+## Instructions for AI Agents
+
+1. **On session start**: Read `{{architectureFile}}` to understand the current system architecture before doing anything else.
+2. **Before major changes**: Re-read `{{architectureFile}}` to ensure your changes align with the existing architecture.
+3. **After major changes**: Update `{{architectureFile}}` to reflect what changed and why.
+
+Major changes include: adding/removing services, changing communication protocols, modifying infrastructure, adopting new frameworks, or refactoring module boundaries.
+
+When updating, always:
+- Add new services to the `services` array with id, name, type, technology, description, and dependencies
+- Add connections between services to the `connections` array
+- Record architectural decisions in the `decisions` array with rationale and rejected alternatives
+- Document user-facing flows in `dataFlows`
+- Append to `history` with a summary of what changed
+- Update `project.lastUpdated`

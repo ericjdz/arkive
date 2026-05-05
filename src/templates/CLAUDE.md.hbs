@@ -1,0 +1,29 @@
+# Architecture-Tracked Project: {{projectName}}
+
+This project uses a living architecture document (`{{architectureFile}}`) that you MUST maintain.
+
+## Rules
+
+1. **Before making any major change**: Read `{{architectureFile}}` to understand the current system architecture.
+2. **After making any major change**: Update `{{architectureFile}}` to reflect what changed and why.
+3. **On session start**: Read `{{architectureFile}}` first to onboard to this project.
+
+## What counts as a "major change"
+
+- Adding/removing a service, database, or external dependency
+- Changing how services communicate (protocols, APIs)
+- Adding/modifying infrastructure (hosting, CI/CD, caching)
+- Choosing a new library or framework for a significant function
+- Refactoring that changes module boundaries
+
+## How to update architecture.json
+
+When updating, include:
+- **services**: Add/modify service entries with id, name, type, technology, description, dependencies
+- **connections**: Add/modify connections between services with protocol and description
+- **decisions**: Record WHY you made architectural choices, with alternatives you considered and why you rejected them
+- **dataFlows**: Document important user-facing flows step by step
+- **history**: Append an entry with timestamp, action, and summary of what changed
+- **stack**: Update language, runtime, framework, database, infrastructure arrays if they changed
+
+Always update `project.lastUpdated` with the current timestamp.
