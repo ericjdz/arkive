@@ -1,0 +1,21 @@
+{
+  "name": "archlearn-marketplace",
+  "owner": {
+    "name": "archlearn contributors",
+    "url": "https://github.com/archlearn"
+  },
+  "description": "The archlearn marketplace: living architecture documents for AI-built projects.",
+  "plugins": [
+    {
+      "name": "archlearn",
+      "description": "Maintain a living architecture.json across AI coding sessions. Includes MCP server, web viewer, and Learning Mode.",
+      "source": {
+        "type": "github",
+        "repo": "archlearn/archlearn"
+      },
+      "version": "0.1.0",
+      "category": "documentation",
+      "tags": ["architecture", "mcp", "learning", "ai-agent"]
+    }
+  ]
+}

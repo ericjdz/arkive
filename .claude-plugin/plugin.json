@@ -1,0 +1,36 @@
+{
+  "name": "archlearn",
+  "version": "0.1.0",
+  "description": "A living architecture document for AI-built projects. Your AI agent maintains it; you understand what was built.",
+  "author": {
+    "name": "archlearn contributors",
+    "url": "https://github.com/archlearn/archlearn"
+  },
+  "homepage": "https://github.com/archlearn/archlearn#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/archlearn/archlearn.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "architecture",
+    "documentation",
+    "system-design",
+    "learning",
+    "mcp"
+  ],
+  "skills": [
+    "skills/core/setup/SKILL.md",
+    "skills/core/architecture-tracker/SKILL.md",
+    "skills/maintenance/reconciliation/SKILL.md",
+    "skills/learning/learning-mode/SKILL.md",
+    "skills/learning/explain-decisions/SKILL.md"
+  ],
+  "commands": [],
+  "mcpServers": {
+    "archlearn": {
+      "command": "npx",
+      "args": ["-y", "archlearn", "serve", "--stdio"]
+    }
+  }
+}
