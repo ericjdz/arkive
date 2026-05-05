@@ -9,7 +9,7 @@ trigger: User runs `arkive learn`, or says "enable learning mode", or `.arkive/l
 ## Activation
 
 Learning Mode is **opt-in**. It activates when:
-- User runs `npx arkive learn` (opens viewer with quiz interface)
+- User runs `npx @ericjdz/arkive learn` (opens viewer with quiz interface)
 - User says "enable learning mode" in conversation
 - `.arkive/learning-progress.json` exists in the project root
 

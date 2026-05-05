@@ -2,7 +2,7 @@
 
 This repo uses a living architecture document, `architecture.json`. You — the AI coding agent (Codex, OpenCode, Copilot, or any AGENTS.md-aware tool) — are responsible for keeping it in sync with the code.
 
-> **Lightweight mode.** No MCP server, no viewer. Just this file and the JSON. To upgrade, run `npx arkive init`.
+> **Lightweight mode.** No MCP server, no viewer. Just this file and the JSON. To upgrade, run `npx @ericjdz/arkive init`.
 
 ## Rules
 
@@ -65,15 +65,15 @@ If arkive is installed, prefer MCP tools over direct file editing:
 - `record_decision` — record decisions with rationale and rejected alternatives
 - `check_drift` — verify doc matches code
 
-To install: `npx arkive init`
+To install: `npx @ericjdz/arkive init`
 
 ## Upgrade
 
 For MCP server, web viewer, and Learning Mode:
 
 ```bash
-npx arkive init
-npx arkive serve
+npx @ericjdz/arkive init
+npx @ericjdz/arkive serve
 ```
 
 Docs: https://github.com/arkive/arkive

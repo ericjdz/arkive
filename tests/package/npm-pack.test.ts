@@ -77,7 +77,7 @@ describe("npm pack + install + bin invocation", () => {
       expect(existsSync(binPath) || existsSync(binPathWin)).toBe(true);
 
       // Invoke --help
-      const helpOut = execSync(`node node_modules/arkive/dist/cli/index.js --help`, {
+      const helpOut = execSync(`node node_modules/@ericjdz/arkive/dist/cli/index.js --help`, {
         cwd: installDir,
         encoding: "utf-8",
       });
@@ -103,7 +103,7 @@ describe("npm pack + install + bin invocation", () => {
       });
 
       execSync(
-        `node node_modules/arkive/dist/cli/index.js init --name pack-test --dir "${projectDir}"`,
+        `node node_modules/@ericjdz/arkive/dist/cli/index.js init --name pack-test --dir "${projectDir}"`,
         { cwd: installDir, stdio: "inherit" }
       );
 

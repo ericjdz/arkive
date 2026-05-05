@@ -28,7 +28,7 @@ describe("scripts/install.sh", () => {
     expect(content).toMatch(/command -v (npm|npx)/);
   });
 
-  it("invokes npx arkive init", () => {
+  it("invokes npx @ericjdz/arkive init", () => {
     const content = readFileSync(SCRIPT, "utf-8");
     expect(content).toMatch(/npx\s+(-y\s+)?arkive\s+init/);
   });

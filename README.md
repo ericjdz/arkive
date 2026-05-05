@@ -18,16 +18,16 @@ arkive solves both problems with one artifact: a structured `architecture.json` 
 
 ```bash
 # Initialize a project
-npx arkive init
+npx @ericjdz/arkive init
 
 # Or with curl
 curl -fsSL https://raw.githubusercontent.com/arkive/arkive/main/scripts/install.sh | bash
 
 # Start the MCP server + web viewer
-npx arkive serve
+npx @ericjdz/arkive serve
 
 # Open Learning Mode (Socratic gating)
-npx arkive learn
+npx @ericjdz/arkive learn
 ```
 
 After `init`, your repo gains:
@@ -53,15 +53,15 @@ Your AI agent will now read and maintain `architecture.json` automatically.
 
 | Command | Action |
 |---|---|
-| `npx arkive init` | Scaffold `architecture.json` and instruction files into a project |
-| `npx arkive serve` | Start the MCP server and open the web viewer |
-| `npx arkive serve --stdio` | Run the MCP server in stdio mode (for direct agent integration) |
-| `npx arkive status` | Show architecture health (last updated, drift warnings, coverage) |
-| `npx arkive reconcile` | Run static analysis to detect drift and suggest fixes |
-| `npx arkive export <format>` | Export as `markdown`, `mermaid`, `png`, or `svg` |
-| `npx arkive learn` | Open the web viewer in Learning Mode |
+| `npx @ericjdz/arkive init` | Scaffold `architecture.json` and instruction files into a project |
+| `npx @ericjdz/arkive serve` | Start the MCP server and open the web viewer |
+| `npx @ericjdz/arkive serve --stdio` | Run the MCP server in stdio mode (for direct agent integration) |
+| `npx @ericjdz/arkive status` | Show architecture health (last updated, drift warnings, coverage) |
+| `npx @ericjdz/arkive reconcile` | Run static analysis to detect drift and suggest fixes |
+| `npx @ericjdz/arkive export <format>` | Export as `markdown`, `mermaid`, `png`, or `svg` |
+| `npx @ericjdz/arkive learn` | Open the web viewer in Learning Mode |
 
-Run `npx arkive <command> --help` for command-specific options.
+Run `npx @ericjdz/arkive <command> --help` for command-specific options.
 
 ## Configuration
 
@@ -83,7 +83,7 @@ The architecture document lives at `./architecture.json` by default.
 
 | Surface | Install path |
 |---|---|
-| npm | `npx arkive init` |
+| npm | `npx @ericjdz/arkive init` |
 | Claude Code marketplace | Add `arkive` from the Claude Code plugin marketplace |
 | Cursor | `init` writes `.cursor/rules/architecture-tracker.mdc` |
 | Codex / OpenCode / Copilot | `init` writes `AGENTS.md` |

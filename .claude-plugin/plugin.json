@@ -30,7 +30,7 @@
   "mcpServers": {
     "arkive": {
       "command": "npx",
-      "args": ["-y", "arkive", "serve", "--stdio"]
+      "args": ["-y", "@ericjdz/arkive", "serve", "--stdio"]
     }
   }
 }

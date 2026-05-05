@@ -1,5 +1,5 @@
 {
-  "name": "arkive",
+  "name": "@ericjdz/arkive",
   "version": "0.1.0",
   "description": "A living architecture document for AI-built projects. Your AI agent maintains it; you understand what was built.",
   "type": "module",
@@ -80,5 +80,8 @@
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -2,7 +2,7 @@
 
 This repo uses a living architecture document, `architecture.json`. You — the AI coding agent — are responsible for keeping it in sync with the code.
 
-> **You are using the lightweight, drop-in version of arkive.** No MCP server, no web viewer, no Learning Mode — just this file and the JSON. To upgrade, run `npx arkive init` (see "Upgrade" at the bottom).
+> **You are using the lightweight, drop-in version of arkive.** No MCP server, no web viewer, no Learning Mode — just this file and the JSON. To upgrade, run `npx @ericjdz/arkive init` (see "Upgrade" at the bottom).
 
 ## The Three Rules
 
@@ -132,7 +132,7 @@ To check: attempt to read `architecture://overview`. If it succeeds, use MCP for
 To install arkive and enable MCP:
 
 ```bash
-npx arkive init
+npx @ericjdz/arkive init
 ```
 
 ## Upgrade to the Full Experience
@@ -140,8 +140,8 @@ npx arkive init
 To get the MCP server (richer agent context), interactive web viewer, and Learning Mode:
 
 ```bash
-npx arkive init
-npx arkive serve
+npx @ericjdz/arkive init
+npx @ericjdz/arkive serve
 ```
 
 Documentation: https://github.com/arkive/arkive

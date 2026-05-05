@@ -8,7 +8,7 @@ const pkg = JSON.parse(
 
 describe("package.json metadata", () => {
   it("has a name", () => {
-    expect(pkg.name).toBe("arkive");
+    expect(pkg.name).toBe("@ericjdz/arkive");
   });
 
   it("has a semver version", () => {

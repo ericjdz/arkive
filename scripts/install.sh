@@ -99,5 +99,5 @@ fi
 echo ""
 echo "==> Done. Next steps:"
 echo "    cd \"$ABS_DIR\""
-echo "    npx arkive serve   # start MCP server + web viewer"
-echo "    npx arkive status  # check architecture health"
+echo "    npx @ericjdz/arkive serve   # start MCP server + web viewer"
+echo "    npx @ericjdz/arkive status  # check architecture health"

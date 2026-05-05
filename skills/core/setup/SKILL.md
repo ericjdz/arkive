@@ -14,7 +14,7 @@ Run this when starting a new project or adding architecture tracking to an exist
 
 ### 1. Initialize
 
-Run: `npx arkive init --name <project-name>`
+Run: `npx @ericjdz/arkive init --name <project-name>`
 
 This creates:
 - `architecture.json` — the living architecture document
@@ -47,7 +47,7 @@ After `init`, scan the existing codebase and update `architecture.json`:
   "mcpServers": {
     "arkive": {
       "command": "npx",
-      "args": ["-y", "arkive", "serve", "--stdio"]
+      "args": ["-y", "@ericjdz/arkive", "serve", "--stdio"]
     }
   }
 }
@@ -59,7 +59,7 @@ After `init`, scan the existing codebase and update `architecture.json`:
 
 ### 4. Verify
 
-Run: `npx arkive status`
+Run: `npx @ericjdz/arkive status`
 
 MUST show project name, counts, and zero drift warnings.
 

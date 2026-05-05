@@ -17,7 +17,7 @@ trigger: User says "check drift", "reconcile", "is the architecture up to date",
 
 ### Option A: Via CLI (recommended)
 
-Run: `npx arkive reconcile`
+Run: `npx @ericjdz/arkive reconcile`
 
 This scans `package.json` and source imports under `src/`, then reports mismatches against `architecture.json`.
 
