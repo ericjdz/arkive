@@ -1,9 +1,50 @@
 import { existsSync } from "node:fs";
-import { architecturePath } from "../../io/architecture-file.js";
+import { join, resolve } from "node:path";
+import { createServer, type Server } from "node:http";
+import express from "express";
+import { architecturePath, readArchitecture } from "../../io/architecture-file.js";
 import { startStdioServer } from "../../server/index.js";
 
 export interface ServeOptions {
   dir: string;
+  port?: number;
+  open?: boolean;
+}
+
+export function createViewerServer(dir: string): { app: express.Express; server: Server } {
+  const app = express();
+
+  app.use((_req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    next();
+  });
+
+  app.get("/api/architecture", (_req, res) => {
+    const result = readArchitecture(dir);
+    if (!result.success) {
+      res.status(500).json({ error: result.error });
+      return;
+    }
+    res.json(result.data);
+  });
+
+  const viewerDir = resolve(__dirname, "../../viewer");
+  if (existsSync(viewerDir)) {
+    app.use(express.static(viewerDir));
+    app.use((_req, res) => {
+      const indexPath = join(viewerDir, "index.html");
+      if (existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).send("Viewer not built. Run `npm run build:viewer` first.");
+      }
+    });
+  }
+
+  const server = createServer(app);
+  return { app, server };
 }
 
 export async function serveProject(options: ServeOptions): Promise<void> {
@@ -14,6 +55,13 @@ export async function serveProject(options: ServeOptions): Promise<void> {
     );
     process.exit(1);
   }
+
+  const port = options.port ?? 4567;
+
+  const { server } = createViewerServer(options.dir);
+  server.listen(port, () => {
+    process.stderr.write(`Viewer running at http://localhost:${port}\n`);
+  });
 
   await startStdioServer({ dir: options.dir });
 }

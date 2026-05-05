@@ -30,11 +30,12 @@ program
 
 program
   .command("serve")
-  .description("Start the MCP server (stdio transport) for AI agents")
+  .description("Start the MCP server + web viewer")
   .option("-d, --dir <path>", "Project directory containing architecture.json", ".")
+  .option("-p, --port <port>", "HTTP port for the web viewer", "4567")
   .action(async (options) => {
     const dir = resolve(options.dir);
-    await serveProject({ dir });
+    await serveProject({ dir, port: parseInt(options.port, 10) });
   });
 
 program
