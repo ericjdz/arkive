@@ -1,30 +1,69 @@
 {
-  "name": "ai-learning-tool",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
+  "name": "archlearn",
+  "version": "0.1.0",
+  "description": "A living architecture document for AI-built projects. Your AI agent maintains it; you understand what was built.",
   "type": "module",
+  "license": "MIT",
+  "author": "archlearn contributors",
+  "homepage": "https://github.com/archlearn/archlearn#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/archlearn/archlearn.git"
+  },
+  "bugs": {
+    "url": "https://github.com/archlearn/archlearn/issues"
+  },
+  "keywords": [
+    "architecture",
+    "ai",
+    "agent",
+    "mcp",
+    "claude-code",
+    "cursor",
+    "copilot",
+    "codex",
+    "opencode",
+    "documentation",
+    "system-design",
+    "learning"
+  ],
   "bin": {
     "archlearn": "./dist/cli/index.js"
   },
-  "scripts": {
-    "build": "tsup src/cli/index.ts --format esm --outDir dist/cli && node -e \"const fs=require('fs');const path=require('path');['CLAUDE.md.hbs','AGENTS.md.hbs','cursor-rule.mdc.hbs'].forEach(f=>fs.copyFileSync(path.join('src','templates',f),path.join('dist','cli',f)))\"",
-    "build:viewer": "cd src/viewer && npm run build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "tsc --noEmit"
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/schema/index.d.ts",
+      "import": "./dist/schema/index.js"
+    }
   },
   "files": [
     "dist",
     "skills",
-    "src/templates"
+    "src/templates",
+    ".claude-plugin",
+    "CLAUDE.md",
+    "AGENTS.md",
+    "LICENSE",
+    "README.md"
   ],
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "build:cli": "tsup",
+    "build:viewer": "vite build --config viewer/vite.config.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run lint && npm test && npm run build && tsx scripts/prepublish.ts"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "commander": "^14.0.3",
