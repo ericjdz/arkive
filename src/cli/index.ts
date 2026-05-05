@@ -2,6 +2,7 @@
 import { Command } from "commander";
 import { resolve } from "node:path";
 import { initProject } from "./commands/init.js";
+import { serveProject } from "./commands/serve.js";
 
 const program = new Command();
 
@@ -23,6 +24,15 @@ program
       dir,
       description: options.description,
     });
+  });
+
+program
+  .command("serve")
+  .description("Start the MCP server (stdio transport) for AI agents")
+  .option("-d, --dir <path>", "Project directory containing architecture.json", ".")
+  .action(async (options) => {
+    const dir = resolve(options.dir);
+    await serveProject({ dir });
   });
 
 program.parse();
