@@ -12,6 +12,7 @@
   },
   "scripts": {
     "build": "tsup src/cli/index.ts --format esm --outDir dist/cli && node -e \"const fs=require('fs');const path=require('path');['CLAUDE.md.hbs','AGENTS.md.hbs','cursor-rule.mdc.hbs'].forEach(f=>fs.copyFileSync(path.join('src','templates',f),path.join('dist','cli',f)))\"",
+    "build:viewer": "cd src/viewer && npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit"
