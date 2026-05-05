@@ -36,26 +36,19 @@ After `init`, scan the existing codebase and update `architecture.json`:
 - Check config files (Docker, nginx, CI) → populate `infrastructure` in stack
 - Check import statements → populate `connections`
 
-### 3. Configure MCP server (for full experience)
+### 3. Register MCP server
 
-**Claude Code plugin users:** MCP is configured automatically via `.claude-plugin/plugin.json`.
+**Ask the user which AI platform they use**, then run:
 
-**Other platforms — add to your MCP config:**
-
-```json
-{
-  "mcpServers": {
-    "arkive": {
-      "command": "npx",
-      "args": ["-y", "@ericjdz/arkive", "serve", "--stdio"]
-    }
-  }
-}
+```bash
+npx @ericjdz/arkive install <platform>
 ```
 
-- **Cursor:** Add to `.cursor/mcp.json`
-- **OpenCode:** Add to `mcp.json` or equivalent config
-- **Copilot:** Add to agent MCP configuration
+Supported platforms: `claude-desktop`, `claude-code`, `cursor`, `opencode`, `vscode`, `windsurf`, `cline`
+
+The command auto-writes the correct MCP config entry. Tell the user to restart their agent session afterward.
+
+**Claude Code plugin users:** MCP is configured automatically via `.claude-plugin/plugin.json` — skip this step.
 
 ### 4. Verify
 

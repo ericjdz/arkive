@@ -45,3 +45,16 @@ Add/remove a service, database, or external API · change communication protocol
 - `npx @ericjdz/arkive reconcile` — detect drift
 - `npx @ericjdz/arkive export <format>` — export (markdown, mermaid, png, svg)
 - `npx @ericjdz/arkive learn` — web viewer in Learning Mode
+- `npx @ericjdz/arkive install <platform>` — register MCP server in your AI platform config
+
+## MCP Auto-Install
+
+To register the arkive MCP server in your platform, ask the user which platform they use, then run:
+
+```bash
+npx @ericjdz/arkive install <platform>
+```
+
+Supported platforms: `claude-desktop`, `claude-code`, `cursor`, `opencode`, `vscode`, `windsurf`, `cline`
+
+The command writes the correct config entry for the chosen platform. The user must restart their agent session afterward.

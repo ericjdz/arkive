@@ -100,3 +100,16 @@ Always include at least one rejected alternative. Decisions without alternatives
 | `npx @ericjdz/arkive reconcile` | Detect drift between doc and code |
 | `npx @ericjdz/arkive export <format>` | Export as markdown, mermaid, png, svg |
 | `npx @ericjdz/arkive learn` | Web viewer in Learning Mode |
+| `npx @ericjdz/arkive install <platform>` | Register MCP server in your AI platform config |
+
+## MCP Auto-Install
+
+To register the arkive MCP server in your platform, ask the user which platform they use, then run:
+
+```bash
+npx @ericjdz/arkive install <platform>
+```
+
+Supported platforms: `claude-desktop`, `claude-code`, `cursor`, `opencode`, `vscode`, `windsurf`, `cline`
+
+The command writes the correct config entry for the chosen platform. The user must restart their agent session afterward.

@@ -7,13 +7,15 @@ import { createLearnCommand } from "./commands/learn.js";
 import { reconcileCommand } from "./commands/reconcile.js";
 import { serveProject } from "./commands/serve.js";
 import { statusCommand } from "./commands/status.js";
+import { PLATFORMS, installMcp } from "./commands/install.js";
+import type { PlatformName } from "./commands/install.js";
 
 const program = new Command();
 
 program
   .name("arkive")
   .description("Architecture learning tool for AI-assisted development")
-  .version("0.1.0");
+  .version("0.1.2");
 
 program
   .command("init")
@@ -21,6 +23,7 @@ program
   .option("-n, --name <name>", "Project name (defaults to directory name)")
   .option("-d, --dir <path>", "Target directory (defaults to current directory)", ".")
   .option("--description <text>", "Project description")
+  .option("--mcp <platform>", `Also register MCP server for: ${Object.keys(PLATFORMS).join(", ")}`)
   .action((options) => {
     const dir = resolve(options.dir);
     initProject({
@@ -28,6 +31,16 @@ program
       dir,
       description: options.description,
     });
+    if (options.mcp) {
+      if (!PLATFORMS[options.mcp as PlatformName]) {
+        console.error(`Unknown platform: ${options.mcp}`);
+        console.error(`Supported: ${Object.keys(PLATFORMS).join(", ")}`);
+        process.exit(1);
+      }
+      const configPath = installMcp({ platform: options.mcp, projectDir: dir });
+      console.log(`arkive MCP server registered in ${configPath}`);
+      console.log("Restart your AI agent to pick up the new MCP server.");
+    }
   });
 
 program
@@ -72,6 +85,24 @@ program
       format: options.format as "markdown" | "mermaid",
       output: options.output ? resolve(options.output) : undefined,
     });
+  });
+
+program
+  .command("install")
+  .description("Register arkive MCP server in your AI platform config")
+  .argument("<platform>", `Platform: ${Object.keys(PLATFORMS).join(", ")}`)
+  .option("-d, --dir <path>", "Project directory (for project-scoped configs)", ".")
+  .option("--config <path>", "Override config file path")
+  .action((platform: string, options: { dir: string; config?: string }) => {
+    if (!PLATFORMS[platform as PlatformName]) {
+      console.error(`Unknown platform: ${platform}`);
+      console.error(`Supported: ${Object.keys(PLATFORMS).join(", ")}`);
+      process.exit(1);
+    }
+    const dir = resolve(options.dir);
+    const configPath = installMcp({ platform, configPath: options.config, projectDir: dir });
+    console.log(`arkive MCP server registered in ${configPath}`);
+    console.log("Restart your AI agent to pick up the new MCP server.");
   });
 
 program.addCommand(createLearnCommand());

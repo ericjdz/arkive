@@ -60,11 +60,11 @@ const pkg = readJson("package.json") as Record<string, unknown> & {
   bin?: Record<string, string>;
   files?: string[];
 };
-check(pkg.name === "arkive", "package.json name must be 'arkive'");
+check(pkg.name === "@ericjdz/arkive", "package.json name must be '@ericjdz/arkive'");
 check(typeof pkg.version === "string", "package.json must declare a version");
 check(
-  pkg.bin?.arkive === "./dist/cli/index.js",
-  "package.json bin.arkive must point to ./dist/cli/index.js"
+  pkg.bin?.arkive === "bin/arkive.mjs",
+  "package.json bin.arkive must point to bin/arkive.mjs"
 );
 check(Array.isArray(pkg.files), "package.json must declare a 'files' array");
 

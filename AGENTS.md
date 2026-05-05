@@ -67,6 +67,9 @@ If arkive is installed, prefer MCP tools over direct file editing:
 
 To install: `npx @ericjdz/arkive init`
 
+To register MCP in your platform: `npx @ericjdz/arkive install <platform>`
+Supported platforms: `claude-desktop`, `claude-code`, `cursor`, `opencode`, `vscode`, `windsurf`, `cline`
+
 ## Upgrade
 
 For MCP server, web viewer, and Learning Mode:

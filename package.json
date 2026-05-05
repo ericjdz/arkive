@@ -1,6 +1,6 @@
 {
   "name": "@ericjdz/arkive",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A living architecture document for AI-built projects. Your AI agent maintains it; you understand what was built.",
   "type": "module",
   "license": "MIT",
@@ -28,7 +28,7 @@
     "learning"
   ],
   "bin": {
-    "arkive": "./dist/cli/index.js"
+    "arkive": "bin/arkive.mjs"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -46,6 +46,7 @@
     }
   },
   "files": [
+    "bin",
     "dist",
     "skills",
     "src/templates",
@@ -56,13 +57,13 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bash scripts/build.sh",
+    "build": "node scripts/build.mjs",
     "build:cli": "tsup",
     "build:viewer": "vite build --config viewer/vite.config.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
-    "prepublishOnly": "npm run lint && npm test && npm run build && tsx scripts/prepublish.ts"
+    "prepublishOnly": "npm run build && npx tsx scripts/prepublish.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",

@@ -133,7 +133,10 @@ To install arkive and enable MCP:
 
 ```bash
 npx @ericjdz/arkive init
+npx @ericjdz/arkive install <platform>
 ```
+
+Supported platforms: `claude-desktop`, `claude-code`, `cursor`, `opencode`, `vscode`, `windsurf`, `cline`
 
 ## Upgrade to the Full Experience
 

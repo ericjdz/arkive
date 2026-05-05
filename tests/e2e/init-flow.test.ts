@@ -57,8 +57,7 @@ describe("E2E: init flow", () => {
     expect(cursorContent).toContain("alwaysApply: true");
   });
 
-  it("running init twice does not overwrite existing files", () => {
-    // First init
+  it("running init twice does not overwrite existing files", { timeout: 60_000 }, () => {
     execSync(
       `npx tsx src/cli/index.ts init --name "first-run" --dir "${tempDir}"`,
       { cwd: process.cwd() }

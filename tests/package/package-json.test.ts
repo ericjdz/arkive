@@ -51,7 +51,7 @@ describe("package.json metadata", () => {
   });
 
   it("exposes arkive bin pointing to compiled CLI", () => {
-    expect(pkg.bin).toEqual({ arkive: "./dist/cli/index.js" });
+    expect(pkg.bin).toEqual({ arkive: "bin/arkive.mjs" });
   });
 
   it("declares ESM module type", () => {
