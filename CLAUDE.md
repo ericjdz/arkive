@@ -119,6 +119,22 @@ Always include at least one rejected alternative. Decisions without alternatives
 3. All timestamps must be ISO 8601.
 4. Update `project.lastUpdated` on every change.
 
+## MCP Server (if archlearn is installed)
+
+If archlearn is installed in this project, prefer MCP tools over direct file editing:
+
+- `update_architecture` — add, modify, or remove services, connections, data flows, and stack entries
+- `record_decision` — record an architectural decision with rationale and rejected alternatives
+- `check_drift` — verify architecture.json matches the codebase
+
+To check: attempt to read `architecture://overview`. If it succeeds, use MCP for all reads/writes.
+
+To install archlearn and enable MCP:
+
+```bash
+npx archlearn init
+```
+
 ## Upgrade to the Full Experience
 
 To get the MCP server (richer agent context), interactive web viewer, and Learning Mode:

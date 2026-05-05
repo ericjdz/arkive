@@ -57,6 +57,16 @@ Then scan the existing codebase (`package.json`, folder structure, imports, infr
 - All timestamps are ISO 8601.
 - Update `project.lastUpdated` on every change.
 
+## MCP Server (if archlearn is installed)
+
+If archlearn is installed, prefer MCP tools over direct file editing:
+
+- `update_architecture` — add/modify/remove services, connections, data flows, stack
+- `record_decision` — record decisions with rationale and rejected alternatives
+- `check_drift` — verify doc matches code
+
+To install: `npx archlearn init`
+
 ## Upgrade
 
 For MCP server, web viewer, and Learning Mode:
