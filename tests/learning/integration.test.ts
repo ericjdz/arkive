@@ -97,7 +97,7 @@ describe("Learning Mode Integration", () => {
       topic: "Caching Strategy",
       decision: "Redis for sessions",
       rationale: "In-memory speed for session data.",
-      alternatives: [],
+      alternatives: [{ name: "Database sessions", whyNot: "Slower for frequent lookups." }],
       timestamp: "2026-05-06T00:00:00Z",
       relatedServices: [],
     });

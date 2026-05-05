@@ -42,7 +42,7 @@ export const DecisionSchema = z.object({
   topic: z.string().min(1),
   decision: z.string().min(1),
   rationale: z.string().min(1),
-  alternatives: z.array(AlternativeSchema).default([]),
+  alternatives: z.array(AlternativeSchema).min(1),
   timestamp: z.string().datetime(),
   relatedServices: z.array(z.string()).default([]),
 });

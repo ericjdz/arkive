@@ -9,6 +9,7 @@ export function createLearnCommand(): Command {
     .description("Open the web viewer in Learning Mode")
     .option("-d, --dir <path>", "Project directory containing architecture.json", ".")
     .option("-p, --port <port>", "Port for the web viewer", "4567")
+    .option("--no-open", "Do not auto-open the browser")
     .action(async (options) => {
       const dir = resolve(options.dir);
       const port = parseInt(options.port, 10);

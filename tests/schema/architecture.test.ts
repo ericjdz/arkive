@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { validateArchitecture, createEmptyArchitecture } from "../../src/schema/validate.js";
+import { DecisionSchema } from "../../src/schema/architecture.js";
 
 describe("Architecture Schema", () => {
   it("validates a minimal valid architecture", () => {
@@ -67,6 +68,19 @@ describe("Architecture Schema", () => {
     });
     const result = validateArchitecture(arch);
     expect(result.success).toBe(true);
+  });
+
+  it("rejects decision with empty alternatives", () => {
+    const result = DecisionSchema.safeParse({
+      id: "dec-001",
+      topic: "Test",
+      decision: "Chose X",
+      rationale: "Because",
+      alternatives: [],
+      timestamp: new Date().toISOString(),
+      relatedServices: [],
+    });
+    expect(result.success).toBe(false);
   });
 
   it("validates architecture with data flows", () => {
