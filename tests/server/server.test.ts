@@ -10,7 +10,7 @@ describe("createServer", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "archlearn-srv-"));
+    tempDir = mkdtempSync(join(tmpdir(), "arkive-srv-"));
     const arch = createEmptyArchitecture("srv", "Server test");
     const r = writeArchitecture(tempDir, arch);
     if (!r.success) throw new Error(r.error);

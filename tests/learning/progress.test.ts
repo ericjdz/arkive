@@ -17,7 +17,7 @@ describe("Learning Progress", () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "archlearn-progress-"));
+    tmpDir = mkdtempSync(join(tmpdir(), "arkive-progress-"));
   });
 
   afterEach(() => {
@@ -50,7 +50,7 @@ describe("Learning Progress", () => {
   });
 
   describe("writeProgress", () => {
-    it("creates .archlearn directory and writes progress", () => {
+    it("creates .arkive directory and writes progress", () => {
       const progress: LearningProgress = {
         projectName: "test-app",
         startedAt: "2026-05-05T00:00:00Z",

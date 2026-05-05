@@ -1,7 +1,7 @@
 ---
 name: setup
 description: Initialize architecture tracking in a project. Run this once per project.
-trigger: User says "set up archlearn", "init architecture tracking", or project has no architecture.json.
+trigger: User says "set up arkive", "init architecture tracking", or project has no architecture.json.
 ---
 
 # Setup — Architecture Tracking
@@ -14,7 +14,7 @@ Run this when starting a new project or adding architecture tracking to an exist
 
 ### 1. Initialize
 
-Run: `npx archlearn init --name <project-name>`
+Run: `npx arkive init --name <project-name>`
 
 This creates:
 - `architecture.json` — the living architecture document
@@ -45,9 +45,9 @@ After `init`, scan the existing codebase and update `architecture.json`:
 ```json
 {
   "mcpServers": {
-    "archlearn": {
+    "arkive": {
       "command": "npx",
-      "args": ["-y", "archlearn", "serve", "--stdio"]
+      "args": ["-y", "arkive", "serve", "--stdio"]
     }
   }
 }
@@ -59,7 +59,7 @@ After `init`, scan the existing codebase and update `architecture.json`:
 
 ### 4. Verify
 
-Run: `npx archlearn status`
+Run: `npx arkive status`
 
 MUST show project name, counts, and zero drift warnings.
 

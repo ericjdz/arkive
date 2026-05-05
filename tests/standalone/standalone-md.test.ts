@@ -34,7 +34,7 @@ describe("Standalone CLAUDE.md (try-before-install)", () => {
 
   it("mentions the upgrade path to the full package", () => {
     const content = read("CLAUDE.md");
-    expect(content).toMatch(/npx archlearn|full (package|experience)|upgrade/i);
+    expect(content).toMatch(/npx arkive|full (package|experience)|upgrade/i);
   });
 });
 
@@ -57,6 +57,6 @@ describe("Standalone AGENTS.md (try-before-install)", () => {
 
   it("mentions the upgrade path", () => {
     const content = read("AGENTS.md");
-    expect(content).toMatch(/npx archlearn|full (package|experience)|upgrade/i);
+    expect(content).toMatch(/npx arkive|full (package|experience)|upgrade/i);
   });
 });

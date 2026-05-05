@@ -1,8 +1,8 @@
-# Architecture-Tracked Project (archlearn — lightweight mode)
+# Architecture-Tracked Project (arkive — lightweight mode)
 
 This repo uses a living architecture document, `architecture.json`. You — the AI coding agent (Codex, OpenCode, Copilot, or any AGENTS.md-aware tool) — are responsible for keeping it in sync with the code.
 
-> **Lightweight mode.** No MCP server, no viewer. Just this file and the JSON. To upgrade, run `npx archlearn init`.
+> **Lightweight mode.** No MCP server, no viewer. Just this file and the JSON. To upgrade, run `npx arkive init`.
 
 ## Rules
 
@@ -57,23 +57,23 @@ Then scan the existing codebase (`package.json`, folder structure, imports, infr
 - All timestamps are ISO 8601.
 - Update `project.lastUpdated` on every change.
 
-## MCP Server (if archlearn is installed)
+## MCP Server (if arkive is installed)
 
-If archlearn is installed, prefer MCP tools over direct file editing:
+If arkive is installed, prefer MCP tools over direct file editing:
 
 - `update_architecture` — add/modify/remove services, connections, data flows, stack
 - `record_decision` — record decisions with rationale and rejected alternatives
 - `check_drift` — verify doc matches code
 
-To install: `npx archlearn init`
+To install: `npx arkive init`
 
 ## Upgrade
 
 For MCP server, web viewer, and Learning Mode:
 
 ```bash
-npx archlearn init
-npx archlearn serve
+npx arkive init
+npx arkive serve
 ```
 
-Docs: https://github.com/archlearn/archlearn
+Docs: https://github.com/arkive/arkive

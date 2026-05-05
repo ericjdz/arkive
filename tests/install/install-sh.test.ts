@@ -28,12 +28,12 @@ describe("scripts/install.sh", () => {
     expect(content).toMatch(/command -v (npm|npx)/);
   });
 
-  it("invokes npx archlearn init", () => {
+  it("invokes npx arkive init", () => {
     const content = readFileSync(SCRIPT, "utf-8");
-    expect(content).toMatch(/npx\s+(-y\s+)?archlearn\s+init/);
+    expect(content).toMatch(/npx\s+(-y\s+)?arkive\s+init/);
   });
 
-  it("supports a --dir argument forwarding to archlearn init", () => {
+  it("supports a --dir argument forwarding to arkive init", () => {
     const content = readFileSync(SCRIPT, "utf-8");
     expect(content).toMatch(/--dir/);
   });
@@ -45,13 +45,13 @@ describe("scripts/install.sh", () => {
 
   it("dry-run prints help when --help is passed", () => {
     if (platform() === "win32") return;
-    const tmp = mkdtempSync(join(tmpdir(), "archlearn-install-"));
+    const tmp = mkdtempSync(join(tmpdir(), "arkive-install-"));
     try {
       const out = execSync(`bash "${SCRIPT}" --help`, {
         encoding: "utf-8",
         env: { ...process.env, ARCHLEARN_INSTALL_DRY_RUN: "1" },
       });
-      expect(out.toLowerCase()).toContain("archlearn");
+      expect(out.toLowerCase()).toContain("arkive");
       expect(out).toMatch(/--dir|usage/i);
     } finally {
       rmSync(tmp, { recursive: true, force: true });

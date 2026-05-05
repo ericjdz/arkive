@@ -17,7 +17,7 @@ export function createLearnCommand(): Command {
       const archPath = architecturePath(dir);
       if (!existsSync(archPath)) {
         process.stderr.write(
-          `architecture.json not found. Run \`archlearn init\` first.\n`
+          `architecture.json not found. Run \`arkive init\` first.\n`
         );
         process.exit(1);
       }

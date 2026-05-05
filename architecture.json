@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "project": {
-    "name": "archlearn",
+    "name": "arkive",
     "description": "A living architecture document for AI-built projects.",
     "created": "2026-05-05T00:00:00.000Z",
     "lastUpdated": "2026-05-05T00:00:00.000Z"
@@ -131,7 +131,7 @@
       "rationale": "Users want one install command, not two packages to coordinate",
       "alternatives": [
         {
-          "name": "Separate @archlearn/server and @archlearn/viewer packages",
+          "name": "Separate @arkive/server and @arkive/viewer packages",
           "whyNot": "Adds coordination complexity and goes against user's stated preference for unified tooling"
         }
       ],
@@ -175,7 +175,7 @@
     {
       "name": "Project initialization",
       "steps": [
-        { "actor": "user", "action": "Runs archlearn init" },
+        { "actor": "user", "action": "Runs arkive init" },
         { "actor": "cli", "action": "Renders templates and writes project files" }
       ]
     },
@@ -191,7 +191,7 @@
     {
       "name": "Drift detection",
       "steps": [
-        { "actor": "user", "action": "Runs archlearn reconcile" },
+        { "actor": "user", "action": "Runs arkive reconcile" },
         { "actor": "cli", "action": "Invokes scanner on project directory" },
         { "actor": "scanner", "action": "Reads package.json and source imports" },
         { "actor": "scanner", "action": "Compares against architecture.json" },
@@ -214,6 +214,11 @@
       "timestamp": "2026-05-05T00:00:00.000Z",
       "action": "dogfood_update",
       "summary": "Updated architecture.json to reflect full system: added MCP server, viewer, scanner, learning mode services and all connections"
+    },
+    {
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "action": "rename_project",
+      "summary": "Renamed project references to arkive in manifests and architecture document"
     }
   ]
 }

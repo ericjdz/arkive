@@ -1,15 +1,15 @@
 {
-  "name": "archlearn",
+  "name": "arkive",
   "version": "0.1.0",
   "description": "A living architecture document for AI-built projects. Your AI agent maintains it; you understand what was built.",
   "author": {
-    "name": "archlearn contributors",
-    "url": "https://github.com/archlearn/archlearn"
+    "name": "arkive contributors",
+    "url": "https://github.com/arkive/arkive"
   },
-  "homepage": "https://github.com/archlearn/archlearn#readme",
+  "homepage": "https://github.com/arkive/arkive#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/archlearn/archlearn.git"
+    "url": "git+https://github.com/arkive/arkive.git"
   },
   "license": "MIT",
   "keywords": [
@@ -28,9 +28,9 @@
   ],
   "commands": [],
   "mcpServers": {
-    "archlearn": {
+    "arkive": {
       "command": "npx",
-      "args": ["-y", "archlearn", "serve", "--stdio"]
+      "args": ["-y", "arkive", "serve", "--stdio"]
     }
   }
 }

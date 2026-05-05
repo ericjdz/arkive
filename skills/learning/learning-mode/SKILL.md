@@ -1,7 +1,7 @@
 ---
 name: learning-mode
 description: Socratic quizzing after architecture updates. Optional — activates when user opts in.
-trigger: User runs `archlearn learn`, or says "enable learning mode", or `.archlearn/learning-progress.json` exists.
+trigger: User runs `arkive learn`, or says "enable learning mode", or `.arkive/learning-progress.json` exists.
 ---
 
 # Learning Mode (Optional)
@@ -9,9 +9,9 @@ trigger: User runs `archlearn learn`, or says "enable learning mode", or `.archl
 ## Activation
 
 Learning Mode is **opt-in**. It activates when:
-- User runs `npx archlearn learn` (opens viewer with quiz interface)
+- User runs `npx arkive learn` (opens viewer with quiz interface)
 - User says "enable learning mode" in conversation
-- `.archlearn/learning-progress.json` exists in the project root
+- `.arkive/learning-progress.json` exists in the project root
 
 ## Behavior (when active)
 
@@ -31,11 +31,11 @@ After every architecture update (any change to `architecture.json`), you MUST:
    - Correct: Acknowledge, explain briefly why, proceed
    - Incorrect: Explain the correct answer with context from the decision rationale. Ask if they want to try another question or move on.
 
-5. **Track progress**: If `.archlearn/learning-progress.json` exists, update it with the result.
+5. **Track progress**: If `.arkive/learning-progress.json` exists, update it with the result.
 
 ## Progress Check
 
-Before generating a question, check `.archlearn/learning-progress.json`:
+Before generating a question, check `.arkive/learning-progress.json`:
 - If user has mastered the relevant concept, skip the question
 - Report: "You've demonstrated understanding of X/Y concepts"
 
@@ -43,8 +43,8 @@ Before generating a question, check `.archlearn/learning-progress.json`:
 
 User can disable Learning Mode by:
 - Saying "disable learning mode"
-- Deleting `.archlearn/learning-progress.json`
-- Running `archlearn serve` (without `learn`)
+- Deleting `.arkive/learning-progress.json`
+- Running `arkive serve` (without `learn`)
 
 ## MUST NOT
 

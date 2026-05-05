@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# archlearn — quick installer
+# arkive — quick installer
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/archlearn/archlearn/main/scripts/install.sh | bash
-#   curl -fsSL https://raw.githubusercontent.com/archlearn/archlearn/main/scripts/install.sh | bash -s -- --dir /path/to/project
+#   curl -fsSL https://raw.githubusercontent.com/arkive/arkive/main/scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/arkive/arkive/main/scripts/install.sh | bash -s -- --dir /path/to/project
 
 PROJECT_DIR="."
 PROJECT_NAME=""
@@ -12,7 +12,7 @@ SHOW_HELP=0
 
 print_help() {
   cat <<'EOF'
-archlearn installer
+arkive installer
 
 Usage:
   install.sh [--dir <path>] [--name <project-name>] [--help]
@@ -24,7 +24,7 @@ Options:
 
 Behavior:
   1. Verifies node and npx are available.
-  2. Runs `npx -y archlearn init` against the target directory.
+   2. Runs `npx -y arkive init` against the target directory.
 
 Set ARCHLEARN_INSTALL_DRY_RUN=1 to print what would run without executing.
 EOF
@@ -57,7 +57,7 @@ if [ "$SHOW_HELP" -eq 1 ]; then
   exit 0
 fi
 
-echo "==> archlearn installer"
+echo "==> arkive installer"
 
 if ! command -v node >/dev/null 2>&1; then
   echo "ERROR: node is required but was not found in PATH." >&2
@@ -82,7 +82,7 @@ mkdir -p "$PROJECT_DIR"
 ABS_DIR="$(cd "$PROJECT_DIR" && pwd)"
 echo "==> Target directory: $ABS_DIR"
 
-CMD=(npx -y archlearn init --dir "$ABS_DIR")
+CMD=(npx -y arkive init --dir "$ABS_DIR")
 if [ -n "$PROJECT_NAME" ]; then
   CMD+=(--name "$PROJECT_NAME")
 fi
@@ -99,5 +99,5 @@ fi
 echo ""
 echo "==> Done. Next steps:"
 echo "    cd \"$ABS_DIR\""
-echo "    npx archlearn serve   # start MCP server + web viewer"
-echo "    npx archlearn status  # check architecture health"
+echo "    npx arkive serve   # start MCP server + web viewer"
+echo "    npx arkive status  # check architecture health"

@@ -1,8 +1,8 @@
-# Architecture-Tracked Project (archlearn — lightweight mode)
+# Architecture-Tracked Project (arkive — lightweight mode)
 
 This repo uses a living architecture document, `architecture.json`. You — the AI coding agent — are responsible for keeping it in sync with the code.
 
-> **You are using the lightweight, drop-in version of archlearn.** No MCP server, no web viewer, no Learning Mode — just this file and the JSON. To upgrade, run `npx archlearn init` (see "Upgrade" at the bottom).
+> **You are using the lightweight, drop-in version of arkive.** No MCP server, no web viewer, no Learning Mode — just this file and the JSON. To upgrade, run `npx arkive init` (see "Upgrade" at the bottom).
 
 ## The Three Rules
 
@@ -119,9 +119,9 @@ Always include at least one rejected alternative. Decisions without alternatives
 3. All timestamps must be ISO 8601.
 4. Update `project.lastUpdated` on every change.
 
-## MCP Server (if archlearn is installed)
+## MCP Server (if arkive is installed)
 
-If archlearn is installed in this project, prefer MCP tools over direct file editing:
+If arkive is installed in this project, prefer MCP tools over direct file editing:
 
 - `update_architecture` — add, modify, or remove services, connections, data flows, and stack entries
 - `record_decision` — record an architectural decision with rationale and rejected alternatives
@@ -129,10 +129,10 @@ If archlearn is installed in this project, prefer MCP tools over direct file edi
 
 To check: attempt to read `architecture://overview`. If it succeeds, use MCP for all reads/writes.
 
-To install archlearn and enable MCP:
+To install arkive and enable MCP:
 
 ```bash
-npx archlearn init
+npx arkive init
 ```
 
 ## Upgrade to the Full Experience
@@ -140,8 +140,8 @@ npx archlearn init
 To get the MCP server (richer agent context), interactive web viewer, and Learning Mode:
 
 ```bash
-npx archlearn init
-npx archlearn serve
+npx arkive init
+npx arkive serve
 ```
 
-Documentation: https://github.com/archlearn/archlearn
+Documentation: https://github.com/arkive/arkive

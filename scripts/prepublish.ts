@@ -25,7 +25,7 @@ function readJson(rel: string): unknown {
   return JSON.parse(readFileSync(resolve(ROOT, rel), "utf-8"));
 }
 
-console.log("==> archlearn prepublish validation");
+console.log("==> arkive prepublish validation");
 
 // 1. Required files exist
 const requiredFiles = [
@@ -60,11 +60,11 @@ const pkg = readJson("package.json") as Record<string, unknown> & {
   bin?: Record<string, string>;
   files?: string[];
 };
-check(pkg.name === "archlearn", "package.json name must be 'archlearn'");
+check(pkg.name === "arkive", "package.json name must be 'arkive'");
 check(typeof pkg.version === "string", "package.json must declare a version");
 check(
-  pkg.bin?.archlearn === "./dist/cli/index.js",
-  "package.json bin.archlearn must point to ./dist/cli/index.js"
+  pkg.bin?.arkive === "./dist/cli/index.js",
+  "package.json bin.arkive must point to ./dist/cli/index.js"
 );
 check(Array.isArray(pkg.files), "package.json must declare a 'files' array");
 

@@ -25,7 +25,7 @@ describe("Claude Code plugin manifests", () => {
 
   it("plugin.json declares required fields", () => {
     const data = readJson(".claude-plugin/plugin.json");
-    expect(data.name).toBe("archlearn");
+    expect(data.name).toBe("arkive");
     expect(data.version).toMatch(/^\d+\.\d+\.\d+/);
     expect(data.description).toBeTruthy();
     expect(data.author).toBeTruthy();
@@ -43,8 +43,8 @@ describe("Claude Code plugin manifests", () => {
   it("plugin.json declares the MCP server entry", () => {
     const data = readJson(".claude-plugin/plugin.json");
     expect(data.mcpServers).toBeDefined();
-    expect(data.mcpServers.archlearn).toBeDefined();
-    expect(data.mcpServers.archlearn.command).toBeTruthy();
+    expect(data.mcpServers.arkive).toBeDefined();
+    expect(data.mcpServers.arkive.command).toBeTruthy();
   });
 
   it("marketplace.json is valid JSON", () => {
@@ -60,10 +60,10 @@ describe("Claude Code plugin manifests", () => {
     expect(result.success).toBe(true);
   });
 
-  it("marketplace.json lists archlearn as a plugin entry", () => {
+  it("marketplace.json lists arkive as a plugin entry", () => {
     const data = readJson(".claude-plugin/marketplace.json");
     expect(Array.isArray(data.plugins)).toBe(true);
-    const entry = data.plugins.find((p: { name: string }) => p.name === "archlearn");
+    const entry = data.plugins.find((p: { name: string }) => p.name === "arkive");
     expect(entry).toBeDefined();
     expect(entry.source).toBeTruthy();
   });

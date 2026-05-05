@@ -13,7 +13,7 @@ describe("architecture file I/O", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "archlearn-io-"));
+    tempDir = mkdtempSync(join(tmpdir(), "arkive-io-"));
   });
 
   afterEach(() => {

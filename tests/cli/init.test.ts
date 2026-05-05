@@ -8,7 +8,7 @@ describe("CLI init command", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "archlearn-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "arkive-test-"));
   });
 
   afterEach(() => {

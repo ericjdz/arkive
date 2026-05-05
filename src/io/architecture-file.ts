@@ -23,7 +23,7 @@ export function readArchitecture(dir: string): ReadResult {
   if (!existsSync(path)) {
     return {
       success: false,
-      error: `architecture.json not found in ${dir}. Run \`archlearn init\` first.`,
+       error: `architecture.json not found in ${dir}. Run \`arkive init\` first.`,
     };
   }
 

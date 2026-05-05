@@ -10,7 +10,7 @@ describe("CLI serve command (stdio smoke test)", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "archlearn-serve-"));
+    tempDir = mkdtempSync(join(tmpdir(), "arkive-serve-"));
     const arch = createEmptyArchitecture("serve-test", "Serve smoke");
     const r = writeArchitecture(tempDir, arch);
     if (!r.success) throw new Error(r.error);
@@ -92,7 +92,7 @@ describe("CLI serve command (stdio smoke test)", () => {
       const response = JSON.parse(responseLine);
       expect(response.id).toBe(1);
       expect(response.result).toBeDefined();
-      expect(response.result.serverInfo?.name).toBe("archlearn");
+      expect(response.result.serverInfo?.name).toBe("arkive");
       expect(response.result.capabilities).toBeDefined();
     } finally {
       child.kill();

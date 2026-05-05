@@ -11,7 +11,7 @@ import { statusCommand } from "./commands/status.js";
 const program = new Command();
 
 program
-  .name("archlearn")
+  .name("arkive")
   .description("Architecture learning tool for AI-assisted development")
   .version("0.1.0");
 

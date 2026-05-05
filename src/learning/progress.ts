@@ -3,7 +3,7 @@ import { join } from "node:path";
 import type { LearningProgress, ConceptMastery, QuestionCategory } from "./types.js";
 import type { ExtractedConcept } from "./concepts.js";
 
-export const PROGRESS_DIR = ".archlearn";
+export const PROGRESS_DIR = ".arkive";
 export const PROGRESS_FILENAME = "learning-progress.json";
 
 export function readProgress(projectRoot: string): LearningProgress | null {

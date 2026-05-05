@@ -10,7 +10,7 @@ describe("CLI status command", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "archlearn-status-"));
+    tempDir = mkdtempSync(join(tmpdir(), "arkive-status-"));
   });
 
   afterEach(() => {

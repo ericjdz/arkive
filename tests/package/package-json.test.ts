@@ -8,7 +8,7 @@ const pkg = JSON.parse(
 
 describe("package.json metadata", () => {
   it("has a name", () => {
-    expect(pkg.name).toBe("archlearn");
+    expect(pkg.name).toBe("arkive");
   });
 
   it("has a semver version", () => {
@@ -50,8 +50,8 @@ describe("package.json metadata", () => {
     );
   });
 
-  it("exposes archlearn bin pointing to compiled CLI", () => {
-    expect(pkg.bin).toEqual({ archlearn: "./dist/cli/index.js" });
+  it("exposes arkive bin pointing to compiled CLI", () => {
+    expect(pkg.bin).toEqual({ arkive: "./dist/cli/index.js" });
   });
 
   it("declares ESM module type", () => {

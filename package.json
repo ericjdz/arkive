@@ -1,17 +1,17 @@
 {
-  "name": "archlearn",
+  "name": "arkive",
   "version": "0.1.0",
   "description": "A living architecture document for AI-built projects. Your AI agent maintains it; you understand what was built.",
   "type": "module",
   "license": "MIT",
-  "author": "archlearn contributors",
-  "homepage": "https://github.com/archlearn/archlearn#readme",
+  "author": "arkive contributors",
+  "homepage": "https://github.com/arkive/arkive#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/archlearn/archlearn.git"
+    "url": "git+https://github.com/arkive/arkive.git"
   },
   "bugs": {
-    "url": "https://github.com/archlearn/archlearn/issues"
+    "url": "https://github.com/arkive/arkive/issues"
   },
   "keywords": [
     "architecture",
@@ -28,7 +28,7 @@
     "learning"
   ],
   "bin": {
-    "archlearn": "./dist/cli/index.js"
+    "arkive": "./dist/cli/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

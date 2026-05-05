@@ -8,7 +8,7 @@ describe("project scanner", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "archlearn-scan-"));
+    tempDir = mkdtempSync(join(tmpdir(), "arkive-scan-"));
   });
 
   afterEach(() => {

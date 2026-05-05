@@ -11,7 +11,7 @@ export interface CreateServerOptions {
 
 export function createServer(options: CreateServerOptions): McpServer {
   const server = new McpServer({
-    name: options.name ?? "archlearn",
+    name: options.name ?? "arkive",
     version: options.version ?? "0.1.0",
   });
   registerResources(server, options.dir);
@@ -24,6 +24,6 @@ export async function startStdioServer(options: CreateServerOptions): Promise<vo
   const transport = new StdioServerTransport();
   await server.connect(transport);
   process.stderr.write(
-    `archlearn MCP server connected via stdio (dir: ${options.dir})\n`
+    `arkive MCP server connected via stdio (dir: ${options.dir})\n`
   );
 }

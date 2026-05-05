@@ -15,7 +15,7 @@ describe("MCP tool handlers", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "archlearn-tools-"));
+    tempDir = mkdtempSync(join(tmpdir(), "arkive-tools-"));
     const arch = createEmptyArchitecture("tool-test", "Tool test");
     const r = writeArchitecture(tempDir, arch);
     if (!r.success) throw new Error(r.error);

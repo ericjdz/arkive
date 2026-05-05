@@ -1,12 +1,12 @@
-# Contributing to archlearn
+# Contributing to arkive
 
 Thanks for your interest. This document covers how to set up, test, and submit changes.
 
 ## Development Setup
 
 ```bash
-git clone https://github.com/archlearn/archlearn.git
-cd archlearn
+git clone https://github.com/arkive/arkive.git
+cd arkive
 npm install
 npm test
 npm run build

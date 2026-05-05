@@ -17,7 +17,7 @@ describe("MCP resource handlers", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "archlearn-res-"));
+    tempDir = mkdtempSync(join(tmpdir(), "arkive-res-"));
     const arch = createEmptyArchitecture("res-test", "Resource test");
     arch.services.push({
       id: "web",

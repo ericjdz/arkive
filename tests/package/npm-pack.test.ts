@@ -19,7 +19,7 @@ beforeAll(() => {
   execSync("npx tsup", { stdio: "inherit" });
 
   // npm pack into a tmp dir
-  tempDir = mkdtempSync(join(tmpdir(), "archlearn-pack-"));
+  tempDir = mkdtempSync(join(tmpdir(), "arkive-pack-"));
   const out = execSync(`npm pack --pack-destination "${tempDir}"`, {
     encoding: "utf-8",
   });
@@ -58,12 +58,12 @@ describe("npm pack + install + bin invocation", () => {
     }
   });
 
-  it("installs and exposes the archlearn bin", () => {
-    const installDir = mkdtempSync(join(tmpdir(), "archlearn-install-"));
+  it("installs and exposes the arkive bin", () => {
+    const installDir = mkdtempSync(join(tmpdir(), "arkive-install-"));
     try {
       writeFileSync(
         join(installDir, "package.json"),
-        JSON.stringify({ name: "archlearn-install-test", version: "0.0.0" }),
+        JSON.stringify({ name: "arkive-install-test", version: "0.0.0" }),
         "utf-8"
       );
 
@@ -72,16 +72,16 @@ describe("npm pack + install + bin invocation", () => {
         stdio: "inherit",
       });
 
-      const binPath = join(installDir, "node_modules", ".bin", "archlearn");
+      const binPath = join(installDir, "node_modules", ".bin", "arkive");
       const binPathWin = binPath + ".cmd";
       expect(existsSync(binPath) || existsSync(binPathWin)).toBe(true);
 
       // Invoke --help
-      const helpOut = execSync(`node node_modules/archlearn/dist/cli/index.js --help`, {
+      const helpOut = execSync(`node node_modules/arkive/dist/cli/index.js --help`, {
         cwd: installDir,
         encoding: "utf-8",
       });
-      expect(helpOut).toContain("archlearn");
+      expect(helpOut).toContain("arkive");
       expect(helpOut).toContain("init");
     } finally {
       rmSync(installDir, { recursive: true, force: true });
@@ -89,8 +89,8 @@ describe("npm pack + install + bin invocation", () => {
   }, 120_000);
 
   it("installed package can scaffold a project via init", () => {
-    const installDir = mkdtempSync(join(tmpdir(), "archlearn-init-from-pack-"));
-    const projectDir = mkdtempSync(join(tmpdir(), "archlearn-project-"));
+    const installDir = mkdtempSync(join(tmpdir(), "arkive-init-from-pack-"));
+    const projectDir = mkdtempSync(join(tmpdir(), "arkive-project-"));
     try {
       writeFileSync(
         join(installDir, "package.json"),
@@ -103,7 +103,7 @@ describe("npm pack + install + bin invocation", () => {
       });
 
       execSync(
-        `node node_modules/archlearn/dist/cli/index.js init --name pack-test --dir "${projectDir}"`,
+        `node node_modules/arkive/dist/cli/index.js init --name pack-test --dir "${projectDir}"`,
         { cwd: installDir, stdio: "inherit" }
       );
 

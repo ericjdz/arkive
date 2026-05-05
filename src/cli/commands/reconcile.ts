@@ -11,7 +11,7 @@ export async function reconcileCommand(options: ReconcileOptions): Promise<void>
   const archPath = architecturePath(options.dir);
   if (!existsSync(archPath)) {
     process.stderr.write(
-      `architecture.json not found at ${archPath}. Run \`archlearn init\` first.\n`
+      `architecture.json not found at ${archPath}. Run \`arkive init\` first.\n`
     );
     process.exit(1);
   }

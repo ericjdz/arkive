@@ -10,7 +10,7 @@ describe("CLI export command", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "archlearn-export-"));
+    tempDir = mkdtempSync(join(tmpdir(), "arkive-export-"));
     const arch = createEmptyArchitecture("export-test", "Export test");
     arch.services.push(
       {

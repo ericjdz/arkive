@@ -12,7 +12,7 @@ trigger: Always active when architecture.json exists in the project root. Activa
 
 | Condition | Read via | Write via |
 |---|---|---|
-| archlearn MCP server is connected | MCP resources (`architecture://overview`, etc.) | MCP tools (`update_architecture`, `record_decision`) |
+| arkive MCP server is connected | MCP resources (`architecture://overview`, etc.) | MCP tools (`update_architecture`, `record_decision`) |
 | MCP not available | Read `architecture.json` directly | Edit `architecture.json` directly, validate manually |
 
 To check if MCP is available: attempt to read `architecture://overview`. If it succeeds, use MCP for all reads/writes.

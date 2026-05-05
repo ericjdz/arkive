@@ -13,7 +13,7 @@ describe("HTTP viewer server", () => {
   let port: number;
 
   beforeEach(async () => {
-    tempDir = mkdtempSync(join(tmpdir(), "archlearn-http-"));
+    tempDir = mkdtempSync(join(tmpdir(), "arkive-http-"));
     const arch = createEmptyArchitecture("http-test", "HTTP test");
     arch.services.push({
       id: "web",

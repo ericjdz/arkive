@@ -9,7 +9,7 @@ describe("E2E: init flow", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "archlearn-e2e-"));
+    tempDir = mkdtempSync(join(tmpdir(), "arkive-e2e-"));
   });
 
   afterEach(() => {
