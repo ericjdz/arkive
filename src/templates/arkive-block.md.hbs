@@ -1,9 +1,14 @@
 <!-- arkive:start -->
-## arkive — Architecture Tracking
+## arkive — Architecture Tracking (MANDATORY)
 
-This project uses `{{architectureFile}}` as a living architecture document. Read it on session start. Update it after major architectural changes (new services, changed protocols, new frameworks, infrastructure changes). Prefer MCP tools when available.
+**On EVERY session start:** Read `{{architectureFile}}` FIRST. It is your cross-session memory.
+**Before ANY major change:** Re-read `{{architectureFile}}` to align your work.
+**After ANY major change:** Update `{{architectureFile}}` via MCP tools or direct edit. Append a history entry.
+**Before claiming completion:** Verify `{{architectureFile}}` reflects all changes made this session.
+
+Major changes: adding/removing services, changing protocols, new frameworks, infrastructure changes, module boundary refactors.
 
 **MCP tools:** `update_architecture`, `record_decision`, `check_drift`
-**CLI:** `npx @ericjdz/arkive status` · `npx @ericjdz/arkive reconcile` · `npx @ericjdz/arkive install <platform>`
+**CLI:** `npx @ericjdz/arkive status` · `npx @ericjdz/arkive reconcile`
 **Docs:** https://github.com/ericjdz/arkive
 <!-- arkive:end -->

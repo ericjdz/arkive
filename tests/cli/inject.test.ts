@@ -3,6 +3,7 @@ import { mkdtempSync, rmSync, readFileSync, writeFileSync, existsSync } from "no
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { injectArkiveBlock, MARKER_START, MARKER_END } from "../../src/cli/commands/inject.js";
+import { renderTemplate } from "../../src/templates/render.js";
 
 const BLOCK = `${MARKER_START}\n## arkive\nTracking enabled.\n${MARKER_END}`;
 
@@ -82,5 +83,18 @@ describe("injectArkiveBlock", () => {
     const filePath = join(tempDir, "nested", "deep", "AGENTS.md");
     injectArkiveBlock(filePath, BLOCK);
     expect(existsSync(filePath)).toBe(true);
+  });
+
+  it("renders arkive block with lifecycle hook directives", () => {
+    const rendered = renderTemplate("arkive-block.md.hbs", {
+      architectureFile: "architecture.json",
+    });
+
+    expect(rendered).toContain("On EVERY session start");
+    expect(rendered).toContain("Before ANY major change");
+    expect(rendered).toContain("After ANY major change");
+    expect(rendered).toContain("Before claiming completion");
+    expect(rendered).toContain("arkive:start");
+    expect(rendered).toContain("arkive:end");
   });
 });
