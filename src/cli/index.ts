@@ -8,6 +8,7 @@ import { reconcileCommand } from "./commands/reconcile.js";
 import { serveProject } from "./commands/serve.js";
 import { statusCommand } from "./commands/status.js";
 import { PLATFORMS, installMcp } from "./commands/install.js";
+import { installSkills } from "./commands/install-skill.js";
 import type { PlatformName } from "./commands/install.js";
 
 const program = new Command();
@@ -105,6 +106,27 @@ program
     const configPath = installMcp({ platform, configPath: options.config, projectDir: dir });
     console.log(`arkive MCP server registered in ${configPath}`);
     console.log("Restart your AI agent to pick up the new MCP server.");
+  });
+
+program
+  .command("install-skill")
+  .description("Install arkive skills for your AI platform")
+  .argument("<platform>", "Platform: opencode, claude-code, cursor, vscode, windsurf, cline, claude-desktop")
+  .option("--global", "Install skills globally (available in all projects)")
+  .option("-d, --dir <path>", "Target directory", ".")
+  .action((platform: string, options: { global?: boolean; dir: string }) => {
+    const dir = resolve(options.dir);
+    const result = installSkills({
+      platform,
+      targetDir: dir,
+      global: options.global ?? false,
+    });
+    console.log(`Installed ${result.skillsCopied} arkive skills (${result.method}) to ${result.skillDir}`);
+    if (result.method === "copy") {
+      console.log("Skills are now available as slash commands in your AI agent.");
+    } else {
+      console.log("Skills injected into instruction files. Your agent will discover them on next session.");
+    }
   });
 
 program.addCommand(createLearnCommand());
