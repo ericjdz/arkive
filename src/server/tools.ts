@@ -40,6 +40,12 @@ export const RecordDecisionInputSchema = z.object({
 
 export const CheckDriftInputSchema = z.object({});
 
+export const ScaffoldProjectInputSchema = z.object({
+  projectPath: z.string().min(1).describe("Absolute path to the project root"),
+  projectName: z.string().optional().describe("Project name (defaults to directory name)"),
+  standalone: z.boolean().optional().default(false).describe("Generate full instruction files instead of injecting blocks"),
+});
+
 export interface ToolDescriptor {
   name: string;
   title: string;
@@ -64,6 +70,12 @@ export const ARCHITECTURE_TOOLS: ToolDescriptor[] = [
     title: "Check Drift",
     description:
       "Run static analysis on package.json and source imports; report mismatches against architecture.json.",
+  },
+  {
+    name: "scaffold_project",
+    title: "Scaffold Project",
+    description:
+      "Initialize arkive in a project directory. Creates architecture.json and injects tracking blocks into instruction files.",
   },
 ];
 
@@ -224,7 +236,6 @@ export async function handleRecordDecision(
 
   return jsonResult({ ok: true, decision });
 }
-
 export async function handleCheckDrift(dir: string): Promise<CallToolResult> {
   const read = readArchitecture(dir);
   if (!read.success) return errorResult(read.error);
@@ -235,6 +246,54 @@ export async function handleCheckDrift(dir: string): Promise<CallToolResult> {
   const scan = scanProject(dir);
   const report = detectDrift(read.data, scan);
   return jsonResult(report);
+}
+
+export async function handleScaffoldProject(
+  input: z.infer<typeof ScaffoldProjectInputSchema>
+): Promise<CallToolResult> {
+  try {
+    const { initProject } = await import("../cli/commands/init.js");
+    const { basename, join } = await import("node:path");
+    const { existsSync } = await import("node:fs");
+
+    const projectPath = input.projectPath;
+    const archPath = join(projectPath, "architecture.json");
+    const archExisted = existsSync(archPath);
+
+    initProject({
+      name: input.projectName || basename(projectPath),
+      dir: projectPath,
+      standalone: input.standalone ?? false,
+    });
+
+    const filesCreated: string[] = [];
+    const filesModified: string[] = [];
+    const filesSkipped: string[] = [];
+
+    if (archExisted) {
+      filesSkipped.push("architecture.json");
+    } else {
+      filesCreated.push("architecture.json");
+    }
+
+    const claudePath = join(projectPath, "CLAUDE.md");
+    const agentsPath = join(projectPath, "AGENTS.md");
+    const cursorPath = join(projectPath, ".cursor", "rules", "architecture-tracker.mdc");
+
+    if (existsSync(claudePath)) {
+      if (archExisted) filesModified.push("CLAUDE.md");
+      else filesCreated.push("CLAUDE.md");
+    }
+    if (existsSync(agentsPath)) {
+      if (archExisted) filesModified.push("AGENTS.md");
+      else filesCreated.push("AGENTS.md");
+    }
+    if (existsSync(cursorPath)) filesCreated.push(".cursor/rules/architecture-tracker.mdc");
+
+    return jsonResult({ success: true, filesCreated, filesModified, filesSkipped });
+  } catch (err) {
+    return errorResult(`Failed to scaffold project: ${(err as Error).message}`);
+  }
 }
 
 export function registerTools(server: McpServer, dir: string): void {
@@ -264,6 +323,16 @@ export function registerTools(server: McpServer, dir: string): void {
     CheckDriftInputSchema.shape,
     async () => {
       const result = await handleCheckDrift(dir);
+      return result;
+    }
+  );
+
+  server.tool(
+    "scaffold_project",
+    ARCHITECTURE_TOOLS[3].description,
+    ScaffoldProjectInputSchema.shape,
+    async (args) => {
+      const result = await handleScaffoldProject(args as unknown as z.infer<typeof ScaffoldProjectInputSchema>);
       return result;
     }
   );
