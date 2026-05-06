@@ -103,8 +103,10 @@ try {
 
 // 5. Skills directory has at least the core skills
 const requiredSkills = [
-  "skills/core/setup/SKILL.md",
   "skills/core/architecture-tracker/SKILL.md",
+  "skills/core/arkive-init/SKILL.md",
+  "skills/core/arkive-import/SKILL.md",
+  "skills/core/arkive-view/SKILL.md",
   "skills/maintenance/reconciliation/SKILL.md",
 ];
 for (const s of requiredSkills) {
