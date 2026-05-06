@@ -43,6 +43,13 @@ export const ARCHITECTURE_RESOURCES: ArchitectureResourceDescriptor[] = [
     title: "Change History",
     description: "Chronological log of architectural changes.",
   },
+  {
+    name: "architecture-hooks",
+    uri: "architecture://hooks",
+    title: "Lifecycle Hooks",
+    description:
+      "Lifecycle rules for maintaining architecture.json: session_start, post_major_change, pre_completion.",
+  },
 ];
 
 function loadOrThrow(dir: string): Architecture {
@@ -119,6 +126,43 @@ export async function readHistory(
   return jsonResource(uri, { history: arch.history });
 }
 
+export async function readHooks(
+  _dir: string,
+  uri: URL
+): Promise<ReadResourceResult> {
+  return {
+    contents: [
+      {
+        uri: uri.href,
+        mimeType: "text/markdown",
+        text: `# arkive Lifecycle Hooks
+
+## session_start
+On EVERY session start, BEFORE any other action:
+1. Check if architecture.json exists in the project root.
+2. If it exists: read it completely. This is your cross-session memory. Do NOT re-derive architecture from code.
+3. If it does not exist: inform the user that arkive is not initialized. Suggest running arkive init.
+
+## post_major_change
+After ANY major change (adding/removing services, changing protocols, new frameworks, infrastructure changes, module boundary refactors):
+1. Re-read architecture.json to get current state.
+2. Call update_architecture with changes.
+3. Call record_decision for any architectural choices made.
+4. Append a history entry.
+5. Do NOT defer this to "later" — update IMMEDIATELY after the change.
+
+## pre_completion
+Before claiming work is complete, before committing, before creating PRs:
+1. Re-read architecture.json.
+2. Verify it reflects the current state of the project.
+3. If any architectural changes were made that are not reflected: update now.
+4. Call check_drift and resolve any mismatches.
+`,
+      },
+    ],
+  };
+}
+
 const HANDLERS: Record<
   string,
   (dir: string, uri: URL) => Promise<ReadResourceResult>
@@ -128,6 +172,7 @@ const HANDLERS: Record<
   "architecture://decisions": readDecisions,
   "architecture://dataflows": readDataflows,
   "architecture://history": readHistory,
+  "architecture://hooks": readHooks,
 };
 
 export function registerResources(server: McpServer, dir: string): void {
