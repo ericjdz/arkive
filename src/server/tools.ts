@@ -46,6 +46,10 @@ export const ScaffoldProjectInputSchema = z.object({
   standalone: z.boolean().optional().default(false).describe("Generate full instruction files instead of injecting blocks"),
 });
 
+export const OpenViewerInputSchema = z.object({
+  port: z.number().optional().default(4567).describe("Port to serve the viewer on"),
+});
+
 export interface ToolDescriptor {
   name: string;
   title: string;
@@ -77,6 +81,12 @@ export const ARCHITECTURE_TOOLS: ToolDescriptor[] = [
     description:
       "Initialize arkive in a project directory. Creates architecture.json and injects tracking blocks into instruction files.",
   },
+  {
+    name: "open_viewer",
+    title: "Open Viewer",
+    description:
+      "Start the arkive web viewer if not already running. Returns the URL for the user to open.",
+  },
 ];
 
 interface CallToolResult {
@@ -84,6 +94,8 @@ interface CallToolResult {
   content: Array<{ type: "text"; text: string }>;
   isError?: boolean;
 }
+
+let activeViewerServer: { server: import("node:http").Server; port: number } | null = null;
 
 function errorResult(message: string): CallToolResult {
   return {
@@ -296,6 +308,41 @@ export async function handleScaffoldProject(
   }
 }
 
+export async function handleOpenViewer(
+  dir: string,
+  input: z.infer<typeof OpenViewerInputSchema>
+): Promise<CallToolResult> {
+  const { existsSync } = await import("node:fs");
+  const { join } = await import("node:path");
+
+  const archPath = join(dir, "architecture.json");
+  if (!existsSync(archPath)) {
+    return errorResult(`architecture.json not found at ${archPath}. Run scaffold_project first.`);
+  }
+
+  const port = input.port ?? 4567;
+
+  if (activeViewerServer && activeViewerServer.port === port) {
+    return jsonResult({ url: `http://localhost:${port}`, port, alreadyRunning: true });
+  }
+
+  try {
+    const { createViewerServer } = await import("../cli/commands/serve.js");
+    const { server } = createViewerServer(dir);
+
+    await new Promise<void>((resolve, reject) => {
+      server.on("error", reject);
+      server.listen(port, () => resolve());
+    });
+
+    activeViewerServer = { server, port };
+
+    return jsonResult({ url: `http://localhost:${port}`, port, alreadyRunning: false });
+  } catch (err) {
+    return errorResult(`Failed to start viewer: ${(err as Error).message}`);
+  }
+}
+
 export function registerTools(server: McpServer, dir: string): void {
   server.tool(
     "update_architecture",
@@ -333,6 +380,16 @@ export function registerTools(server: McpServer, dir: string): void {
     ScaffoldProjectInputSchema.shape,
     async (args) => {
       const result = await handleScaffoldProject(args as unknown as z.infer<typeof ScaffoldProjectInputSchema>);
+      return result;
+    }
+  );
+
+  server.tool(
+    "open_viewer",
+    ARCHITECTURE_TOOLS[4].description,
+    OpenViewerInputSchema.shape,
+    async (args) => {
+      const result = await handleOpenViewer(dir, args as unknown as z.infer<typeof OpenViewerInputSchema>);
       return result;
     }
   );
