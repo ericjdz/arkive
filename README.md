@@ -40,6 +40,12 @@ arkive extends your existing instruction files — it never overwrites them. Use
 
 Your AI agent will now read and maintain `architecture.json` automatically.
 
+## Get Started with Your AI Agent
+
+Copy and paste this into your AI agent (Claude Code, Cursor, Copilot, OpenCode, etc.):
+
+> Install arkive for architecture tracking in this project. Read the instructions at https://github.com/ericjdz/arkive and follow the "For Agents — Self-Install Guide" section. Ask me which AI platform I use, then set up MCP and skills.
+
 ## Features
 
 - **Cross-session memory for AI agents** — the architecture file survives compaction, session resets, and model switches.
