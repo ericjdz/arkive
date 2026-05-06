@@ -1,6 +1,6 @@
 {
   "name": "arkive",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A living architecture document for AI-built projects. Your AI agent maintains it; you understand what was built.",
   "author": {
     "name": "arkive contributors",
@@ -20,8 +20,10 @@
     "mcp"
   ],
   "skills": [
-    "skills/core/setup/SKILL.md",
     "skills/core/architecture-tracker/SKILL.md",
+    "skills/core/arkive-init/SKILL.md",
+    "skills/core/arkive-import/SKILL.md",
+    "skills/core/arkive-view/SKILL.md",
     "skills/maintenance/reconciliation/SKILL.md",
     "skills/learning/learning-mode/SKILL.md",
     "skills/learning/explain-decisions/SKILL.md"
