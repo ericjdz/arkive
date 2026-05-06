@@ -23,6 +23,30 @@ To check if MCP is available: attempt to read `architecture://overview`. If it s
 2. **Before any major change**: Re-read to align your changes with existing architecture.
 3. **After any major change**: Update `architecture.json` using the post-change sequence below.
 
+## Lifecycle Hooks (NON-NEGOTIABLE)
+
+These hooks govern your behavior for the ENTIRE session, not just during explicit architecture work.
+
+### session_start (BEFORE anything else)
+1. Check if `architecture.json` exists in the project root.
+2. If it exists: read it completely. This is your cross-session memory. Do NOT re-derive architecture from code.
+3. If it does not exist: inform the user that arkive is not initialized. Suggest `/arkive-init`.
+4. This step is NON-NEGOTIABLE. Do NOT skip it even if the user's first message seems urgent.
+
+### post_major_change (IMMEDIATELY after any major change)
+1. Re-read `architecture.json` to get current state.
+2. Call `update_architecture` with changes (or edit directly if MCP unavailable).
+3. Call `record_decision` for any architectural choices made.
+4. Append a `history` entry.
+5. Do NOT defer this to "later" or "end of session." Update IMMEDIATELY after the change.
+
+### pre_completion (BEFORE claiming work is done)
+1. Re-read `architecture.json`.
+2. Verify it reflects the current state of the project.
+3. If any architectural changes were made during this session that are not reflected: update now.
+4. Call `check_drift` and resolve any mismatches.
+5. Do NOT claim completion until architecture is current.
+
 ## What Counts as a Major Change
 
 - Adding, removing, or replacing a service, database, or external API
