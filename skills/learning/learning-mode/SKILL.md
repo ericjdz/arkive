@@ -11,11 +11,11 @@ trigger: User runs `arkive learn`, or says "enable learning mode", or `.arkive/l
 Learning Mode is **opt-in**. It activates when:
 - User runs `npx @ericjdz/arkive learn` (opens viewer with quiz interface)
 - User says "enable learning mode" in conversation
-- `.arkive/learning-progress.json` exists in the project root
+- `.arkive/learning-progress.json` exists in the arkive/ directory
 
 ## Behavior (when active)
 
-After every architecture update (any change to `architecture.json`), you MUST:
+After every architecture update (any change to `arkive/architecture.json`), you MUST:
 
 1. **Identify what changed**: What services, decisions, connections, or data flows were added or modified?
 

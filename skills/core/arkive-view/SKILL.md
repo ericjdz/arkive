@@ -14,7 +14,7 @@ Run this when the user wants to visually browse the project's architecture.
 
 ### 1. Verify architecture exists
 
-Check that `architecture.json` exists in the project root. If not, inform the user and suggest `/arkive-init`.
+Check that `arkive/architecture.json` exists in the arkive/ directory. If not, inform the user and suggest `/arkive-init`.
 
 ### 2. Start the viewer
 

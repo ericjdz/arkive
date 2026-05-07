@@ -14,7 +14,7 @@ Run this to set up arkive in a new or existing project.
 
 ### 1. Check existing state
 
-Check if `architecture.json` exists in the project root.
+Check if `arkive/architecture.json` exists in the arkive/ directory.
 - If it exists: inform the user arkive is already initialized. Offer to run `/arkive-import` to populate from existing code, or re-initialize (destructive — requires explicit confirmation).
 - If it does not exist: proceed.
 
@@ -60,7 +60,7 @@ npx -y @ericjdz/arkive install-skill <platform> [--global]
 If the project already contains source code (check for `package.json`, `src/`, `app/`, or similar):
 - Inform the user: "This project already has code. Want me to analyze it and populate the architecture document? This may use significant tokens for large projects."
 - If yes: invoke `/arkive-import`
-- If no: leave `architecture.json` empty — it will be populated as you build.
+- If no: leave `arkive/architecture.json` empty — it will be populated as you build.
 
 ### 6. Verify
 
@@ -80,4 +80,4 @@ Tell the user to restart their agent session to pick up the MCP server.
 
 - Do NOT skip the platform question — MCP registration is platform-specific
 - Do NOT commit generated files without user confirmation
-- Do NOT re-initialize if `architecture.json` exists without explicit user confirmation
+- Do NOT re-initialize if `arkive/architecture.json` exists without explicit user confirmation

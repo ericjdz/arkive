@@ -1,4 +1,4 @@
-# architecture.json Schema Guide
+# arkive/architecture.json Schema Guide
 
 ## Top-Level Structure
 

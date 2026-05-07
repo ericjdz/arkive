@@ -1,6 +1,6 @@
 # Question Templates
 
-Templates for generating architecture comprehension questions. The AI agent uses these patterns to create questions from `architecture.json` data.
+Templates for generating architecture comprehension questions. The AI agent uses these patterns to create questions from `arkive/architecture.json` data.
 
 ## Decision Questions (Multiple Choice)
 

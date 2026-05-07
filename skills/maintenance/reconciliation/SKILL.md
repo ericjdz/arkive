@@ -1,6 +1,6 @@
 ---
 name: reconciliation
-description: Detect drift between architecture.json and the actual codebase.
+description: Detect drift between arkive/architecture.json and the actual codebase.
 trigger: User says "check drift", "reconcile", "is the architecture up to date", or when returning to a project after a break.
 ---
 
@@ -19,7 +19,7 @@ trigger: User says "check drift", "reconcile", "is the architecture up to date",
 
 Run: `npx @ericjdz/arkive reconcile`
 
-This scans `package.json` and source imports under `src/`, then reports mismatches against `architecture.json`.
+This scans `package.json` and source imports under `src/`, then reports mismatches against `arkive/architecture.json`.
 
 ### Option B: Via MCP tool
 
@@ -29,7 +29,7 @@ Call the `check_drift` tool. It returns the same report as the CLI command.
 
 If neither CLI nor MCP is available:
 
-1. Read `architecture.json`
+1. Read `arkive/architecture.json`
 2. Check these files for ground truth:
    - `package.json` / `requirements.txt` / `go.mod` → actual dependencies vs `stack`
    - Import statements across source files → actual connections vs `connections`
@@ -41,17 +41,17 @@ If neither CLI nor MCP is available:
 
 ## After Reconciliation
 
-Update `architecture.json` to reflect reality. MUST append a history entry:
+Update `arkive/architecture.json` to reflect reality. MUST append a history entry:
 
 ```json
 {
   "timestamp": "ISO 8601 now",
   "action": "reconciliation",
-  "summary": "Reconciled architecture.json with codebase — fixed N mismatches"
+  "summary": "Reconciled arkive/architecture.json with codebase — fixed N mismatches"
 }
 ```
 
 ## MUST NOT
 
 - Do NOT silently fix drift without reporting what changed
-- Do NOT remove entries from architecture.json without verifying they are truly gone from the codebase
+- Do NOT remove entries from arkive/architecture.json without verifying they are truly gone from the codebase

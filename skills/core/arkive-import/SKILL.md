@@ -1,6 +1,6 @@
 ---
 name: arkive-import
-description: Convert an existing project into arkive by analyzing git history or filesystem dates. Builds a phased, history-rich architecture.json.
+description: Convert an existing project into arkive by analyzing git history or filesystem dates. Builds a phased, history-rich arkive/architecture.json.
 trigger: User says "import project", "convert project to arkive", "analyze project history", or invokes /arkive-import.
 ---
 
@@ -8,11 +8,11 @@ trigger: User says "import project", "convert project to arkive", "analyze proje
 
 ## When to Use
 
-Run this to populate `architecture.json` from an existing codebase. This skill reconstructs the project's architectural history by analyzing when files were introduced and what they represent.
+Run this to populate `arkive/architecture.json` from an existing codebase. This skill reconstructs the project's architectural history by analyzing when files were introduced and what they represent.
 
 ## Precondition
 
-`architecture.json` must exist. If it doesn't, run `/arkive-init` first.
+`arkive/architecture.json` must exist. If it doesn't, run `/arkive-init` first.
 
 ## Flow
 
@@ -104,7 +104,7 @@ For EACH phase:
    - New connections between services
    - Stack additions (languages, frameworks, databases, infrastructure)
    - Architectural decisions evident from the code
-3. **Update architecture.json:**
+3. **Update arkive/architecture.json:**
    - Call `update_architecture` (MCP) or edit directly with discovered services, connections, stack entries.
    - Use the phase's ORIGINAL timestamp, not the current time.
 4. **Record decisions:**
@@ -136,7 +136,7 @@ After all phases:
 ### Resumption
 
 If the session is interrupted mid-import:
-- On re-invocation, read the `history` array in `architecture.json`.
+- On re-invocation, read the `history` array in `arkive/architecture.json`.
 - Find the last entry with action `"import_phase"`.
 - Resume from the next unprocessed phase.
 - Do NOT reprocess completed phases.
