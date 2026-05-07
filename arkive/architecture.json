@@ -4,7 +4,7 @@
     "name": "arkive",
     "description": "A living architecture document for AI-built projects.",
     "created": "2026-05-07T00:00:00.000Z",
-    "lastUpdated": "2026-05-07T00:00:00.000Z"
+    "lastUpdated": "2026-05-07T21:51:25.000Z"
   },
   "stack": {
     "language": ["TypeScript"],
@@ -60,6 +60,11 @@
       "timestamp": "2026-05-07T00:00:00.000Z",
       "action": "initial_scaffold",
       "summary": "Architecture document created"
+    },
+    {
+      "timestamp": "2026-05-07T21:51:25.000Z",
+      "action": "update",
+      "summary": "Added HTTP prompt queue endpoints to the viewer server"
     }
   ]
 }
