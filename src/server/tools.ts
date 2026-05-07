@@ -1,6 +1,12 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { readArchitecture, writeArchitecture } from "../io/architecture-file.js";
+import {
+  architecturePath,
+  ARKIVE_DIR,
+  ARCHITECTURE_FILENAME,
+  readArchitecture,
+  writeArchitecture,
+} from "../io/architecture-file.js";
 import {
   ServiceSchema,
   ConnectionSchema,
@@ -269,7 +275,7 @@ export async function handleScaffoldProject(
     const { existsSync } = await import("node:fs");
 
     const projectPath = input.projectPath;
-    const archPath = join(projectPath, "architecture.json");
+    const archPath = join(projectPath, ARKIVE_DIR, ARCHITECTURE_FILENAME);
     const archExisted = existsSync(archPath);
 
     initProject({
@@ -283,9 +289,9 @@ export async function handleScaffoldProject(
     const filesSkipped: string[] = [];
 
     if (archExisted) {
-      filesSkipped.push("architecture.json");
+      filesSkipped.push(`${ARKIVE_DIR}/${ARCHITECTURE_FILENAME}`);
     } else {
-      filesCreated.push("architecture.json");
+      filesCreated.push(`${ARKIVE_DIR}/${ARCHITECTURE_FILENAME}`);
     }
 
     const claudePath = join(projectPath, "CLAUDE.md");
@@ -313,11 +319,10 @@ export async function handleOpenViewer(
   input: z.infer<typeof OpenViewerInputSchema>
 ): Promise<CallToolResult> {
   const { existsSync } = await import("node:fs");
-  const { join } = await import("node:path");
 
-  const archPath = join(dir, "architecture.json");
+  const archPath = architecturePath(dir);
   if (!existsSync(archPath)) {
-    return errorResult(`architecture.json not found at ${archPath}. Run scaffold_project first.`);
+    return errorResult(`arkive/architecture.json not found at ${archPath}. Run scaffold_project first.`);
   }
 
   const port = input.port ?? 4567;

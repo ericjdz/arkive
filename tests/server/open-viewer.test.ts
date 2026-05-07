@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleOpenViewer } from "../../src/server/tools.js";
@@ -11,7 +11,8 @@ describe("open_viewer MCP tool", () => {
   beforeEach(() => {
     tempDir = mkdtempSync(join(tmpdir(), "arkive-viewer-test-"));
     const arch = createEmptyArchitecture("test", "test");
-    writeFileSync(join(tempDir, "architecture.json"), JSON.stringify(arch, null, 2), "utf-8");
+    mkdirSync(join(tempDir, "arkive"), { recursive: true });
+    writeFileSync(join(tempDir, "arkive", "architecture.json"), JSON.stringify(arch, null, 2), "utf-8");
   });
 
   afterEach(() => {

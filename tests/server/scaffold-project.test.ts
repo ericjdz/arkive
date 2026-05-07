@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { existsSync, mkdtempSync, rmSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleScaffoldProject } from "../../src/server/tools.js";
@@ -25,9 +25,9 @@ describe("scaffold_project MCP tool", () => {
 
     const body = JSON.parse(result.content[0].text);
     expect(body.success).toBe(true);
-    expect(body.filesCreated).toContain("architecture.json");
+    expect(body.filesCreated).toContain("arkive/architecture.json");
 
-    expect(existsSync(join(tempDir, "architecture.json"))).toBe(true);
+    expect(existsSync(join(tempDir, "arkive", "architecture.json"))).toBe(true);
     expect(existsSync(join(tempDir, "CLAUDE.md"))).toBe(true);
     expect(existsSync(join(tempDir, "AGENTS.md"))).toBe(true);
 
@@ -36,8 +36,9 @@ describe("scaffold_project MCP tool", () => {
   });
 
   it("does not overwrite existing architecture.json", async () => {
-    const archPath = join(tempDir, "architecture.json");
+    const archPath = join(tempDir, "arkive", "architecture.json");
     const originalContent = '{"existing": true}';
+    mkdirSync(join(tempDir, "arkive"), { recursive: true });
     writeFileSync(archPath, originalContent, "utf-8");
 
     const result = await handleScaffoldProject({
@@ -46,8 +47,8 @@ describe("scaffold_project MCP tool", () => {
 
     const body = JSON.parse(result.content[0].text);
     expect(body.success).toBe(true);
-    expect(body.filesCreated).not.toContain("architecture.json");
-    expect(body.filesSkipped).toContain("architecture.json");
+    expect(body.filesCreated).not.toContain("arkive/architecture.json");
+    expect(body.filesSkipped).toContain("arkive/architecture.json");
 
     expect(readFileSync(archPath, "utf-8")).toBe(originalContent);
   });

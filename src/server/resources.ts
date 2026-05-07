@@ -48,7 +48,7 @@ export const ARCHITECTURE_RESOURCES: ArchitectureResourceDescriptor[] = [
     uri: "architecture://hooks",
     title: "Lifecycle Hooks",
     description:
-      "Lifecycle rules for maintaining architecture.json: session_start, post_major_change, pre_completion.",
+      "Lifecycle rules for maintaining arkive/architecture.json: session_start, post_major_change, pre_completion.",
   },
 ];
 
@@ -139,7 +139,7 @@ export async function readHooks(
 
 ## session_start
 On EVERY session start, BEFORE any other action:
-1. Check if architecture.json exists in the project root.
+1. Check if arkive/architecture.json exists in the project.
 2. If it exists: read it completely. This is your cross-session memory. Do NOT re-derive architecture from code.
 3. If it does not exist: inform the user that arkive is not initialized. Suggest running arkive init.
 
