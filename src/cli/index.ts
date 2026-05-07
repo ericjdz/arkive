@@ -49,7 +49,7 @@ program
 program
   .command("serve")
   .description("Start the MCP server + web viewer")
-  .option("-d, --dir <path>", "Project directory containing architecture.json", ".")
+  .option("-d, --dir <path>", "Project directory containing arkive/architecture.json", ".")
   .option("-p, --port <port>", "HTTP port for the web viewer", "4567")
   .option("--stdio", "Run MCP server over stdio only (no HTTP viewer)")
   .action(async (options) => {
@@ -60,7 +60,7 @@ program
 program
   .command("status")
   .description("Show architecture health: counts, last updated, drift warnings")
-  .option("-d, --dir <path>", "Project directory containing architecture.json", ".")
+  .option("-d, --dir <path>", "Project directory containing arkive/architecture.json", ".")
   .action(async (options) => {
     const dir = resolve(options.dir);
     await statusCommand({ dir });
@@ -68,8 +68,8 @@ program
 
 program
   .command("reconcile")
-  .description("Detect drift between architecture.json and codebase")
-  .option("-d, --dir <path>", "Project directory containing architecture.json", ".")
+  .description("Detect drift between arkive/architecture.json and codebase")
+  .option("-d, --dir <path>", "Project directory containing arkive/architecture.json", ".")
   .action(async (options) => {
     const dir = resolve(options.dir);
     await reconcileCommand({ dir });
@@ -78,7 +78,7 @@ program
 program
   .command("export")
   .description("Export architecture as markdown or Mermaid diagram")
-  .option("-d, --dir <path>", "Project directory containing architecture.json", ".")
+  .option("-d, --dir <path>", "Project directory containing arkive/architecture.json", ".")
   .option("-f, --format <format>", "Output format: markdown or mermaid", "markdown")
   .option("-o, --output <file>", "Write to file instead of stdout")
   .action((options) => {

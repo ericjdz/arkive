@@ -11,14 +11,14 @@ export async function reconcileCommand(options: ReconcileOptions): Promise<void>
   const archPath = architecturePath(options.dir);
   if (!existsSync(archPath)) {
     process.stderr.write(
-      `architecture.json not found at ${archPath}. Run \`arkive init\` first.\n`
+      `arkive/architecture.json not found at ${archPath}. Run \`arkive init\` first.\n`
     );
     process.exit(1);
   }
 
   const result = readArchitecture(options.dir);
   if (!result.success) {
-    process.stderr.write(`Failed to read architecture.json: ${result.error}\n`);
+    process.stderr.write(`Failed to read arkive/architecture.json: ${result.error}\n`);
     process.exit(1);
   }
 
@@ -26,7 +26,7 @@ export async function reconcileCommand(options: ReconcileOptions): Promise<void>
   const report = detectDrift(result.data, scan);
 
   if (report.warnings.length === 0) {
-    process.stdout.write("No drift detected. architecture.json is in sync.\n");
+    process.stdout.write("No drift detected. arkive/architecture.json is in sync.\n");
     return;
   }
 

@@ -77,7 +77,7 @@ export function detectDrift(
         kind: "stale-stack",
         severity: "warning",
         subject: entry,
-        message: `architecture.json lists "${entry}" in stack, but no matching dependency found in package.json.`,
+        message: `arkive/architecture.json lists "${entry}" in stack, but no matching dependency found in package.json.`,
         suggestion: `Either install the dependency or remove "${entry}" from architecture.stack.`,
       });
     }
@@ -95,7 +95,7 @@ export function detectDrift(
       kind: "untracked-service",
       severity: "info",
       subject: imp,
-      message: `Imported package "${imp}" does not correspond to any service.technology in architecture.json.`,
+      message: `Imported package "${imp}" does not correspond to any service.technology in arkive/architecture.json.`,
       suggestion: `If "${imp}" introduces a new service or significant capability, add or update a service entry.`,
     });
   }

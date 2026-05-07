@@ -53,7 +53,7 @@ describe("HTTP viewer server", () => {
   });
 
   it("returns 500 when architecture.json is missing", async () => {
-    rmSync(join(tempDir, "architecture.json"));
+    rmSync(join(tempDir, "arkive", "architecture.json"));
     const response = await fetch(`http://localhost:${port}/api/architecture`);
     expect(response.status).toBe(500);
   });
