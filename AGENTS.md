@@ -1,14 +1,14 @@
 # Architecture-Tracked Project (arkive — lightweight mode)
 
-This repo uses a living architecture document, `architecture.json`. You — the AI coding agent (Codex, OpenCode, Copilot, or any AGENTS.md-aware tool) — are responsible for keeping it in sync with the code.
+This repo uses a living architecture document, `arkive/architecture.json`. You — the AI coding agent (Codex, OpenCode, Copilot, or any AGENTS.md-aware tool) — are responsible for keeping it in sync with the code.
 
 > **Lightweight mode.** No MCP server, no viewer. Just this file and the JSON. To upgrade, run `npx @ericjdz/arkive init`.
 
 ## Rules
 
-1. **On every session start**: Read `architecture.json` first. It is your cross-session memory.
-2. **Before any major change**: Re-read `architecture.json`.
-3. **After any major change**: Update `architecture.json` and append a `history` entry.
+1. **On every session start**: Read `arkive/architecture.json` first. It is your cross-session memory.
+2. **Before any major change**: Re-read `arkive/architecture.json`.
+3. **After any major change**: Update `arkive/architecture.json` and append a `history` entry.
 
 ## Major Changes
 
@@ -16,7 +16,7 @@ Add/remove a service, database, or external API · change communication protocol
 
 ## Bootstrap
 
-If `architecture.json` is missing, create it with this structure:
+If `arkive/architecture.json` is missing, create it with this structure:
 
 ```json
 {

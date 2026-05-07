@@ -17,7 +17,7 @@ Requires Node.js 18+.
 ## Project Layout
 
 - `src/cli/` — CLI entry point and commands (Plan 1 + Plan 2)
-- `src/schema/` — Zod schema for `architecture.json` (Plan 1)
+- `src/schema/` — Zod schema for `arkive/architecture.json` (Plan 1)
 - `src/templates/` — Handlebars templates rendered by `init` (Plan 1)
 - `src/server/` — MCP server (Plan 2)
 - `src/manifests/` — schema validators for distribution manifests (Plan 5)

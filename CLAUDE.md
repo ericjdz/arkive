@@ -1,14 +1,14 @@
 # Architecture-Tracked Project (arkive — lightweight mode)
 
-This repo uses a living architecture document, `architecture.json`. You — the AI coding agent — are responsible for keeping it in sync with the code.
+This repo uses a living architecture document, `arkive/architecture.json`. You — the AI coding agent — are responsible for keeping it in sync with the code.
 
 > **You are using the lightweight, drop-in version of arkive.** No MCP server, no web viewer, no Learning Mode — just this file and the JSON. To upgrade, run `npx @ericjdz/arkive init` (see "Upgrade" at the bottom).
 
 ## The Three Rules
 
-1. **On every session start**: Read `architecture.json` first. It is your memory across sessions, compaction, and model switches. Do not re-derive the architecture from the codebase if this file exists.
-2. **Before any major change**: Re-read `architecture.json` to align your changes with the existing system.
-3. **After any major change**: Update `architecture.json` to reflect what changed and why. Append a `history` entry. Update `project.lastUpdated`.
+1. **On every session start**: Read `arkive/architecture.json` first. It is your memory across sessions, compaction, and model switches. Do not re-derive the architecture from the codebase if this file exists.
+2. **Before any major change**: Re-read `arkive/architecture.json` to align your changes with the existing system.
+3. **After any major change**: Update `arkive/architecture.json` to reflect what changed and why. Append a `history` entry. Update `project.lastUpdated`.
 
 ## What Counts as a Major Change
 
@@ -18,9 +18,9 @@ This repo uses a living architecture document, `architecture.json`. You — the 
 - Adopting a new framework or major library for a significant function
 - Refactoring that changes module boundaries or data flow
 
-## Bootstrapping `architecture.json` From Scratch
+## Bootstrapping `arkive/architecture.json` From Scratch
 
-If `architecture.json` does not exist yet, create it with this exact structure:
+If `arkive/architecture.json` does not exist yet, create it with this exact structure:
 
 ```json
 {
@@ -125,7 +125,7 @@ If arkive is installed in this project, prefer MCP tools over direct file editin
 
 - `update_architecture` — add, modify, or remove services, connections, data flows, and stack entries
 - `record_decision` — record an architectural decision with rationale and rejected alternatives
-- `check_drift` — verify architecture.json matches the codebase
+- `check_drift` — verify arkive/architecture.json matches the codebase
 
 To check: attempt to read `architecture://overview`. If it succeeds, use MCP for all reads/writes.
 

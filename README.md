@@ -12,7 +12,7 @@
 
 AI coding agents (Claude Code, Cursor, Copilot, Codex, OpenCode) build entire projects from a single prompt. You ship fast — but you can't explain why your project uses Postgres over Mongo, microservices over a monolith, or REST over GraphQL. The agent decided. You accepted. Across sessions, the agent has no memory of what was built and re-derives (or hallucinates) the architecture every time.
 
-arkive solves both problems with one artifact: a structured `architecture.json` that lives in your repo. The agent reads it on session start (instant onboarding, no context rot), updates it after every major change (always-current docs), and you browse it in an interactive web viewer (finally understand your own project).
+arkive solves both problems with one artifact: a structured `arkive/architecture.json` that lives in your repo. The agent reads it on session start (instant onboarding, no context rot), updates it after every major change (always-current docs), and you browse it in an interactive web viewer (finally understand your own project).
 
 ## Quick Start
 
@@ -32,13 +32,13 @@ npx @ericjdz/arkive learn
 
 After `init`, your repo gains:
 
-- `architecture.json` — the living architecture document
+- `arkive/` — contains `architecture.json` and `history/`
 - A small tracking block injected into your existing `CLAUDE.md` and `AGENTS.md` (created if missing)
 - `.cursor/rules/architecture-tracker.mdc` — Cursor auto-apply rule
 
 arkive extends your existing instruction files — it never overwrites them. Use `--standalone` to generate full instruction files instead.
 
-Your AI agent will now read and maintain `architecture.json` automatically.
+Your AI agent will now read and maintain `arkive/architecture.json` automatically.
 
 ## Get Started with Your AI Agent
 
@@ -61,7 +61,7 @@ Copy and paste this into your AI agent (Claude Code, Cursor, Copilot, OpenCode, 
 
 | Command | Action |
 |---|---|
-| `npx @ericjdz/arkive init` | Scaffold `architecture.json` and inject tracking block into instruction files |
+| `npx @ericjdz/arkive init` | Scaffold `arkive/architecture.json` and inject tracking block into instruction files |
 | `npx @ericjdz/arkive init --standalone` | Generate full `AGENTS.md`/`CLAUDE.md` files (for platforms without MCP) |
 | `npx @ericjdz/arkive install <platform>` | Register MCP server in your AI platform config |
 | `npx @ericjdz/arkive serve` | Start the MCP server and open the web viewer |
@@ -87,7 +87,7 @@ Run `npx @ericjdz/arkive <command> --help` for command-specific options.
 - `--port <n>` — HTTP/viewer port (default: 4317)
 - `--no-open` — do not auto-open the browser
 
-The architecture document lives at `./architecture.json` by default.
+The architecture document lives at `./arkive/architecture.json` by default.
 
 ## Distribution Surfaces
 
@@ -103,7 +103,7 @@ The architecture document lives at `./architecture.json` by default.
 
 ## Architecture Document Schema
 
-`architecture.json` is a structured, view-agnostic document:
+`arkive/architecture.json` is a structured, view-agnostic document:
 
 - `project` — name, description, timestamps
 - `stack` — language, runtime, framework, database, infrastructure
@@ -125,7 +125,7 @@ Validated by Zod. See `src/schema/architecture.ts` for the full schema.
 npx -y @ericjdz/arkive init
 ```
 
-This creates `architecture.json`, `AGENTS.md`, `CLAUDE.md`, and `.cursor/rules/architecture-tracker.mdc`. If these files already exist, they are not overwritten.
+This creates `arkive/architecture.json`, `arkive/history/`, `AGENTS.md`, `CLAUDE.md`, and `.cursor/rules/architecture-tracker.mdc`. If these files already exist, they are not overwritten.
 
 ### Step 2: Register the MCP server
 
@@ -284,7 +284,7 @@ The MCP response should list three tools: `update_architecture`, `record_decisio
 
 If MCP registration is not possible in your environment, arkive still works:
 
-- **Read/write `architecture.json` directly** — follow the schema in `AGENTS.md` or `CLAUDE.md`
+- **Read/write `arkive/architecture.json` directly** — follow the schema in `AGENTS.md` or `CLAUDE.md`
 - **CLI commands** — `npx @ericjdz/arkive status`, `reconcile`, `export`
 - **No dependencies required** — the JSON file is self-contained
 
@@ -292,9 +292,9 @@ If MCP registration is not possible in your environment, arkive still works:
 
 | Tool | Description |
 |---|---|
-| `update_architecture` | Merge services, connections, data flows, and stack entries into `architecture.json`. Supports `removeServiceIds`, `removeConnectionKeys`, `removeDataFlowNames` for deletions. |
+| `update_architecture` | Merge services, connections, data flows, and stack entries into `arkive/architecture.json`. Supports `removeServiceIds`, `removeConnectionKeys`, `removeDataFlowNames` for deletions. |
 | `record_decision` | Append an architectural decision with rationale and at least one rejected alternative. |
-| `check_drift` | Static analysis comparing `architecture.json` against `package.json` and source imports. Returns mismatches. |
+| `check_drift` | Static analysis comparing `arkive/architecture.json` against `package.json` and source imports. Returns mismatches. |
 
 ---
 
