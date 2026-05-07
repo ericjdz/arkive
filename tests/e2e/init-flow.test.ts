@@ -24,7 +24,7 @@ describe("E2E: init flow", () => {
     );
 
     // Verify architecture.json exists and validates
-    const archPath = join(tempDir, "architecture.json");
+    const archPath = join(tempDir, "arkive", "architecture.json");
     expect(existsSync(archPath)).toBe(true);
     const archData = JSON.parse(readFileSync(archPath, "utf-8"));
     const validation = validateArchitecture(archData);
@@ -41,7 +41,7 @@ describe("E2E: init flow", () => {
     expect(existsSync(claudePath)).toBe(true);
     const claudeContent = readFileSync(claudePath, "utf-8");
     expect(claudeContent).toContain("<!-- arkive:start -->");
-    expect(claudeContent).toContain("architecture.json");
+    expect(claudeContent).toContain("arkive/architecture.json");
     expect(claudeContent).toContain("<!-- arkive:end -->");
 
     // Verify AGENTS.md
@@ -49,6 +49,7 @@ describe("E2E: init flow", () => {
     expect(existsSync(agentsPath)).toBe(true);
     const agentsContent = readFileSync(agentsPath, "utf-8");
     expect(agentsContent).toContain("<!-- arkive:start -->");
+    expect(agentsContent).toContain("arkive/architecture.json");
 
     // Verify Cursor rule
     const cursorPath = join(tempDir, ".cursor", "rules", "architecture-tracker.mdc");
@@ -63,7 +64,7 @@ describe("E2E: init flow", () => {
       { cwd: process.cwd() }
     );
 
-    const archPath = join(tempDir, "architecture.json");
+    const archPath = join(tempDir, "arkive", "architecture.json");
     const firstContent = readFileSync(archPath, "utf-8");
 
     // Second init with different name

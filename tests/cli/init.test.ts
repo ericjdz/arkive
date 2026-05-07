@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, rmSync, readFileSync, existsSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync, existsSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execSync } from "node:child_process";
+import { ARKIVE_DIR } from "../../src/io/architecture-file.js";
 
 describe("CLI init command", () => {
   let tempDir: string;
@@ -19,12 +20,21 @@ describe("CLI init command", () => {
     execSync(`npx tsx src/cli/index.ts init --name test-project --dir "${tempDir}"`, {
       cwd: process.cwd(),
     });
-    const archPath = join(tempDir, "architecture.json");
+    const archPath = join(tempDir, "arkive", "architecture.json");
     expect(existsSync(archPath)).toBe(true);
 
     const arch = JSON.parse(readFileSync(archPath, "utf-8"));
     expect(arch.project.name).toBe("test-project");
     expect(arch.version).toBe("1.0.0");
+  }, 20000);
+
+  it("creates arkive directory structure with history and context subdirs", () => {
+    execSync(`npx tsx src/cli/index.ts init --name test-project --dir "${tempDir}"`, {
+      cwd: process.cwd(),
+    });
+    expect(existsSync(join(tempDir, ARKIVE_DIR))).toBe(true);
+    expect(existsSync(join(tempDir, ARKIVE_DIR, "history"))).toBe(true);
+    expect(existsSync(join(tempDir, ARKIVE_DIR, "context", "sessions"))).toBe(true);
   }, 20000);
 
   it("creates CLAUDE.md in target directory", () => {
@@ -36,7 +46,7 @@ describe("CLI init command", () => {
 
     const content = readFileSync(claudePath, "utf-8");
     expect(content).toContain("<!-- arkive:start -->");
-    expect(content).toContain("architecture.json");
+    expect(content).toContain("arkive/architecture.json");
     expect(content).toContain("<!-- arkive:end -->");
   }, 20000);
 
@@ -49,7 +59,7 @@ describe("CLI init command", () => {
 
     const content = readFileSync(agentsPath, "utf-8");
     expect(content).toContain("<!-- arkive:start -->");
-    expect(content).toContain("architecture.json");
+    expect(content).toContain("arkive/architecture.json");
     expect(content).toContain("<!-- arkive:end -->");
   }, 20000);
 
@@ -62,7 +72,8 @@ describe("CLI init command", () => {
   }, 20000);
 
   it("does not overwrite existing architecture.json", () => {
-    const archPath = join(tempDir, "architecture.json");
+    mkdirSync(join(tempDir, "arkive"), { recursive: true });
+    const archPath = join(tempDir, "arkive", "architecture.json");
     const existingContent = '{"existing": true}';
     writeFileSync(archPath, existingContent);
 
@@ -133,7 +144,7 @@ describe("CLI init command", () => {
     execSync(`npx tsx src/cli/index.ts init --dir "${tempDir}"`, {
       cwd: process.cwd(),
     });
-    const archPath = join(tempDir, "architecture.json");
+    const archPath = join(tempDir, "arkive", "architecture.json");
     const arch = JSON.parse(readFileSync(archPath, "utf-8"));
     expect(arch.project.name).toBeTruthy();
   }, 20000);

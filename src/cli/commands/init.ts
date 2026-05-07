@@ -3,6 +3,7 @@ import { join, basename } from "node:path";
 import { createEmptyArchitecture } from "../../schema/validate.js";
 import { renderTemplate } from "../../templates/render.js";
 import { injectArkiveBlock } from "./inject.js";
+import { ARKIVE_DIR, ARCHITECTURE_FILENAME } from "../../io/architecture-file.js";
 
 export interface InitOptions {
   name?: string;
@@ -17,9 +18,15 @@ export function initProject(options: InitOptions): void {
 
   const projectName = options.name || basename(projectDir);
   const description = options.description || `Architecture for ${projectName}`;
-  const architectureFile = "architecture.json";
+  const architectureFile = `${ARKIVE_DIR}/${ARCHITECTURE_FILENAME}`;
 
-  const archPath = join(projectDir, architectureFile);
+  // Create arkive directory structure
+  const arkiveDir = join(projectDir, ARKIVE_DIR);
+  mkdirSync(arkiveDir, { recursive: true });
+  mkdirSync(join(arkiveDir, "history"), { recursive: true });
+  mkdirSync(join(arkiveDir, "context", "sessions"), { recursive: true });
+
+  const archPath = join(arkiveDir, ARCHITECTURE_FILENAME);
   if (!existsSync(archPath)) {
     const architecture = createEmptyArchitecture(projectName, description);
     writeFileSync(archPath, JSON.stringify(architecture, null, 2) + "\n", "utf-8");
@@ -74,5 +81,5 @@ export function initProject(options: InitOptions): void {
   }
 
   console.log(`\nDone! Architecture tracking initialized for "${projectName}".`);
-  console.log("Your AI agent will now maintain architecture.json as it builds.");
+  console.log("Your AI agent will now maintain arkive/architecture.json as it builds.");
 }
