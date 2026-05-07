@@ -16,7 +16,7 @@ const program = new Command();
 program
   .name("arkive")
   .description("Architecture learning tool for AI-assisted development")
-  .version("0.1.5");
+  .version("0.1.6");
 
 program
   .command("init")
