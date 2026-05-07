@@ -1,0 +1,65 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "arkive",
+    "description": "A living architecture document for AI-built projects.",
+    "created": "2026-05-07T00:00:00.000Z",
+    "lastUpdated": "2026-05-07T00:00:00.000Z"
+  },
+  "stack": {
+    "language": ["TypeScript"],
+    "runtime": ["Node.js"],
+    "framework": ["Vite", "React"],
+    "database": [],
+    "infrastructure": ["filesystem"]
+  },
+  "services": [
+    {
+      "id": "cli",
+      "name": "CLI",
+      "type": "backend",
+      "technology": "Node.js + Commander",
+      "description": "Command-line entrypoint for init, serve, reconcile, and export flows.",
+      "dependencies": ["architecture-store"]
+    },
+    {
+      "id": "viewer",
+      "name": "Viewer",
+      "type": "frontend",
+      "technology": "React + Vite",
+      "description": "Interactive UI for browsing architecture, decisions, and learning mode.",
+      "dependencies": ["architecture-store"]
+    },
+    {
+      "id": "architecture-store",
+      "name": "Architecture store",
+      "type": "storage",
+      "technology": "arkive/architecture.json",
+      "description": "Local JSON document that stores the tracked architecture state.",
+      "dependencies": []
+    }
+  ],
+  "connections": [
+    {
+      "from": "cli",
+      "to": "architecture-store",
+      "protocol": "filesystem",
+      "description": "CLI reads and writes architecture state on disk."
+    },
+    {
+      "from": "viewer",
+      "to": "architecture-store",
+      "protocol": "filesystem",
+      "description": "Viewer loads architecture data for visualization."
+    }
+  ],
+  "decisions": [],
+  "dataFlows": [],
+  "history": [
+    {
+      "timestamp": "2026-05-07T00:00:00.000Z",
+      "action": "initial_scaffold",
+      "summary": "Architecture document created"
+    }
+  ]
+}
