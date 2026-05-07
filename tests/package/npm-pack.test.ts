@@ -107,7 +107,7 @@ describe("npm pack + install + bin invocation", () => {
         { cwd: installDir, stdio: "inherit" }
       );
 
-      expect(existsSync(join(projectDir, "architecture.json"))).toBe(true);
+      expect(existsSync(join(projectDir, "arkive", "architecture.json"))).toBe(true);
       expect(existsSync(join(projectDir, "CLAUDE.md"))).toBe(true);
       expect(existsSync(join(projectDir, "AGENTS.md"))).toBe(true);
       expect(
@@ -115,7 +115,7 @@ describe("npm pack + install + bin invocation", () => {
       ).toBe(true);
 
       const arch = JSON.parse(
-        readFileSync(join(projectDir, "architecture.json"), "utf-8")
+        readFileSync(join(projectDir, "arkive", "architecture.json"), "utf-8")
       );
       expect(arch.project.name).toBe("pack-test");
     } finally {

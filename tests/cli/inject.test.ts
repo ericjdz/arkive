@@ -87,7 +87,7 @@ describe("injectArkiveBlock", () => {
 
   it("renders arkive block with lifecycle hook directives", () => {
     const rendered = renderTemplate("arkive-block.md.hbs", {
-      architectureFile: "architecture.json",
+      architectureFile: "arkive/architecture.json",
     });
 
     expect(rendered).toContain("On EVERY session start");
