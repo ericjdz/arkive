@@ -25,9 +25,12 @@ describe("MCP tool handlers", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("declares 5 tools by name", () => {
+  it("declares 8 tools by name", () => {
     expect(ARCHITECTURE_TOOLS.map((t) => t.name).sort()).toEqual([
+      "ack_prompt",
       "check_drift",
+      "claim_next_prompt",
+      "list_prompts",
       "open_viewer",
       "record_decision",
       "scaffold_project",

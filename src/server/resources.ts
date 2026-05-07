@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
 import { readArchitecture } from "../io/architecture-file.js";
+import { readPromptQueue } from "../io/prompt-queue.js";
 import type { Architecture } from "../schema/types.js";
 
 export interface ArchitectureResourceDescriptor {
@@ -49,6 +50,13 @@ export const ARCHITECTURE_RESOURCES: ArchitectureResourceDescriptor[] = [
     title: "Lifecycle Hooks",
     description:
       "Lifecycle rules for maintaining arkive/architecture.json: session_start, post_major_change, pre_completion.",
+  },
+  {
+    name: "architecture-prompts",
+    uri: "architecture://prompts",
+    title: "Prompt Queue",
+    description:
+      "User-queued prompts from the architecture viewer, scoped to specific services. Agents can read pending prompts and claim them for execution.",
   },
 ];
 
@@ -163,6 +171,20 @@ Before claiming work is complete, before committing, before creating PRs:
   };
 }
 
+export async function readPrompts(
+  dir: string,
+  uri: URL
+): Promise<ReadResourceResult> {
+  const read = readPromptQueue(dir);
+  const queue = read.success ? read.data : { prompts: [] };
+  return jsonResource(uri, {
+    prompts: queue.prompts,
+    total: queue.prompts.length,
+    pending: queue.prompts.filter((p) => p.status === "pending").length,
+    claimed: queue.prompts.filter((p) => p.status === "claimed").length,
+  });
+}
+
 const HANDLERS: Record<
   string,
   (dir: string, uri: URL) => Promise<ReadResourceResult>
@@ -173,6 +195,7 @@ const HANDLERS: Record<
   "architecture://dataflows": readDataflows,
   "architecture://history": readHistory,
   "architecture://hooks": readHooks,
+  "architecture://prompts": readPrompts,
 };
 
 export function registerResources(server: McpServer, dir: string): void {

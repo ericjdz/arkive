@@ -8,6 +8,12 @@ import {
   writeArchitecture,
 } from "../io/architecture-file.js";
 import {
+  readPromptQueue,
+  claimNextPrompt,
+  ackPrompt,
+  failPrompt,
+} from "../io/prompt-queue.js";
+import {
   ServiceSchema,
   ConnectionSchema,
   DataFlowSchema,
@@ -56,6 +62,19 @@ export const OpenViewerInputSchema = z.object({
   port: z.number().optional().default(4567).describe("Port to serve the viewer on"),
 });
 
+export const ListPromptsInputSchema = z.object({
+  status: z.enum(["pending", "claimed", "done", "failed"]).optional().describe("Filter by status (omit for all)"),
+});
+
+export const ClaimNextPromptInputSchema = z.object({
+  agent: z.string().optional().describe("Agent identifier claiming the prompt"),
+});
+
+export const AckPromptInputSchema = z.object({
+  promptId: z.string().min(1).describe("ID of the prompt to acknowledge"),
+  outcome: z.enum(["done", "failed"]).describe("Whether the prompt was completed or failed"),
+});
+
 export interface ToolDescriptor {
   name: string;
   title: string;
@@ -92,6 +111,24 @@ export const ARCHITECTURE_TOOLS: ToolDescriptor[] = [
     title: "Open Viewer",
     description:
       "Start the arkive web viewer if not already running. Returns the URL for the user to open.",
+  },
+  {
+    name: "list_prompts",
+    title: "List Prompts",
+    description:
+      "List prompts queued by the user from the architecture viewer. Returns all prompts or filtered by status.",
+  },
+  {
+    name: "claim_next_prompt",
+    title: "Claim Next Prompt",
+    description:
+      "Atomically claim the next pending prompt from the queue. Returns the prompt with its target services and marks it as claimed.",
+  },
+  {
+    name: "ack_prompt",
+    title: "Acknowledge Prompt",
+    description:
+      "Mark a claimed prompt as done or failed after processing.",
   },
 ];
 
@@ -348,6 +385,51 @@ export async function handleOpenViewer(
   }
 }
 
+export async function handleListPrompts(
+  dir: string,
+  input: z.infer<typeof ListPromptsInputSchema>
+): Promise<CallToolResult> {
+  const read = readPromptQueue(dir);
+  if (!read.success) return errorResult(read.error);
+
+  const queue = read.data;
+  const filtered = input.status
+    ? queue.prompts.filter((p) => p.status === input.status)
+    : queue.prompts;
+
+  return jsonResult({
+    prompts: filtered,
+    total: queue.prompts.length,
+    pending: queue.prompts.filter((p) => p.status === "pending").length,
+    claimed: queue.prompts.filter((p) => p.status === "claimed").length,
+  });
+}
+
+export async function handleClaimNextPrompt(
+  dir: string,
+  input: z.infer<typeof ClaimNextPromptInputSchema>
+): Promise<CallToolResult> {
+  const result = claimNextPrompt(dir, input.agent);
+  if (!result.success) return errorResult(result.error);
+
+  if (result.data === null) {
+    return jsonResult({ claimed: false, prompt: null, message: "No pending prompts in queue" });
+  }
+
+  return jsonResult({ claimed: true, prompt: result.data });
+}
+
+export async function handleAckPrompt(
+  dir: string,
+  input: z.infer<typeof AckPromptInputSchema>
+): Promise<CallToolResult> {
+  const fn = input.outcome === "done" ? ackPrompt : failPrompt;
+  const result = fn(dir, input.promptId);
+  if (!result.success) return errorResult(result.error);
+
+  return jsonResult({ ok: true, promptId: input.promptId, outcome: input.outcome });
+}
+
 export function registerTools(server: McpServer, dir: string): void {
   server.tool(
     "update_architecture",
@@ -395,6 +477,36 @@ export function registerTools(server: McpServer, dir: string): void {
     OpenViewerInputSchema.shape,
     async (args) => {
       const result = await handleOpenViewer(dir, args as unknown as z.infer<typeof OpenViewerInputSchema>);
+      return result;
+    }
+  );
+
+  server.tool(
+    "list_prompts",
+    ARCHITECTURE_TOOLS[5].description,
+    ListPromptsInputSchema.shape,
+    async (args) => {
+      const result = await handleListPrompts(dir, args as unknown as z.infer<typeof ListPromptsInputSchema>);
+      return result;
+    }
+  );
+
+  server.tool(
+    "claim_next_prompt",
+    ARCHITECTURE_TOOLS[6].description,
+    ClaimNextPromptInputSchema.shape,
+    async (args) => {
+      const result = await handleClaimNextPrompt(dir, args as unknown as z.infer<typeof ClaimNextPromptInputSchema>);
+      return result;
+    }
+  );
+
+  server.tool(
+    "ack_prompt",
+    ARCHITECTURE_TOOLS[7].description,
+    AckPromptInputSchema.shape,
+    async (args) => {
+      const result = await handleAckPrompt(dir, args as unknown as z.infer<typeof AckPromptInputSchema>);
       return result;
     }
   );

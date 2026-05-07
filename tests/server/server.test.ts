@@ -26,12 +26,12 @@ describe("createServer", () => {
     expect(typeof (server as unknown as { connect: unknown }).connect).toBe("function");
   });
 
-  it("registers all 5 architecture resources", () => {
+  it("registers all 6 architecture resources", () => {
     const server = createServer({ dir: tempDir });
     expect(server).toBeDefined();
   });
 
-  it("registers all 3 tools without throwing", () => {
+  it("registers all 6 tools without throwing", () => {
     expect(() => createServer({ dir: tempDir })).not.toThrow();
   });
 });
