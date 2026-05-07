@@ -143,6 +143,30 @@ These hooks govern your behavior for the ENTIRE session, not just during explici
 - Do NOT leave orphaned references (connections pointing to removed services)
 - Do NOT re-derive the architecture from code if `arkive/architecture.json` exists — trust the document
 
+## Prompt Queue
+
+Users can queue architecture change prompts from the web viewer, scoped to specific services.
+
+### MCP Tools
+
+- `list_prompts` — List all queued prompts (optionally filter by status: pending, claimed, done, failed)
+- `claim_next_prompt` — Atomically claim the oldest pending prompt. Returns the prompt text and target service IDs.
+- `ack_prompt` — Mark a claimed prompt as done or failed after execution.
+
+### MCP Resource
+
+- `architecture://prompts` — Read-only view of all queued prompts with summary counts.
+
+### Workflow
+
+1. User opens the viewer (`arkive serve`) and selects architecture nodes
+2. User writes prompts scoped to those nodes
+3. User clicks "Copy All" to paste into agent chat, OR the agent reads `architecture://prompts`
+4. Agent calls `claim_next_prompt` to get the next prompt
+5. Agent executes the prompt, updating architecture.json as needed
+6. Agent calls `ack_prompt` with outcome "done" or "failed"
+7. Repeat until queue is empty
+
 ## Reference
 
 See `references/schema-guide.md` for the complete schema specification.
