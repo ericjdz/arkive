@@ -20,6 +20,7 @@ interface TopologyViewProps {
   services: Service[];
   connections: Connection[];
   decisions: Decision[];
+  onAddPrompt?: (serviceId: string, prompt: string) => void;
 }
 
 const NODE_WIDTH = 200;
@@ -32,6 +33,7 @@ export function TopologyView({
   services,
   connections,
   decisions,
+  onAddPrompt,
 }: TopologyViewProps) {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
 
@@ -115,6 +117,7 @@ export function TopologyView({
         connections={connections}
         decisions={decisions}
         onClose={() => setSelectedService(null)}
+        onAddPrompt={onAddPrompt}
       />
     </div>
   );

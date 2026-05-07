@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useArchitecture } from "./hooks/useArchitecture.js";
 import { ViewSwitcher } from "./components/ViewSwitcher.js";
 import type { ViewId } from "./components/ViewSwitcher.js";
@@ -9,6 +9,8 @@ import { DecisionLogView } from "./views/DecisionLogView.js";
 import { TreeView } from "./views/TreeView.js";
 import { StackView } from "./views/StackView.js";
 import { LearningView } from "./views/LearningView.js";
+import { usePromptQueue } from "./hooks/usePromptQueue.js";
+import { PromptQueuePanel } from "./components/PromptQueuePanel.js";
 
 export function App() {
   const {
@@ -24,6 +26,13 @@ export function App() {
     const params = new URLSearchParams(window.location.search);
     return params.get("mode") === "learning" ? "learning" : "topology";
   });
+
+  const promptQueue = usePromptQueue();
+  const [queueOpen, setQueueOpen] = useState(false);
+
+  const handleAddPrompt = useCallback(async (serviceId: string, prompt: string) => {
+    await promptQueue.addPrompt([serviceId], prompt);
+  }, [promptQueue]);
 
   if (loading) {
     return (
@@ -110,6 +119,7 @@ export function App() {
             services={searchResults.services}
             connections={data.connections}
             decisions={data.decisions}
+            onAddPrompt={handleAddPrompt}
           />
         )}
         {activeView === "dataflow" && (
@@ -134,6 +144,14 @@ export function App() {
           />
         )}
       </main>
+
+      <PromptQueuePanel
+        prompts={promptQueue.prompts}
+        isOpen={queueOpen}
+        onToggle={() => setQueueOpen((o) => !o)}
+        onRemove={promptQueue.removePrompt}
+        onCopyAll={() => promptQueue.copyAllToClipboard(data.project.name)}
+      />
     </div>
   );
 }

@@ -1,10 +1,12 @@
 import type { Service, Decision, Connection } from "../api/architecture.js";
+import { PromptInput } from "./PromptInput.js";
 
 interface DetailPanelProps {
   service: Service | null;
   connections: Connection[];
   decisions: Decision[];
   onClose: () => void;
+  onAddPrompt?: (serviceId: string, prompt: string) => void;
 }
 
 export function DetailPanel({
@@ -12,6 +14,7 @@ export function DetailPanel({
   connections,
   decisions,
   onClose,
+  onAddPrompt,
 }: DetailPanelProps) {
   if (!service) return null;
 
@@ -118,6 +121,14 @@ export function DetailPanel({
             </div>
           ))}
         </div>
+      )}
+
+      {onAddPrompt && (
+        <PromptInput
+          serviceId={service.id}
+          serviceName={service.name}
+          onSubmit={(prompt) => onAddPrompt(service.id, prompt)}
+        />
       )}
     </div>
   );
