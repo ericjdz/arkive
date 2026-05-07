@@ -1,9 +1,10 @@
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { validateArchitecture } from "../schema/validate.js";
 import type { Architecture } from "../schema/types.js";
 
 export const ARCHITECTURE_FILENAME = "architecture.json";
+export const ARKIVE_DIR = "arkive";
 
 export type ReadResult =
   | { success: true; data: Architecture }
@@ -13,8 +14,12 @@ export type WriteResult =
   | { success: true; data: Architecture }
   | { success: false; error: string };
 
+export function arkiveDirPath(dir: string): string {
+  return join(dir, ARKIVE_DIR);
+}
+
 export function architecturePath(dir: string): string {
-  return join(dir, ARCHITECTURE_FILENAME);
+  return join(dir, ARKIVE_DIR, ARCHITECTURE_FILENAME);
 }
 
 export function readArchitecture(dir: string): ReadResult {
@@ -23,7 +28,7 @@ export function readArchitecture(dir: string): ReadResult {
   if (!existsSync(path)) {
     return {
       success: false,
-       error: `architecture.json not found in ${dir}. Run \`arkive init\` first.`,
+      error: `architecture.json not found in ${join(dir, ARKIVE_DIR)}. Run \`arkive init\` first.`,
     };
   }
 
@@ -79,6 +84,7 @@ export function writeArchitecture(
   }
 
   const path = architecturePath(dir);
+  mkdirSync(arkiveDirPath(dir), { recursive: true });
   try {
     writeFileSync(path, JSON.stringify(validation.data, null, 2) + "\n", "utf-8");
   } catch (err) {
