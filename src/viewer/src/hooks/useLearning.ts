@@ -1,9 +1,11 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import type { Architecture } from "../../../schema/types.js";
-import type { Question, LearningProgress } from "../../../learning/types.js";
+import type { Question } from "../../../learning/types.js";
 import { generateAllQuestions } from "../../../learning/questions.js";
 import { extractConcepts } from "../../../learning/concepts.js";
 import { recordAnswer, mergeNewConcepts, createInitialProgress } from "../../../learning/progress.shared.js";
+import { saveLearningProgress } from "../api/learning.js";
+import type { LearningProgress } from "../api/learning.js";
 
 interface UseLearningResult {
   questions: Question[];
@@ -58,6 +60,15 @@ export function useLearning(
   const nextQuestion = useCallback(() => {
     setCurrentIndex((prev) => prev + 1);
   }, []);
+
+  // Auto-save progress to server
+  useEffect(() => {
+    if (progress.totalQuestions > 0) {
+      saveLearningProgress(progress).catch(() => {
+        // Silently fail — progress is still in-memory
+      });
+    }
+  }, [progress]);
 
   const masteredCount = progress.concepts.filter((c) => c.mastered).length;
   const totalConcepts = progress.concepts.length;

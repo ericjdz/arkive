@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useArchitecture } from "./hooks/useArchitecture.js";
 import { ViewSwitcher } from "./components/ViewSwitcher.js";
 import type { ViewId } from "./components/ViewSwitcher.js";
@@ -11,6 +11,8 @@ import { StackView } from "./views/StackView.js";
 import { LearningView } from "./views/LearningView.js";
 import { usePromptQueue } from "./hooks/usePromptQueue.js";
 import { PromptQueuePanel } from "./components/PromptQueuePanel.js";
+import { fetchLearningProgress } from "./api/learning.js";
+import type { LearningProgress } from "./api/learning.js";
 
 export function App() {
   const {
@@ -29,6 +31,13 @@ export function App() {
 
   const promptQueue = usePromptQueue();
   const [queueOpen, setQueueOpen] = useState(false);
+  const [learningProgress, setLearningProgress] = useState<LearningProgress | null>(null);
+
+  useEffect(() => {
+    fetchLearningProgress()
+      .then(setLearningProgress)
+      .catch(() => {});
+  }, []);
 
   const handleAddPrompt = useCallback(async (serviceId: string, prompt: string) => {
     await promptQueue.addPrompt([serviceId], prompt);
@@ -140,7 +149,7 @@ export function App() {
         {activeView === "learning" && (
           <LearningView
             architecture={data}
-            initialProgress={null}
+            initialProgress={learningProgress}
           />
         )}
       </main>

@@ -5,6 +5,7 @@ import { createServer, type Server } from "node:http";
 import express from "express";
 import { architecturePath, readArchitecture } from "../../io/architecture-file.js";
 import { readPromptQueue, addPrompt, writePromptQueue } from "../../io/prompt-queue.js";
+import { readProgress, writeProgress } from "../../learning/progress.js";
 import { startStdioServer } from "../../server/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -72,6 +73,29 @@ export function createViewerServer(dir: string): { app: express.Express; server:
       return;
     }
     res.json({ ok: true });
+  });
+
+  app.get("/api/learning/progress", (_req, res) => {
+    const progress = readProgress(dir);
+    if (!progress) {
+      res.json(null);
+      return;
+    }
+    res.json(progress);
+  });
+
+  app.put("/api/learning/progress", (req, res) => {
+    const progress = req.body;
+    if (!progress || typeof progress !== "object") {
+      res.status(400).json({ error: "Invalid progress data" });
+      return;
+    }
+    try {
+      writeProgress(dir, progress);
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ error: (err as Error).message });
+    }
   });
 
   app.get("/api/architecture", (_req, res) => {
