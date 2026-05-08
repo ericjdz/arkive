@@ -1,6 +1,6 @@
 {
   "name": "@ericjdz/arkive",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A living architecture document for AI-built projects. Your AI agent maintains it; you understand what was built.",
   "type": "module",
   "license": "MIT",
