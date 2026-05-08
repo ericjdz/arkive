@@ -50,12 +50,25 @@ Copy and paste this into your AI agent (Claude Code, Cursor, Copilot, OpenCode, 
 
 - **Cross-session memory for AI agents** — the architecture file survives compaction, session resets, and model switches.
 - **MCP server** — agents pull live architecture context via the Model Context Protocol (stdio + HTTP).
-- **Interactive web viewer** — five views: System Topology, Data Flow, Decision Log, Component Tree, Stack Overview.
+- **Interactive web viewer** — six views: System Topology, Data Flow, Decision Log, Component Tree, Stack Overview, Learning Mode.
+- **Prompt queue** — select nodes in the viewer, write scoped architecture prompts, and your AI agent consumes them via MCP or clipboard.
 - **Decisions are first-class** — every architectural choice records what was chosen, why, and what was rejected.
 - **Drift detection** — `arkive reconcile` compares the doc against the actual code and flags mismatches.
 - **Learning Mode** — Socratic gating that quizzes you on architectural decisions and tracks concept mastery.
 - **Multi-platform** — Claude Code (marketplace + CLAUDE.md), Cursor (.cursor/rules), Codex / OpenCode / Copilot (AGENTS.md), or any agent via the MCP server.
 - **Try before you install** — drop the standalone `CLAUDE.md` or `AGENTS.md` into any repo and your agent maintains the doc with no install.
+
+## Prompt Queue
+
+The prompt queue lets you direct your AI agent from the viewer.
+
+1. Open the viewer (`npx @ericjdz/arkive serve`)
+2. Click any service node to open its detail panel
+3. Write an architecture change prompt scoped to that service
+4. Click "Copy All" to paste into your agent's chat, or let the agent read `architecture://prompts` directly
+5. The agent claims prompts via `claim_next_prompt`, executes them, and acknowledges with `ack_prompt`
+
+Prompts are stored in `arkive/prompt-queue.json` and survive session resets.
 
 ## CLI Reference
 
@@ -129,7 +142,7 @@ This creates `arkive/architecture.json`, `arkive/history/`, `AGENTS.md`, `CLAUDE
 
 ### Step 2: Register the MCP server
 
-arkive exposes three MCP tools via stdio: `update_architecture`, `record_decision`, and `check_drift`. To use them natively, register arkive as an MCP server in your platform's config.
+arkive exposes eight MCP tools and seven resources via stdio: `update_architecture`, `record_decision`, `check_drift`, `scaffold_project`, `open_viewer`, `list_prompts`, `claim_next_prompt`, `ack_prompt`. To use them natively, register arkive as an MCP server in your platform's config.
 
 Pick your platform and add the config block to the corresponding file.
 
@@ -278,7 +291,7 @@ npx @ericjdz/arkive status
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | npx -y @ericjdz/arkive serve --stdio
 ```
 
-The MCP response should list three tools: `update_architecture`, `record_decision`, `check_drift`.
+The MCP response should list eight tools: `update_architecture`, `record_decision`, `check_drift`, `scaffold_project`, `open_viewer`, `list_prompts`, `claim_next_prompt`, `ack_prompt`.
 
 ### Fallback (no MCP)
 
@@ -295,6 +308,23 @@ If MCP registration is not possible in your environment, arkive still works:
 | `update_architecture` | Merge services, connections, data flows, and stack entries into `arkive/architecture.json`. Supports `removeServiceIds`, `removeConnectionKeys`, `removeDataFlowNames` for deletions. |
 | `record_decision` | Append an architectural decision with rationale and at least one rejected alternative. |
 | `check_drift` | Static analysis comparing `arkive/architecture.json` against `package.json` and source imports. Returns mismatches. |
+| `scaffold_project` | Generate a project scaffold from the architecture document. |
+| `open_viewer` | Open the web viewer in the default browser. |
+| `list_prompts` | List queued architecture prompts from the viewer. Optionally filter by status. |
+| `claim_next_prompt` | Atomically claim the oldest pending prompt. Returns prompt text and target services. |
+| `ack_prompt` | Mark a claimed prompt as done or failed after execution. |
+
+### MCP Resources Reference
+
+| Resource | Description |
+|---|---|
+| `architecture://overview` | Project metadata, stack, and summary statistics. |
+| `architecture://services` | All services with dependencies and connections. |
+| `architecture://decisions` | Full decision log with rationale and alternatives. |
+| `architecture://dataflows` | Data flow definitions with step-by-step sequences. |
+| `architecture://history` | Chronological change log. |
+| `architecture://hooks` | Lifecycle rules for maintaining the architecture document. |
+| `architecture://prompts` | Queued architecture prompts with summary counts. |
 
 ---
 
