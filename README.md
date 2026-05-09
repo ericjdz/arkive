@@ -44,7 +44,9 @@ Your AI agent will now read and maintain `arkive/architecture.json` automaticall
 
 Copy and paste this into your AI agent (Claude Code, Cursor, Copilot, OpenCode, etc.):
 
-> Install arkive for architecture tracking in this project. Read the instructions at https://github.com/ericjdz/arkive and follow the "For Agents — Self-Install Guide" section. Ask me which AI platform I use, then set up MCP and skills.
+```
+Install arkive for architecture tracking in this project. Read the instructions at https://github.com/ericjdz/arkive and follow the "For Agents — Self-Install Guide" section. Ask me which AI platform I use, then set up MCP and skills.
+```
 
 ## Features
 
@@ -127,9 +129,9 @@ The architecture document lives at `./arkive/architecture.json` by default.
 
 - `project` — name, description, timestamps
 - `stack` — language, runtime, framework, database, infrastructure
-- `services` — every component (frontend, backend, db, cache, queue, ...)
-- `connections` — how services communicate (HTTP, WebSocket, gRPC, ...)
-- `decisions` — what was chosen, why, and what was rejected
+- `services` — every component (frontend, backend, db, cache, queue, ...) — each may carry optional `source` (`agent-scanned` | `human-verified` | `inferred`) and `confidence` (0–1) fields
+- `connections` — how services communicate (HTTP, WebSocket, gRPC, ...) — also supports `source` and `confidence`
+- `decisions` — what was chosen, why, and what was rejected — also supports `source` and `confidence`
 - `dataFlows` — important user-facing flows step by step
 - `history` — chronological change log
 
@@ -155,6 +157,7 @@ This single command:
 - Creates `.cursor/rules/architecture-tracker.mdc`
 - **Registers the MCP server** in the platform's config file
 - **Installs 7 arkive skills** (architecture-tracker, arkive-init, arkive-import, arkive-view, learning-mode, explain-decisions, reconciliation)
+- **Optionally installs the git hook** — run `npx @ericjdz/arkive hooks install` after init to enable auto-reconcile on every commit
 
 If files already exist, they are not overwritten. If `--platform` is omitted, arkive auto-detects by checking for `opencode.json`, `.mcp.json`, `.cursor/`, `.vscode/`, or environment variables.
 
@@ -178,9 +181,14 @@ After init, **immediately scan the codebase** and populate `arkive/architecture.
 
 1. Read `package.json`, folder structure, and imports
 2. Use the `update_architecture` MCP tool (or edit `arkive/architecture.json` directly) to populate `stack`, `services`, and `connections`
-3. Record any existing architectural decisions via `record_decision`
+3. When adding services from a code scan, set `"source": "agent-scanned"` and `"confidence": 0.8`. Set `"source": "human-verified"` and `"confidence": 1.0` only when the user explicitly confirms a service. Entries with confidence below 0.6 are flagged as drift warnings.
+4. Record any existing architectural decisions via `record_decision`
 
 **From this point forward**, update `arkive/architecture.json` after every major change (adding/removing services, changing protocols, new frameworks, infrastructure changes).
+
+### Step 5: Use session context on every session start
+
+Read `architecture://session-context` at the start of every session instead of `arkive/architecture.json` directly. It returns a compact, token-efficient summary (stack, top services, recent decisions, active drift warnings) without dumping the full document into context.
 
 ### Manual MCP Registration (if auto-detection fails)
 
@@ -319,7 +327,7 @@ If `init --platform` didn't register MCP correctly, you can register manually:
 }
 ```
 
-### Step 3: Verify
+### Verify after manual registration
 
 After registering, restart your agent session and verify the MCP tools are available:
 
