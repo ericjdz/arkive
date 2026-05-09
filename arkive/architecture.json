@@ -4,7 +4,7 @@
     "name": "arkive",
     "description": "A living architecture document for AI-built projects.",
     "created": "2026-05-07T00:00:00.000Z",
-    "lastUpdated": "2026-05-08T10:00:00.000Z"
+    "lastUpdated": "2026-05-09T17:26:00.000Z"
   },
   "stack": {
     "language": ["TypeScript"],
@@ -70,6 +70,16 @@
       "timestamp": "2026-05-08T10:00:00.000Z",
       "action": "update_documentation",
       "summary": "Updated README.md to reflect new MCP tools, resources, and prompt queue feature"
+    },
+    {
+      "timestamp": "2026-05-09T00:00:00.000Z",
+      "action": "update",
+      "summary": "Added compact session context MCP resource for token-efficient architecture retrieval"
+    },
+    {
+      "timestamp": "2026-05-09T17:26:00.000Z",
+      "action": "update",
+      "summary": "Added git hook installer and CLI command for auto-reconcile on post-commit"
     }
   ]
 }

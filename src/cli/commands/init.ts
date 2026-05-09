@@ -6,6 +6,7 @@ import { injectArkiveBlock } from "./inject.js";
 import { ARKIVE_DIR, ARCHITECTURE_FILENAME } from "../../io/architecture-file.js";
 import { installMcp, PLATFORMS } from "./install.js";
 import { installSkills } from "./install-skill.js";
+import { installGitHooks } from "./hooks.js";
 import type { PlatformName } from "./install.js";
 
 export interface InitOptions {
@@ -149,6 +150,12 @@ export function initProject(options: InitOptions): void {
     } catch (err) {
       console.error(`Warning: Could not install skills: ${(err as Error).message}`);
     }
+  }
+
+  // Install git hooks for auto-reconcile
+  const hookResult = installGitHooks(projectDir);
+  if (hookResult.installed.length > 0) {
+    console.log(`Installed git hooks: ${hookResult.installed.join(", ")}`);
   }
 
   console.log(`\nDone! Architecture tracking initialized for "${projectName}".`);

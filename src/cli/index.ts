@@ -9,6 +9,7 @@ import { serveProject } from "./commands/serve.js";
 import { statusCommand } from "./commands/status.js";
 import { PLATFORMS, installMcp } from "./commands/install.js";
 import { installSkills } from "./commands/install-skill.js";
+import { installGitHooks, uninstallGitHooks } from "./commands/hooks.js";
 import type { PlatformName } from "./commands/install.js";
 
 const program = new Command();
@@ -126,6 +127,33 @@ program
       console.log("Skills are now available as slash commands in your AI agent.");
     } else {
       console.log("Skills injected into instruction files. Your agent will discover them on next session.");
+    }
+  });
+
+program
+  .command("hooks")
+  .description("Install or remove arkive git hooks")
+  .option("--remove", "Remove arkive git hooks")
+  .option("--dir <path>", "Project directory", process.cwd())
+  .action((opts) => {
+    if (opts.remove) {
+      const result = uninstallGitHooks(opts.dir);
+      if (result.removed.length > 0) {
+        process.stdout.write(`Removed arkive hooks: ${result.removed.join(", ")}\n`);
+      } else {
+        process.stdout.write("No arkive hooks found.\n");
+      }
+    } else {
+      const result = installGitHooks(opts.dir);
+      if (result.installed.length > 0) {
+        process.stdout.write(`Installed hooks: ${result.installed.join(", ")}\n`);
+      }
+      if (result.skipped.length > 0) {
+        process.stdout.write(`Already installed: ${result.skipped.join(", ")}\n`);
+      }
+      if (result.error) {
+        process.stderr.write(`Warning: ${result.error}\n`);
+      }
     }
   });
 
