@@ -100,4 +100,57 @@ describe("drift detection", () => {
     expect(result.summary.total).toBeGreaterThan(0);
     expect(result.summary.bySeverity.warning).toBeGreaterThan(0);
   });
+
+  describe("confidence-aware drift", () => {
+    it("flags low-confidence services as warnings", () => {
+      const arch = createEmptyArchitecture("test", "Test");
+      arch.services = [
+        {
+          id: "api",
+          name: "API",
+          type: "backend",
+          technology: "Express",
+          description: "Main API",
+          dependencies: [],
+          source: "inferred" as any,
+          confidence: 0.3 as any,
+        },
+      ];
+
+      const report = detectDrift(arch, {
+        hasPackageJson: true,
+        dependencies: [],
+        imports: [],
+      });
+
+      const lowConf = report.warnings.find((w) => w.kind === "low-confidence");
+      expect(lowConf).toBeDefined();
+      expect(lowConf!.subject).toBe("api");
+      expect(lowConf!.severity).toBe("warning");
+    });
+
+    it("does not flag high-confidence services", () => {
+      const arch = createEmptyArchitecture("test", "Test");
+      arch.services = [
+        {
+          id: "api",
+          name: "API",
+          type: "backend",
+          technology: "Express",
+          description: "Main API",
+          dependencies: [],
+          source: "human-verified" as any,
+          confidence: 1 as any,
+        },
+      ];
+
+      const report = detectDrift(arch, {
+        hasPackageJson: true,
+        dependencies: [],
+        imports: [],
+      });
+
+      expect(report.warnings.find((w) => w.kind === "low-confidence")).toBeUndefined();
+    });
+  });
 });

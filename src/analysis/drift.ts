@@ -6,7 +6,8 @@ export type DriftSeverity = "info" | "warning" | "critical";
 export type DriftKind =
   | "undeclared-import"
   | "stale-stack"
-  | "untracked-service";
+  | "untracked-service"
+  | "low-confidence";
 
 export interface DriftWarning {
   kind: DriftKind;
@@ -100,6 +101,20 @@ export function detectDrift(
     });
   }
 
+  // Flag services with low confidence for human review
+  for (const svc of architecture.services) {
+    const conf = (svc as any).confidence;
+    if (typeof conf === "number" && conf < 0.6) {
+      warnings.push({
+        kind: "low-confidence",
+        severity: "warning",
+        subject: svc.id,
+        message: `Service "${svc.name}" has low confidence (${conf}). Source: ${(svc as any).source ?? "unknown"}.`,
+        suggestion: `Verify this service exists and is correctly described. Set confidence to 1.0 and source to "human-verified" after review.`,
+      });
+    }
+  }
+
   return finalize(warnings);
 }
 
@@ -135,6 +150,7 @@ function finalize(warnings: DriftWarning[]): DriftReport {
     "undeclared-import": 0,
     "stale-stack": 0,
     "untracked-service": 0,
+    "low-confidence": 0,
   };
   for (const w of warnings) {
     bySeverity[w.severity]++;
