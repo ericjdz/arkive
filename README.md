@@ -8,10 +8,6 @@
 
 ---
 
-<video src="media/demo.mp4" controls width="100%"></video>
-
----
-
 ## Why
 
 AI coding agents (Claude Code, Cursor, Copilot, Codex, OpenCode) build entire projects from a single prompt. You ship fast — but you can't explain why your project uses Postgres over Mongo, microservices over a monolith, or REST over GraphQL. The agent decided. You accepted. Across sessions, the agent has no memory of what was built and re-derives (or hallucinates) the architecture every time.
