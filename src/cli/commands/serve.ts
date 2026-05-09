@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer, type Server } from "node:http";
@@ -101,7 +101,14 @@ export function createViewerServer(dir: string): { app: express.Express; server:
   app.get("/api/architecture", (_req, res) => {
     const result = readArchitecture(dir);
     if (!result.success) {
-      res.status(500).json({ error: result.error });
+      // Fallback: return raw JSON so the viewer still renders even if schema is slightly off
+      const archPath = architecturePath(dir);
+      try {
+        const raw = JSON.parse(readFileSync(archPath, "utf-8"));
+        res.json(raw);
+      } catch {
+        res.status(500).json({ error: result.error });
+      }
       return;
     }
     res.json(result.data);
@@ -120,8 +127,17 @@ export function createViewerServer(dir: string): { app: express.Express; server:
     });
   }
 
-  const server = createServer(app);
-  return { app, server };
+  const httpServer = createServer(app);
+
+  app.post("/api/shutdown", (_req, res) => {
+    res.json({ message: "Shutting down..." });
+    setTimeout(() => {
+      httpServer.close(() => process.exit(0));
+      setTimeout(() => process.exit(0), 2000);
+    }, 100);
+  });
+
+  return { app, server: httpServer };
 }
 
 export async function serveProject(options: ServeOptions): Promise<void> {
@@ -142,7 +158,17 @@ export async function serveProject(options: ServeOptions): Promise<void> {
 
   const { server } = createViewerServer(options.dir);
   server.listen(port, () => {
-    process.stderr.write(`Viewer running at http://localhost:${port}\n`);
+    const url = `http://localhost:${port}`;
+    process.stderr.write(`Viewer running at ${url}\n`);
+    if (options.open !== false) {
+      const openCmd =
+        process.platform === "win32"
+          ? `start "" "${url}"`
+          : process.platform === "darwin"
+            ? `open "${url}"`
+            : `xdg-open "${url}"`;
+      import("node:child_process").then(({ exec }) => exec(openCmd));
+    }
   });
 
   await startStdioServer({ dir: options.dir });

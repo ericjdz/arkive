@@ -119,6 +119,31 @@ export function App() {
         <div style={{ marginLeft: "auto", width: 280 }}>
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
         </div>
+        <button
+          onClick={() => {
+            if (window.confirm("Shut down the arkive viewer?")) {
+              fetch("/api/shutdown", { method: "POST" })
+                .then(() => {
+                  document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#888;font-family:system-ui">Viewer stopped. Close this tab.</div>';
+                })
+                .catch(() => {});
+            }
+          }}
+          title="Stop viewer"
+          style={{
+            background: "none",
+            border: "1px solid var(--color-border)",
+            borderRadius: "var(--radius)",
+            color: "var(--color-text-muted)",
+            cursor: "pointer",
+            padding: "0.25rem 0.5rem",
+            fontSize: "0.8rem",
+            flexShrink: 0,
+            marginLeft: "0.5rem",
+          }}
+        >
+          Stop
+        </button>
       </header>
 
       {/* View content */}
