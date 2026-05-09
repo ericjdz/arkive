@@ -91,9 +91,8 @@ describe("injectArkiveBlock", () => {
     });
 
     expect(rendered).toContain("On EVERY session start");
-    expect(rendered).toContain("Before ANY major change");
-    expect(rendered).toContain("After ANY major change");
-    expect(rendered).toContain("Before claiming completion");
+    expect(rendered).toContain("After EVERY major change");
+    expect(rendered).toContain("Before claiming ANY task is complete");
     expect(rendered).toContain("arkive:start");
     expect(rendered).toContain("arkive:end");
   });

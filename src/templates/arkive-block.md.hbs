@@ -1,14 +1,32 @@
 <!-- arkive:start -->
-## arkive — Architecture Tracking (MANDATORY)
+## arkive — Architecture Tracking (MANDATORY — DO NOT SKIP)
 
-**On EVERY session start:** Read `{{architectureFile}}` FIRST. It is your cross-session memory.
-**Before ANY major change:** Re-read `{{architectureFile}}` to align your work.
-**After ANY major change:** Update `{{architectureFile}}` via MCP tools or direct edit. Append a history entry.
-**Before claiming completion:** Verify `{{architectureFile}}` reflects all changes made this session.
+**On EVERY session start:** Read `{{architectureFile}}` FIRST. It is your cross-session memory. Do not proceed until you have read it.
 
-Major changes: adding/removing services, changing protocols, new frameworks, infrastructure changes, module boundary refactors.
+**After EVERY major change:** Update `{{architectureFile}}` IMMEDIATELY — not at the end, not later, NOW. Use MCP tools or direct edit. Append a history entry.
 
-**MCP tools:** `update_architecture`, `record_decision`, `check_drift`
+**Before claiming ANY task is complete:** Verify `{{architectureFile}}` reflects ALL changes made this session. If it doesn't, you are not done.
+
+### What counts as a major change (update architecture for ALL of these):
+- Adding or removing a service, component, or module
+- Installing a new framework, library, or significant dependency
+- Changing communication protocols or API boundaries
+- Modifying infrastructure or deployment configuration
+- Refactoring module boundaries or file structure
+- Making any architectural decision (record with `record_decision`)
+
+### How to update:
+1. **MCP tools (preferred):** `update_architecture` to add/modify services, connections, stack. `record_decision` for decisions.
+2. **Direct edit:** Edit `{{architectureFile}}` following the schema. Always update `project.lastUpdated` and append to `history`.
+3. **Verify:** `npx @ericjdz/arkive reconcile` to detect drift.
+
+### Enforcement:
+- If you create a new file or directory that represents a service/component → update architecture
+- If you run `npm install <package>` → update `stack` in architecture
+- If you chose between two approaches → record the decision with `record_decision`
+- If you skip updating → the next session will have no memory of your changes
+
+**MCP tools:** `update_architecture`, `record_decision`, `check_drift`, `list_prompts`, `claim_next_prompt`, `ack_prompt`
 **CLI:** `npx @ericjdz/arkive status` · `npx @ericjdz/arkive reconcile`
 **Docs:** https://github.com/ericjdz/arkive
 <!-- arkive:end -->

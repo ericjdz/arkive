@@ -20,30 +20,30 @@ program
 
 program
   .command("init")
-  .description("Initialize architecture tracking in a project")
+  .description("Initialize architecture tracking in a project (auto-detects platform, registers MCP, installs skills)")
   .option("-n, --name <name>", "Project name (defaults to directory name)")
   .option("-d, --dir <path>", "Target directory (defaults to current directory)", ".")
   .option("--description <text>", "Project description")
   .option("--standalone", "Generate full AGENTS.md/CLAUDE.md files instead of injecting a block")
-  .option("--mcp <platform>", `Also register MCP server for: ${Object.keys(PLATFORMS).join(", ")}`)
+  .option("--platform <platform>", `AI platform (auto-detected if omitted): ${Object.keys(PLATFORMS).join(", ")}`)
+  .option("--skip-mcp", "Skip MCP server registration")
+  .option("--skip-skills", "Skip skill installation")
   .action((options) => {
     const dir = resolve(options.dir);
+    if (options.platform && !PLATFORMS[options.platform as PlatformName]) {
+      console.error(`Unknown platform: ${options.platform}`);
+      console.error(`Supported: ${Object.keys(PLATFORMS).join(", ")}`);
+      process.exit(1);
+    }
     initProject({
       name: options.name,
       dir,
       description: options.description,
       standalone: options.standalone ?? false,
+      platform: options.platform,
+      skipMcp: options.skipMcp ?? false,
+      skipSkills: options.skipSkills ?? false,
     });
-    if (options.mcp) {
-      if (!PLATFORMS[options.mcp as PlatformName]) {
-        console.error(`Unknown platform: ${options.mcp}`);
-        console.error(`Supported: ${Object.keys(PLATFORMS).join(", ")}`);
-        process.exit(1);
-      }
-      const configPath = installMcp({ platform: options.mcp, projectDir: dir });
-      console.log(`arkive MCP server registered in ${configPath}`);
-      console.log("Restart your AI agent to pick up the new MCP server.");
-    }
   });
 
 program

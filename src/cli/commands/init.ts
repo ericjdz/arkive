@@ -4,12 +4,56 @@ import { createEmptyArchitecture } from "../../schema/validate.js";
 import { renderTemplate } from "../../templates/render.js";
 import { injectArkiveBlock } from "./inject.js";
 import { ARKIVE_DIR, ARCHITECTURE_FILENAME } from "../../io/architecture-file.js";
+import { installMcp, PLATFORMS } from "./install.js";
+import { installSkills } from "./install-skill.js";
+import type { PlatformName } from "./install.js";
 
 export interface InitOptions {
   name?: string;
   dir: string;
   description?: string;
   standalone?: boolean;
+  platform?: string;
+  skipMcp?: boolean;
+  skipSkills?: boolean;
+}
+
+/**
+ * Auto-detect which AI platform is running by checking for platform-specific
+ * config files or environment variables in the project directory.
+ */
+export function detectPlatform(projectDir: string): PlatformName | null {
+  // Check for existing platform config files (most specific first)
+  if (existsSync(join(projectDir, "opencode.json")) || existsSync(join(projectDir, ".opencode"))) {
+    return "opencode";
+  }
+  if (existsSync(join(projectDir, ".mcp.json")) || existsSync(join(projectDir, ".claude"))) {
+    return "claude-code";
+  }
+  if (existsSync(join(projectDir, ".cursor"))) {
+    return "cursor";
+  }
+  if (existsSync(join(projectDir, ".vscode"))) {
+    return "vscode";
+  }
+
+  // Check environment variables that indicate the running platform
+  if (process.env.OPENCODE_SESSION || process.env.OPENCODE) {
+    return "opencode";
+  }
+  if (process.env.CLAUDE_CODE || process.env.ANTHROPIC_API_KEY) {
+    return "claude-code";
+  }
+  if (process.env.CURSOR_SESSION) {
+    return "cursor";
+  }
+
+  // Check for AGENTS.md (suggests Codex/OpenCode/Copilot)
+  if (existsSync(join(projectDir, "AGENTS.md"))) {
+    return "opencode";
+  }
+
+  return null;
 }
 
 export function initProject(options: InitOptions): void {
@@ -80,6 +124,38 @@ export function initProject(options: InitOptions): void {
     console.log("Cursor rule already exists, skipping");
   }
 
+  // Auto-detect or use provided platform
+  const platform = options.platform || detectPlatform(projectDir);
+
+  // Auto-register MCP server
+  if (!options.skipMcp && platform && PLATFORMS[platform as PlatformName]) {
+    try {
+      const configPath = installMcp({ platform, projectDir });
+      console.log(`MCP server registered for ${platform} in ${configPath}`);
+    } catch (err) {
+      console.error(`Warning: Could not register MCP for ${platform}: ${(err as Error).message}`);
+    }
+  }
+
+  // Auto-install skills
+  if (!options.skipSkills && platform) {
+    try {
+      const result = installSkills({
+        platform,
+        targetDir: projectDir,
+        global: false,
+      });
+      console.log(`Installed ${result.skillsCopied} arkive skills (${result.method}) to ${result.skillDir}`);
+    } catch (err) {
+      console.error(`Warning: Could not install skills: ${(err as Error).message}`);
+    }
+  }
+
   console.log(`\nDone! Architecture tracking initialized for "${projectName}".`);
+  if (platform) {
+    console.log(`Platform detected: ${platform}. MCP and skills configured.`);
+  } else {
+    console.log("No platform detected. Run `arkive install <platform>` and `arkive install-skill <platform>` manually.");
+  }
   console.log("Your AI agent will now maintain arkive/architecture.json as it builds.");
 }

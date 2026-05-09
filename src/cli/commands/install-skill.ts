@@ -6,7 +6,18 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const SKILL_NAMES = ["arkive-init", "arkive-import", "arkive-view", "architecture-tracker"];
+const SKILL_NAMES = [
+  // Core skills
+  "architecture-tracker",
+  "arkive-init",
+  "arkive-import",
+  "arkive-view",
+  // Learning skills
+  "learning-mode",
+  "explain-decisions",
+  // Maintenance skills
+  "reconciliation",
+];
 
 type SkillPlatform = "claude-code" | "opencode" | "cursor" | "vscode" | "windsurf" | "cline" | "claude-desktop";
 
@@ -40,8 +51,8 @@ export function resolveSkillDir(platform: string, projectDir: string, global: bo
   }
 }
 
-function getSkillSourceDir(): string {
-  const candidates = [resolve(__dirname, "../../../skills/core"), resolve(__dirname, "../../skills/core")];
+function getSkillsRootDir(): string {
+  const candidates = [resolve(__dirname, "../../../skills"), resolve(__dirname, "../../skills")];
 
   for (const candidate of candidates) {
     if (existsSync(candidate)) {
@@ -52,23 +63,42 @@ function getSkillSourceDir(): string {
   throw new Error("Could not find arkive skills directory. Is the package installed correctly?");
 }
 
-function readSkillContent(skillName: string): string {
-  const skillPath = join(getSkillSourceDir(), skillName, "SKILL.md");
+/** Search all subdirectories (core/, learning/, maintenance/) for a skill by name. */
+function findSkillDir(skillName: string): string | null {
+  const root = getSkillsRootDir();
+  const subdirs = ["core", "learning", "maintenance"];
 
+  for (const sub of subdirs) {
+    const candidate = join(root, sub, skillName);
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function readSkillContent(skillName: string): string {
+  const skillDir = findSkillDir(skillName);
+
+  if (!skillDir) {
+    throw new Error(`Skill not found: ${skillName}`);
+  }
+
+  const skillPath = join(skillDir, "SKILL.md");
   if (!existsSync(skillPath)) {
-    throw new Error(`Skill not found: ${skillPath}`);
+    throw new Error(`SKILL.md not found in: ${skillDir}`);
   }
 
   return readFileSync(skillPath, "utf-8");
 }
 
 function copySkills(targetDir: string): number {
-  const sourceDir = getSkillSourceDir();
   let count = 0;
 
   for (const skillName of SKILL_NAMES) {
-    const srcPath = join(sourceDir, skillName);
-    if (!existsSync(srcPath)) {
+    const srcPath = findSkillDir(skillName);
+    if (!srcPath) {
       continue;
     }
 
@@ -86,7 +116,10 @@ function injectAsRules(targetDir: string): number {
 
   for (const skillName of SKILL_NAMES) {
     try {
-      writeFileSync(join(rulesDir, `${skillName}.mdc`), readSkillContent(skillName), "utf-8");
+      const dest = join(rulesDir, `${skillName}.mdc`);
+      if (!existsSync(dest)) {
+        writeFileSync(dest, readSkillContent(skillName), "utf-8");
+      }
       count += 1;
     } catch {
       // Ignore missing optional skills.

@@ -74,9 +74,11 @@ Prompts are stored in `arkive/prompt-queue.json` and survive session resets.
 
 | Command | Action |
 |---|---|
-| `npx @ericjdz/arkive init` | Scaffold `arkive/architecture.json` and inject tracking block into instruction files |
+| `npx @ericjdz/arkive init` | Scaffold `arkive/architecture.json`, inject tracking blocks, auto-detect platform, register MCP, install skills |
+| `npx @ericjdz/arkive init --platform <p>` | Same as above, but explicitly specify the platform instead of auto-detecting |
 | `npx @ericjdz/arkive init --standalone` | Generate full `AGENTS.md`/`CLAUDE.md` files (for platforms without MCP) |
 | `npx @ericjdz/arkive install <platform>` | Register MCP server in your AI platform config |
+| `npx @ericjdz/arkive install-skill <platform>` | Install arkive skills for your AI platform (7 skills: architecture tracking, init, import, view, learning, decisions, reconciliation) |
 | `npx @ericjdz/arkive serve` | Start the MCP server and open the web viewer |
 | `npx @ericjdz/arkive serve --stdio` | Run the MCP server in stdio mode (for direct agent integration) |
 | `npx @ericjdz/arkive status` | Show architecture health (last updated, drift warnings, coverage) |
@@ -93,6 +95,9 @@ Run `npx @ericjdz/arkive <command> --help` for command-specific options.
 - `--name <name>` — project name (defaults to directory name)
 - `--dir <path>` — target directory (defaults to current directory)
 - `--description <text>` — project description
+- `--platform <platform>` — AI platform (auto-detected if omitted): claude-desktop, claude-code, cursor, opencode, vscode, windsurf, cline
+- `--skip-mcp` — skip MCP server registration
+- `--skip-skills` — skip skill installation
 
 `serve` accepts:
 
@@ -132,19 +137,52 @@ Validated by Zod. See `src/schema/architecture.ts` for the full schema.
 
 > **This section is written for AI coding agents.** If you are an agent reading this README, follow the steps below to install arkive and register its MCP server in your platform. All commands are idempotent and safe to re-run.
 
-### Step 1: Initialize arkive in the project
+### Step 1: Ask which platform the user uses
+
+Before running init, ask the user which AI platform they use: `opencode`, `claude-code`, `cursor`, `vscode`, `windsurf`, `cline`, or `claude-desktop`. This determines how MCP and skills are configured.
+
+### Step 2: Initialize arkive (does everything)
 
 ```bash
-npx -y @ericjdz/arkive init
+npx -y @ericjdz/arkive init --platform <platform>
 ```
 
-This creates `arkive/architecture.json`, `arkive/history/`, `AGENTS.md`, `CLAUDE.md`, and `.cursor/rules/architecture-tracker.mdc`. If these files already exist, they are not overwritten.
+This single command:
+- Creates `arkive/architecture.json` and `arkive/history/`
+- Injects tracking blocks into `AGENTS.md` and `CLAUDE.md` (created if missing)
+- Creates `.cursor/rules/architecture-tracker.mdc`
+- **Registers the MCP server** in the platform's config file
+- **Installs 7 arkive skills** (architecture-tracker, arkive-init, arkive-import, arkive-view, learning-mode, explain-decisions, reconciliation)
 
-### Step 2: Register the MCP server
+If files already exist, they are not overwritten. If `--platform` is omitted, arkive auto-detects by checking for `opencode.json`, `.mcp.json`, `.cursor/`, `.vscode/`, or environment variables.
 
-arkive exposes eight MCP tools and seven resources via stdio: `update_architecture`, `record_decision`, `check_drift`, `scaffold_project`, `open_viewer`, `list_prompts`, `claim_next_prompt`, `ack_prompt`. To use them natively, register arkive as an MCP server in your platform's config.
+### Step 3: Verify
 
-Pick your platform and add the config block to the corresponding file.
+After initializing, verify the setup:
+
+```bash
+# CLI health check
+npx @ericjdz/arkive status
+
+# Verify MCP server starts
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | npx -y @ericjdz/arkive serve --stdio
+```
+
+The MCP response should list eight tools: `update_architecture`, `record_decision`, `check_drift`, `scaffold_project`, `open_viewer`, `list_prompts`, `claim_next_prompt`, `ack_prompt`.
+
+### Step 4: Start maintaining the architecture
+
+After init, **immediately scan the codebase** and populate `arkive/architecture.json`:
+
+1. Read `package.json`, folder structure, and imports
+2. Use the `update_architecture` MCP tool (or edit `arkive/architecture.json` directly) to populate `stack`, `services`, and `connections`
+3. Record any existing architectural decisions via `record_decision`
+
+**From this point forward**, update `arkive/architecture.json` after every major change (adding/removing services, changing protocols, new frameworks, infrastructure changes).
+
+### Manual MCP Registration (if auto-detection fails)
+
+If `init --platform` didn't register MCP correctly, you can register manually:
 
 #### Claude Desktop
 
