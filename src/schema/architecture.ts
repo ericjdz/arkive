@@ -15,6 +15,14 @@ export const ServiceTypeSchema = z.enum([
   "other",
 ]);
 
+export const SourceSchema = z.enum([
+  "agent-scanned",
+  "human-verified",
+  "inferred",
+]);
+
+export const ConfidenceSchema = z.number().min(0).max(1);
+
 export const ServiceSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -23,6 +31,8 @@ export const ServiceSchema = z.object({
   description: z.string(),
   ports: z.array(z.string()).optional(),
   dependencies: z.array(z.string()).default([]),
+  source: SourceSchema.optional(),
+  confidence: ConfidenceSchema.optional(),
 });
 
 export const ConnectionSchema = z.object({
@@ -30,6 +40,8 @@ export const ConnectionSchema = z.object({
   to: z.string().min(1),
   protocol: z.string().min(1),
   description: z.string(),
+  source: SourceSchema.optional(),
+  confidence: ConfidenceSchema.optional(),
 });
 
 export const AlternativeSchema = z.object({
@@ -45,6 +57,8 @@ export const DecisionSchema = z.object({
   alternatives: z.array(AlternativeSchema).min(1),
   timestamp: z.string().datetime(),
   relatedServices: z.array(z.string()).default([]),
+  source: SourceSchema.optional(),
+  confidence: ConfidenceSchema.optional(),
 });
 
 export const DataFlowStepSchema = z.object({
