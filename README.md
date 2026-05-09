@@ -85,6 +85,8 @@ Prompts are stored in `arkive/prompt-queue.json` and survive session resets.
 | `npx @ericjdz/arkive reconcile` | Run static analysis to detect drift and suggest fixes |
 | `npx @ericjdz/arkive export <format>` | Export as `markdown`, `mermaid`, `png`, or `svg` |
 | `npx @ericjdz/arkive learn` | Open the web viewer in Learning Mode |
+| `npx @ericjdz/arkive hooks install` | Install post-commit git hook for auto-reconcile |
+| `npx @ericjdz/arkive hooks uninstall` | Remove the auto-reconcile git hook |
 
 Run `npx @ericjdz/arkive <command> --help` for command-specific options.
 
@@ -363,6 +365,7 @@ If MCP registration is not possible in your environment, arkive still works:
 | `architecture://history` | Chronological change log. |
 | `architecture://hooks` | Lifecycle rules for maintaining the architecture document. |
 | `architecture://prompts` | Queued architecture prompts with summary counts. |
+| `architecture://session-context` | Token-efficient session summary with stack, top services, recent decisions, and drift warnings. |
 
 ---
 

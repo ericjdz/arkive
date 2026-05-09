@@ -80,9 +80,18 @@ These hooks govern your behavior for the ENTIRE session, not just during explici
   "type": "frontend|backend|database|cache|queue|gateway|cdn|storage|auth|search|monitoring|other",
   "technology": "Specific tech (e.g., 'Next.js', 'PostgreSQL')",
   "description": "What this service does in one sentence",
-  "dependencies": ["ids-of-services-this-depends-on"]
+  "dependencies": ["ids-of-services-this-depends-on"],
+  "source": "agent-scanned|human-verified|inferred",
+  "confidence": 0.0-1.0
 }
 ```
+
+**Confidence & provenance guidelines:**
+- When creating services by scanning the codebase: `"source": "agent-scanned"`, `"confidence": 0.8`
+- When the user explicitly describes the architecture: `"source": "human-verified"`, `"confidence": 1.0`
+- When inferring connections from import analysis: `"source": "inferred"`, `"confidence": 0.5`
+- Both fields are optional. Omit them if unsure — they default to unset.
+- Low-confidence entries (< 0.6) are flagged during `reconcile`.
 
 ### Connection
 ```json
@@ -90,7 +99,9 @@ These hooks govern your behavior for the ENTIRE session, not just during explici
   "from": "service-id-that-initiates",
   "to": "service-id-that-receives",
   "protocol": "HTTP/REST|GraphQL|WebSocket|gRPC|TCP/SQL|AMQP|etc",
-  "description": "What data flows through this connection"
+  "description": "What data flows through this connection",
+  "source": "agent-scanned|human-verified|inferred",
+  "confidence": 0.0-1.0
 }
 ```
 
@@ -105,7 +116,9 @@ These hooks govern your behavior for the ENTIRE session, not just during explici
     { "name": "Alternative A", "whyNot": "Why this was rejected" }
   ],
   "timestamp": "ISO 8601",
-  "relatedServices": ["service-ids-affected"]
+  "relatedServices": ["service-ids-affected"],
+  "source": "agent-scanned|human-verified|inferred",
+  "confidence": 0.0-1.0
 }
 ```
 
