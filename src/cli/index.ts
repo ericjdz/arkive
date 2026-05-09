@@ -7,6 +7,7 @@ import { createLearnCommand } from "./commands/learn.js";
 import { reconcileCommand } from "./commands/reconcile.js";
 import { serveProject } from "./commands/serve.js";
 import { statusCommand } from "./commands/status.js";
+import { stopViewer } from "./commands/stop.js";
 import { PLATFORMS, installMcp } from "./commands/install.js";
 import { installSkills } from "./commands/install-skill.js";
 import { installGitHooks, uninstallGitHooks } from "./commands/hooks.js";
@@ -53,9 +54,10 @@ program
   .option("-d, --dir <path>", "Project directory containing arkive/architecture.json", ".")
   .option("-p, --port <port>", "HTTP port for the web viewer", "4567")
   .option("--stdio", "Run MCP server over stdio only (no HTTP viewer)")
+  .option("--no-open", "Do not auto-open the browser")
   .action(async (options) => {
     const dir = resolve(options.dir);
-    await serveProject({ dir, port: parseInt(options.port, 10), stdio: options.stdio ?? false });
+    await serveProject({ dir, port: parseInt(options.port, 10), stdio: options.stdio ?? false, open: options.open ?? true });
   });
 
 program
@@ -155,6 +157,14 @@ program
         process.stderr.write(`Warning: ${result.error}\n`);
       }
     }
+  });
+
+program
+  .command("stop")
+  .description("Stop the running arkive viewer")
+  .option("--port <port>", "Port to stop (default: 4567)", "4567")
+  .action((opts) => {
+    stopViewer({ port: parseInt(opts.port, 10) });
   });
 
 program.addCommand(createLearnCommand());

@@ -19,18 +19,20 @@ Check that `arkive/architecture.json` exists in the arkive/ directory. If not, i
 ### 2. Start the viewer
 
 **If MCP `open_viewer` tool is available:**
-Call `open_viewer` with default port. It returns the URL.
+Call `open_viewer` with default port. It returns the URL and auto-opens the browser.
 
 **If MCP is not available:**
 ```bash
 npx @ericjdz/arkive serve
 ```
 
+The `serve` command auto-opens the browser by default. Use `--no-open` to suppress.
+
 ### 3. Present to user
 
 Tell the user:
 
-> "Architecture viewer is running at **http://localhost:4567**. Open this URL in your browser.
+> "Architecture viewer is running at **http://localhost:4567** and should have opened in your browser.
 >
 > Available views:
 > - **System Topology** — interactive graph of services and connections
@@ -38,9 +40,11 @@ Tell the user:
 > - **Decision Log** — all architectural decisions with rationale
 > - **Component Tree** — hierarchical service view
 > - **Stack Overview** — technology stack summary
-> - **Learning Mode** — Socratic quizzes on architectural decisions"
+> - **Learning Mode** — Socratic quizzes on architectural decisions
+>
+> To stop the viewer, click the **Stop** button in the viewer header, or run `npx @ericjdz/arkive stop`."
 
 ## MUST NOT
 
-- Do NOT open the browser programmatically without telling the user the URL first
 - Do NOT start multiple viewer instances on the same port
+- Do NOT leave the viewer running without telling the user how to stop it
