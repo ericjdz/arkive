@@ -7,4 +7,11 @@ describe("architecture resources", () => {
     expect(hooks).toBeDefined();
     expect(hooks!.name).toBe("architecture-hooks");
   });
+
+  it("includes session context resource as markdown", () => {
+    const sessionContext = ARCHITECTURE_RESOURCES.find((r) => r.uri === "architecture://session-context");
+    expect(sessionContext).toBeDefined();
+    expect(sessionContext!.name).toBe("architecture-session-context");
+    expect(sessionContext!.mimeType).toBe("text/markdown");
+  });
 });

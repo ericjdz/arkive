@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
 import { readArchitecture } from "../io/architecture-file.js";
 import { readPromptQueue } from "../io/prompt-queue.js";
+import { buildSessionContext } from "./session-context.js";
 import type { Architecture } from "../schema/types.js";
 
 export interface ArchitectureResourceDescriptor {
@@ -9,6 +10,7 @@ export interface ArchitectureResourceDescriptor {
   uri: string;
   title: string;
   description: string;
+  mimeType?: string;
 }
 
 export const ARCHITECTURE_RESOURCES: ArchitectureResourceDescriptor[] = [
@@ -50,6 +52,7 @@ export const ARCHITECTURE_RESOURCES: ArchitectureResourceDescriptor[] = [
     title: "Lifecycle Hooks",
     description:
       "Lifecycle rules for maintaining arkive/architecture.json: session_start, post_major_change, pre_completion.",
+    mimeType: "text/markdown",
   },
   {
     name: "architecture-prompts",
@@ -57,6 +60,14 @@ export const ARCHITECTURE_RESOURCES: ArchitectureResourceDescriptor[] = [
     title: "Prompt Queue",
     description:
       "User-queued prompts from the architecture viewer, scoped to specific services. Agents can read pending prompts and claim them for execution.",
+  },
+  {
+    name: "architecture-session-context",
+    uri: "architecture://session-context",
+    title: "Session Context",
+    description:
+      "Compact, token-budgeted summary of the architecture optimized for session start injection. Returns markdown, not raw JSON. Use this instead of reading the full architecture when context window is limited.",
+    mimeType: "text/markdown",
   },
 ];
 
@@ -186,6 +197,23 @@ export async function readPrompts(
   });
 }
 
+export async function readSessionContext(
+  dir: string,
+  uri: URL
+): Promise<ReadResourceResult> {
+  const arch = loadOrThrow(dir);
+  const context = buildSessionContext(arch);
+  return {
+    contents: [
+      {
+        uri: uri.href,
+        mimeType: "text/markdown",
+        text: context,
+      },
+    ],
+  };
+}
+
 const HANDLERS: Record<
   string,
   (dir: string, uri: URL) => Promise<ReadResourceResult>
@@ -197,6 +225,7 @@ const HANDLERS: Record<
   "architecture://history": readHistory,
   "architecture://hooks": readHooks,
   "architecture://prompts": readPrompts,
+  "architecture://session-context": readSessionContext,
 };
 
 export function registerResources(server: McpServer, dir: string): void {
@@ -207,7 +236,7 @@ export function registerResources(server: McpServer, dir: string): void {
       descriptor.uri,
       {
         description: descriptor.description,
-        mimeType: "application/json",
+        mimeType: descriptor.mimeType ?? "application/json",
       },
       async (uri) => handler(dir, uri)
     );
