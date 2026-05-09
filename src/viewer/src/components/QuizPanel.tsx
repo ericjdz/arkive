@@ -1,5 +1,5 @@
 /* @jsxRuntime classic */
-import * as React from "../../../../node_modules/react/index.js";
+import * as React from "react";
 import { QuestionCard } from "./QuestionCard.js";
 import type { Question } from "../../../learning/types.js";
 

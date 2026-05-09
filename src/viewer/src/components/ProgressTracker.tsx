@@ -1,4 +1,4 @@
-import { createElement } from "../../../../node_modules/react/index.js";
+import { createElement } from "react";
 import type { LearningProgress } from "../../../learning/types.js";
 
 interface ProgressTrackerProps {

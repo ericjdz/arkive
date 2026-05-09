@@ -1,5 +1,5 @@
 // src/viewer/src/hooks/usePromptQueue.ts
-import { useState, useCallback } from "../../node_modules/react/index.js";
+import { useState, useCallback } from "react";
 import {
   fetchPromptQueue,
   submitPrompt,

@@ -1,5 +1,5 @@
 /* @jsxRuntime classic */
-import React, { useState } from "../../../../node_modules/react/index.js";
+import React, { useState } from "react";
 import type {
   Question,
   MultipleChoiceQuestion,

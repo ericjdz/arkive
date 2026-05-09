@@ -1,5 +1,5 @@
 // src/viewer/src/components/PromptInput.tsx
-import { useState } from "../../node_modules/react/index.js";
+import { useState } from "react";
 
 interface PromptInputProps {
   serviceId: string;

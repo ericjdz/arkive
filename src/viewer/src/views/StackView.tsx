@@ -1,4 +1,4 @@
-import { createElement } from "../../../../node_modules/react/index.js";
+import { createElement } from "react";
 import type { Decision } from "../api/architecture.js";
 
 interface Stack {

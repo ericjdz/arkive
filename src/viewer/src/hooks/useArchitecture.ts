@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "../../../../node_modules/react/index.js";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { fetchArchitecture } from "../api/architecture.js";
 import type { Architecture, Service, Decision, DataFlow } from "../api/architecture.js";
 
