@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   ArchitectureSchema,
   ServiceSchema,
+  ServiceTypeSchema,
   ConnectionSchema,
   DecisionSchema,
   DataFlowSchema,
@@ -12,6 +13,7 @@ import {
 
 export type Architecture = z.infer<typeof ArchitectureSchema>;
 export type Service = z.infer<typeof ServiceSchema>;
+export type ServiceType = z.infer<typeof ServiceTypeSchema>;
 export type Connection = z.infer<typeof ConnectionSchema>;
 export type Decision = z.infer<typeof DecisionSchema>;
 export type DataFlow = z.infer<typeof DataFlowSchema>;

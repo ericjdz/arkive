@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
-import React from "../../src/viewer/node_modules/react/index.js";
-import { act } from "../../src/viewer/node_modules/react-dom/test-utils.js";
-import { createRoot } from "../../src/viewer/node_modules/react-dom/client.js";
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
 import { TreeView } from "../../src/viewer/src/views/TreeView.js";
+import type { Service } from "../../src/viewer/src/api/architecture.js";
 
-const SERVICES = [
+const SERVICES: Service[] = [
   { id: "web", name: "Web Client", type: "frontend", technology: "Next.js", description: "UI", dependencies: ["api"] },
   { id: "api", name: "API Server", type: "backend", technology: "Express", description: "REST API", dependencies: ["db"] },
   { id: "ws", name: "WebSocket", type: "backend", technology: "Socket.io", description: "Real-time", dependencies: ["db"] },

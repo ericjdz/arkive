@@ -4,9 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    environmentMatchGlobs: [
-      ["tests/viewer/**", "jsdom"],
-      ["tests\\viewer\\**", "jsdom"],
-    ],
+    // Per-file environments are declared with `// @vitest-environment jsdom`
+    // docblocks rather than `environmentMatchGlobs`, which vitest 4 removed.
   },
 });

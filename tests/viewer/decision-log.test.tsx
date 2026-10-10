@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
-import React from "../../src/viewer/node_modules/react/index.js";
-import { act } from "../../src/viewer/node_modules/react-dom/test-utils.js";
-import { createRoot } from "../../src/viewer/node_modules/react-dom/client.js";
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
 import { DecisionLogView } from "../../src/viewer/src/views/DecisionLogView.js";
 
 const DECISIONS = [

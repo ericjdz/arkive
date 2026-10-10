@@ -76,5 +76,5 @@ describe("E2E: init flow", () => {
     const secondContent = readFileSync(archPath, "utf-8");
     expect(secondContent).toBe(firstContent); // Not overwritten
     expect(JSON.parse(secondContent).project.name).toBe("first-run");
-  }, 15000);
+  });
 });

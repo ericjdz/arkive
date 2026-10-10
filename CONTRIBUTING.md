@@ -21,7 +21,7 @@ Requires Node.js 18+.
 - `src/templates/` — Handlebars templates rendered by `init` (Plan 1)
 - `src/server/` — MCP server (Plan 2)
 - `src/manifests/` — schema validators for distribution manifests (Plan 5)
-- `viewer/` — React + Vite web viewer (Plan 3)
+- `src/viewer/` — React + Vite web viewer (Plan 3)
 - `skills/` — `SKILL.md` files for AI agents (Plans 1, 4)
 - `.claude-plugin/` — Claude Code marketplace manifests (Plan 5)
 - `scripts/` — build, install, and prepublish scripts (Plan 5)

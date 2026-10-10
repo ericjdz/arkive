@@ -47,7 +47,7 @@ describe("HTTP viewer server", () => {
   it("serves /api/architecture with architecture data", async () => {
     const response = await fetch(`http://localhost:${port}/api/architecture`);
     expect(response.ok).toBe(true);
-    const data = await response.json();
+    const data = (await response.json()) as { project: { name: string }; services: unknown[] };
     expect(data.project.name).toBe("http-test");
     expect(data.services).toHaveLength(1);
   });

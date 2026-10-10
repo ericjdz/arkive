@@ -1,0 +1,60 @@
+name: CI
+
+# VISION.md definition-of-done #1: "npm run lint and npm test pass in CI.
+# No exceptions, no skips." The parallel feature agents building on this repo
+# cannot verify anything while the suite is red, so both gates are enforced here.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+# Cancel superseded runs on the same ref rather than queueing them.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: lint, test, build (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # package.json declares engines.node >= 18; 18 and 20 are the floor and
+        # the most common LTS versions in use.
+        node: ["18", "20"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      # src/viewer/ is a separate npm project with its own package.json and
+      # lockfile. Its deps (@xyflow/react, dagre, @vitejs/plugin-react, the React
+      # type packages) are not hoisted into the root node_modules, so both the
+      # viewer build and tests/viewer/* cannot resolve them without this step.
+      # React itself is deliberately not installed here — see src/viewer/.npmrc.
+      - name: Install viewer dependencies
+        run: npm ci --prefix src/viewer
+
+      - name: Lint
+        # Type-checks both tsconfig projects: the node/CLI project at the root
+        # and the separate DOM/JSX project under src/viewer/.
+        run: npm run lint
+
+      # `pretest` runs `npm run lint`, so tests cannot pass without a clean
+      # type-check even if this step is invoked directly.
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build

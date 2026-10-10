@@ -1,0 +1,20 @@
+# Normalize line endings to LF in the repository. Without this, Git applies the
+# platform default on checkout, so scripts/install.sh arrives with CRLF on
+# Windows and its `#!/usr/bin/env bash` shebang is followed by a stray \r.
+# That breaks the shebang and fails tests/install/install-sh.test.ts.
+* text=auto eol=lf
+
+# Shell scripts must always be LF: a CRLF shebang is not executable by bash.
+*.sh text eol=lf
+
+# Keep binary assets out of text conversion.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+
+# Lockfiles are generated and diffed line-by-line; keep them stable.
+package-lock.json text eol=lf

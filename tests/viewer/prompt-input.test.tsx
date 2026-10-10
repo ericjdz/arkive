@@ -1,9 +1,8 @@
 // tests/viewer/prompt-input.test.tsx
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
-import React from "../../src/viewer/node_modules/react/index.js";
-import { act } from "../../src/viewer/node_modules/react-dom/test-utils.js";
-import { createRoot } from "../../src/viewer/node_modules/react-dom/client.js";
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
 import { PromptInput } from "../../src/viewer/src/components/PromptInput.js";
 
 describe("PromptInput", () => {

@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { PACKAGE_VERSION } from "../version.js";
 import { registerResources } from "./resources.js";
 import { registerTools } from "./tools.js";
 
@@ -12,7 +13,7 @@ export interface CreateServerOptions {
 export function createServer(options: CreateServerOptions): McpServer {
   const server = new McpServer({
     name: options.name ?? "arkive",
-    version: options.version ?? "0.1.0",
+    version: options.version ?? PACKAGE_VERSION,
   });
   registerResources(server, options.dir);
   registerTools(server, options.dir);

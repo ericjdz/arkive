@@ -142,9 +142,9 @@ describe("Prompt queue I/O", () => {
     const claim = claimNextPrompt(tempDir, "claude-opus");
     expect(claim.success).toBe(true);
     if (claim.success) {
-      expect(claim.data.prompt).toBe("First prompt");
-      expect(claim.data.status).toBe("claimed");
-      expect(claim.data.agent).toBe("claude-opus");
+      expect(claim.data?.prompt).toBe("First prompt");
+      expect(claim.data?.status).toBe("claimed");
+      expect(claim.data?.agent).toBe("claude-opus");
     }
 
     const queue = readPromptQueue(tempDir);

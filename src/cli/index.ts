@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { resolve } from "node:path";
+import { PACKAGE_VERSION } from "../version.js";
 import { initProject } from "./commands/init.js";
 import { exportArchitecture } from "./commands/export.js";
 import { createLearnCommand } from "./commands/learn.js";
@@ -18,7 +19,7 @@ const program = new Command();
 program
   .name("arkive")
   .description("Architecture learning tool for AI-assisted development")
-  .version("0.1.6");
+  .version(PACKAGE_VERSION);
 
 program
   .command("init")

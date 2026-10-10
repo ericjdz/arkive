@@ -303,8 +303,10 @@ export async function handleCheckDrift(dir: string): Promise<CallToolResult> {
   return jsonResult(report);
 }
 
+// Input type (not `z.infer`, which is the parsed output type): this handler is
+// called with raw, unvalidated MCP arguments and applies its own defaults below.
 export async function handleScaffoldProject(
-  input: z.infer<typeof ScaffoldProjectInputSchema>
+  input: z.input<typeof ScaffoldProjectInputSchema>
 ): Promise<CallToolResult> {
   try {
     const { initProject } = await import("../cli/commands/init.js");
@@ -353,7 +355,7 @@ export async function handleScaffoldProject(
 
 export async function handleOpenViewer(
   dir: string,
-  input: z.infer<typeof OpenViewerInputSchema>
+  input: z.input<typeof OpenViewerInputSchema>
 ): Promise<CallToolResult> {
   const { existsSync } = await import("node:fs");
 
@@ -466,7 +468,7 @@ export function registerTools(server: McpServer, dir: string): void {
     ARCHITECTURE_TOOLS[3].description,
     ScaffoldProjectInputSchema.shape,
     async (args) => {
-      const result = await handleScaffoldProject(args as unknown as z.infer<typeof ScaffoldProjectInputSchema>);
+      const result = await handleScaffoldProject(args as unknown as z.input<typeof ScaffoldProjectInputSchema>);
       return result;
     }
   );
@@ -476,7 +478,7 @@ export function registerTools(server: McpServer, dir: string): void {
     ARCHITECTURE_TOOLS[4].description,
     OpenViewerInputSchema.shape,
     async (args) => {
-      const result = await handleOpenViewer(dir, args as unknown as z.infer<typeof OpenViewerInputSchema>);
+      const result = await handleOpenViewer(dir, args as unknown as z.input<typeof OpenViewerInputSchema>);
       return result;
     }
   );

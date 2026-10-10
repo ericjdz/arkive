@@ -7,12 +7,12 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "//": "react/react-dom are intentionally NOT installed here. The viewer is nested in src/viewer/, so installing its own copy produced a second React in the module graph, which breaks hooks at runtime. src/viewer/vite.config.ts already aliases every react import to the root node_modules copy; omitting them here makes Node's normal upward resolution do the same thing for tests and for `tsc`. See architecture decision dec-003.",
   "dependencies": {
+    "@ericjdz/arkive": "file:../..",
     "@xyflow/react": "^12.0.0",
     "d3": "^7.9.0",
-    "dagre": "^0.8.5",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "dagre": "^0.8.5"
   },
   "devDependencies": {
     "@types/d3": "^7.4.0",

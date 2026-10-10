@@ -5,6 +5,19 @@
     "moduleResolution": "bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
+    "typeRoots": ["node_modules/@types", "../../node_modules/@types"],
+    // React is installed once at the repo root (see src/viewer/package.json), but
+    // its type declarations are a devDependency of the viewer package. Without
+    // these mappings TypeScript resolves `react` to the root install, finds no
+    // co-located types, and cannot fall back to the viewer's @types because the
+    // resolution respects package.json "exports". Point them at the real types.
+    "paths": {
+      "react": ["./node_modules/@types/react"],
+      "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
+      "react/jsx-dev-runtime": ["./node_modules/@types/react/jsx-dev-runtime"],
+      "react-dom": ["./node_modules/@types/react-dom"],
+      "react-dom/client": ["./node_modules/@types/react-dom/client"]
+    },
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -13,5 +26,5 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["src"]
+  "include": ["src", "../../tests/viewer"]
 }

@@ -44,7 +44,7 @@ describe("HTTP prompt queue endpoints", () => {
   it("GET /api/prompts returns empty queue initially", async () => {
     const res = await fetch(`${baseUrl}/api/prompts`);
     expect(res.ok).toBe(true);
-    const data = await res.json();
+    const data = (await res.json()) as { prompts: unknown[] };
     expect(data.prompts).toEqual([]);
   });
 
@@ -58,12 +58,12 @@ describe("HTTP prompt queue endpoints", () => {
       }),
     });
     expect(res.ok).toBe(true);
-    const data = await res.json();
+    const data = (await res.json()) as { id: string; status: string };
     expect(data.id).toMatch(/^p-\d{3}$/);
     expect(data.status).toBe("pending");
 
     const list = await fetch(`${baseUrl}/api/prompts`);
-    const listData = await list.json();
+    const listData = (await list.json()) as { prompts: unknown[] };
     expect(listData.prompts).toHaveLength(1);
   });
 
@@ -82,13 +82,13 @@ describe("HTTP prompt queue endpoints", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ targetServices: ["web"], prompt: "Test" }),
     });
-    const { id } = await addRes.json();
+    const { id } = (await addRes.json()) as { id: string };
 
     const delRes = await fetch(`${baseUrl}/api/prompts/${id}`, { method: "DELETE" });
     expect(delRes.ok).toBe(true);
 
     const list = await fetch(`${baseUrl}/api/prompts`);
-    const listData = await list.json();
+    const listData = (await list.json()) as { prompts: unknown[] };
     expect(listData.prompts).toHaveLength(0);
   });
 

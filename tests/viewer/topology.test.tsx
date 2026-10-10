@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
-import React from "../../src/viewer/node_modules/react/index.js";
-import { act } from "../../src/viewer/node_modules/react-dom/test-utils.js";
-import { createRoot } from "../../src/viewer/node_modules/react-dom/client.js";
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
 import { TopologyView } from "../../src/viewer/src/views/TopologyView.js";
+import type { Connection, Decision, Service } from "../../src/viewer/src/api/architecture.js";
 
 // React Flow requires ResizeObserver
 class ResizeObserverMock {
@@ -13,7 +13,11 @@ class ResizeObserverMock {
 }
 vi.stubGlobal("ResizeObserver", ResizeObserverMock);
 
-const MOCK_DATA = {
+const MOCK_DATA: {
+  services: Service[];
+  connections: Connection[];
+  decisions: Decision[];
+} = {
   services: [
     { id: "web", name: "Web Client", type: "frontend", technology: "Next.js", description: "UI", dependencies: ["api"] },
     { id: "api", name: "API Server", type: "backend", technology: "Express", description: "REST API", dependencies: [] },

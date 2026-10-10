@@ -1,4 +1,8 @@
-import { defineConfig, type Plugin } from "tsup";
+import { defineConfig, type Options } from "tsup";
+
+// tsup declares `Plugin` internally but does not export it. Derive the same
+// type from the public `plugins` option so this stays in step with tsup itself.
+type Plugin = NonNullable<Options["plugins"]>[number];
 
 const emitDeclarations: Plugin = {
   name: "emit-declarations",

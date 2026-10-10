@@ -4,6 +4,14 @@ import { existsSync } from "node:fs";
 import { createViewerServer } from "./serve.js";
 import { architecturePath } from "../../io/architecture-file.js";
 
+// `open` is an optional convenience and is deliberately NOT a declared dependency
+// of this package, so it can only ever be resolved at runtime. The `.catch()`
+// below is the supported degradation path: when `open` is not installed we fall
+// back to printing the URL. The specifier is held in a variable so that
+// TypeScript treats this as a runtime-only resolution instead of a compile-time
+// module reference (which would be a hard build error for an optional module).
+const OPEN_MODULE = "open";
+
 export function createLearnCommand(): Command {
   const cmd = new Command("learn")
     .description("Open the web viewer in Learning Mode")
@@ -27,7 +35,7 @@ export function createLearnCommand(): Command {
         const url = `http://localhost:${port}?mode=learning`;
         process.stderr.write(`Learning Mode at ${url}\n`);
 
-        import("open")
+        import(OPEN_MODULE)
           .then((mod) => mod.default(url))
           .catch(() => {
             process.stderr.write(`Open ${url} in your browser.\n`);

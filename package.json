@@ -60,9 +60,12 @@
     "build": "node scripts/build.mjs",
     "build:cli": "tsup",
     "build:viewer": "vite build --config src/viewer/vite.config.ts",
+    "pretest": "npm run lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "tsc --noEmit",
+    "lint": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p src/viewer/tsconfig.json",
+    "lint:types": "tsc --noEmit -p tsconfig.json",
+    "lint:viewer": "tsc --noEmit -p src/viewer/tsconfig.json",
     "prepublishOnly": "npm run build && npx tsx scripts/prepublish.ts"
   },
   "dependencies": {
@@ -79,6 +82,7 @@
     "@types/node": "^25.6.0",
     "jsdom": "^29.1.1",
     "tsup": "^8.5.1",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"
   },

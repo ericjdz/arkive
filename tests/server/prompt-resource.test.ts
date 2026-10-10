@@ -25,7 +25,9 @@ describe("architecture://prompts resource", () => {
     const uri = new URL("architecture://prompts");
     const result = await readPrompts(tempDir, uri);
     expect(result.contents).toHaveLength(1);
-    const body = JSON.parse(result.contents[0].text as string);
+    const first = result.contents[0];
+    expect("text" in first).toBe(true);
+    const body = JSON.parse((first as { text: string }).text);
     expect(body.prompts).toEqual([]);
     expect(body.pending).toBe(0);
   });
@@ -36,7 +38,9 @@ describe("architecture://prompts resource", () => {
 
     const uri = new URL("architecture://prompts");
     const result = await readPrompts(tempDir, uri);
-    const body = JSON.parse(result.contents[0].text as string);
+    const first = result.contents[0];
+    expect("text" in first).toBe(true);
+    const body = JSON.parse((first as { text: string }).text);
     expect(body.prompts).toHaveLength(2);
     expect(body.pending).toBe(2);
     expect(body.total).toBe(2);

@@ -87,6 +87,7 @@ describe("injectArkiveBlock", () => {
 
   it("renders arkive block with lifecycle hook directives", () => {
     const rendered = renderTemplate("arkive-block.md.hbs", {
+      projectName: "test-project",
       architectureFile: "arkive/architecture.json",
     });
 

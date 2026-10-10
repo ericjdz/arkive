@@ -1,3 +1,5 @@
+import type { ServiceType } from "../../../schema/types.js";
+
 export interface Architecture {
   version: string;
   project: {
@@ -23,7 +25,7 @@ export interface Architecture {
 export interface Service {
   id: string;
   name: string;
-  type: string;
+  type: ServiceType;
   technology: string;
   description: string;
   ports?: string[];

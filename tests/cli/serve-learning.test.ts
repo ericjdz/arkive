@@ -59,12 +59,12 @@ describe("Learning Progress API", () => {
       body: JSON.stringify(progress),
     });
     expect(putRes.status).toBe(200);
-    const putData = await putRes.json();
+    const putData = (await putRes.json()) as { ok: boolean };
     expect(putData.ok).toBe(true);
 
     const getRes = await fetch(`${baseUrl}/api/learning/progress`);
     expect(getRes.status).toBe(200);
-    const getData = await getRes.json();
+    const getData = (await getRes.json()) as { projectName: string; totalQuestions: number };
     expect(getData.projectName).toBe("test");
     expect(getData.totalQuestions).toBe(0);
   });

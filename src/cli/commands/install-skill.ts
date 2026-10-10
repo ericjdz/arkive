@@ -12,6 +12,7 @@ const SKILL_NAMES = [
   "arkive-init",
   "arkive-import",
   "arkive-view",
+  "process-prompts",
   // Learning skills
   "learning-mode",
   "explain-decisions",

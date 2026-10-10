@@ -28,6 +28,7 @@ describe("install-skill command", () => {
     expect(existsSync(join(result.skillDir, "arkive-import", "SKILL.md"))).toBe(true);
     expect(existsSync(join(result.skillDir, "arkive-view", "SKILL.md"))).toBe(true);
     expect(existsSync(join(result.skillDir, "architecture-tracker", "SKILL.md"))).toBe(true);
+    expect(existsSync(join(result.skillDir, "process-prompts", "SKILL.md"))).toBe(true);
   });
 
   it("injects skill content into instruction file for cursor", () => {
