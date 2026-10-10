@@ -12,6 +12,7 @@ describe("HTTP prompt queue endpoints", () => {
   let server: Server;
   let port: number;
   let baseUrl: string;
+  let token: string;
 
   beforeEach(async () => {
     tempDir = mkdtempSync(join(tmpdir(), "arkive-pq-http-"));
@@ -24,6 +25,7 @@ describe("HTTP prompt queue endpoints", () => {
 
     const result = createViewerServer(tempDir);
     server = result.server;
+    token = result.token;
     await new Promise<void>((resolve) => {
       server.listen(0, () => {
         const addr = server.address();
@@ -41,8 +43,10 @@ describe("HTTP prompt queue endpoints", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
+  const auth = () => ({ Authorization: `Bearer ${token}` });
+
   it("GET /api/prompts returns empty queue initially", async () => {
-    const res = await fetch(`${baseUrl}/api/prompts`);
+    const res = await fetch(`${baseUrl}/api/prompts`, { headers: auth() });
     expect(res.ok).toBe(true);
     const data = (await res.json()) as { prompts: unknown[] };
     expect(data.prompts).toEqual([]);
@@ -51,7 +55,7 @@ describe("HTTP prompt queue endpoints", () => {
   it("POST /api/prompts adds a prompt", async () => {
     const res = await fetch(`${baseUrl}/api/prompts`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { ...auth(), "Content-Type": "application/json" },
       body: JSON.stringify({
         targetServices: ["web", "api"],
         prompt: "Add authentication",
@@ -62,7 +66,7 @@ describe("HTTP prompt queue endpoints", () => {
     expect(data.id).toMatch(/^p-\d{3}$/);
     expect(data.status).toBe("pending");
 
-    const list = await fetch(`${baseUrl}/api/prompts`);
+    const list = await fetch(`${baseUrl}/api/prompts`, { headers: auth() });
     const listData = (await list.json()) as { prompts: unknown[] };
     expect(listData.prompts).toHaveLength(1);
   });
@@ -70,7 +74,7 @@ describe("HTTP prompt queue endpoints", () => {
   it("POST /api/prompts rejects empty prompt text", async () => {
     const res = await fetch(`${baseUrl}/api/prompts`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { ...auth(), "Content-Type": "application/json" },
       body: JSON.stringify({ targetServices: ["web"], prompt: "" }),
     });
     expect(res.status).toBe(400);
@@ -79,21 +83,21 @@ describe("HTTP prompt queue endpoints", () => {
   it("DELETE /api/prompts/:id removes a prompt", async () => {
     const addRes = await fetch(`${baseUrl}/api/prompts`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { ...auth(), "Content-Type": "application/json" },
       body: JSON.stringify({ targetServices: ["web"], prompt: "Test" }),
     });
     const { id } = (await addRes.json()) as { id: string };
 
-    const delRes = await fetch(`${baseUrl}/api/prompts/${id}`, { method: "DELETE" });
+    const delRes = await fetch(`${baseUrl}/api/prompts/${id}`, { method: "DELETE", headers: auth() });
     expect(delRes.ok).toBe(true);
 
-    const list = await fetch(`${baseUrl}/api/prompts`);
+    const list = await fetch(`${baseUrl}/api/prompts`, { headers: auth() });
     const listData = (await list.json()) as { prompts: unknown[] };
     expect(listData.prompts).toHaveLength(0);
   });
 
   it("DELETE /api/prompts/:id returns 404 for unknown id", async () => {
-    const res = await fetch(`${baseUrl}/api/prompts/p-999`, { method: "DELETE" });
+    const res = await fetch(`${baseUrl}/api/prompts/p-999`, { method: "DELETE", headers: auth() });
     expect(res.status).toBe(404);
   });
 });

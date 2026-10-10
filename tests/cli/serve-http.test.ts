@@ -11,6 +11,7 @@ describe("HTTP viewer server", () => {
   let tempDir: string;
   let server: Server;
   let port: number;
+  let token: string;
 
   beforeEach(async () => {
     tempDir = mkdtempSync(join(tmpdir(), "arkive-http-"));
@@ -28,6 +29,7 @@ describe("HTTP viewer server", () => {
 
     const result = createViewerServer(tempDir);
     server = result.server;
+    token = result.token;
     await new Promise<void>((resolve) => {
       server.listen(0, () => {
         const addr = server.address();
@@ -44,8 +46,12 @@ describe("HTTP viewer server", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
+  const auth = () => ({ Authorization: `Bearer ${token}` });
+
   it("serves /api/architecture with architecture data", async () => {
-    const response = await fetch(`http://localhost:${port}/api/architecture`);
+    const response = await fetch(`http://localhost:${port}/api/architecture`, {
+      headers: auth(),
+    });
     expect(response.ok).toBe(true);
     const data = (await response.json()) as { project: { name: string }; services: unknown[] };
     expect(data.project.name).toBe("http-test");
@@ -54,12 +60,18 @@ describe("HTTP viewer server", () => {
 
   it("returns 500 when architecture.json is missing", async () => {
     rmSync(join(tempDir, "arkive", "architecture.json"));
-    const response = await fetch(`http://localhost:${port}/api/architecture`);
+    const response = await fetch(`http://localhost:${port}/api/architecture`, {
+      headers: auth(),
+    });
     expect(response.status).toBe(500);
   });
 
-  it("sets CORS headers", async () => {
-    const response = await fetch(`http://localhost:${port}/api/architecture`);
-    expect(response.headers.get("access-control-allow-origin")).toBe("*");
+  it("never emits a wildcard Access-Control-Allow-Origin", async () => {
+    const response = await fetch(`http://localhost:${port}/api/architecture`, {
+      headers: { ...auth(), Origin: `http://localhost:${port}` },
+    });
+    const allowOrigin = response.headers.get("access-control-allow-origin");
+    expect(allowOrigin).not.toBe("*");
+    expect(allowOrigin).toBe(`http://localhost:${port}`);
   });
 });

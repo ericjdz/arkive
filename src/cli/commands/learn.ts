@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { resolve } from "node:path";
 import { existsSync } from "node:fs";
-import { createViewerServer } from "./serve.js";
+import { createViewerServer, viewerUrl, LOOPBACK_HOST } from "./serve.js";
 import { architecturePath } from "../../io/architecture-file.js";
 
 // `open` is an optional convenience and is deliberately NOT a declared dependency
@@ -30,9 +30,11 @@ export function createLearnCommand(): Command {
         process.exit(1);
       }
 
-      const { server } = createViewerServer(dir);
-      server.listen(port, () => {
-        const url = `http://localhost:${port}?mode=learning`;
+      const { server, token } = createViewerServer(dir);
+      server.listen(port, LOOPBACK_HOST, () => {
+        // The token rides in the fragment, so it never reaches a server log.
+        // See docs/issues/0016-viewer-server-trust-boundary.md.
+        const url = viewerUrl(port, token, "mode=learning");
         process.stderr.write(`Learning Mode at ${url}\n`);
 
         import(OPEN_MODULE)

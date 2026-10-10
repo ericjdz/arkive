@@ -10,6 +10,7 @@ describe("Learning Progress API", () => {
   let server: ReturnType<typeof createViewerServer>["server"];
   let baseUrl: string;
   let port: number;
+  let token: string;
 
   beforeEach(async () => {
     dir = mkdtempSync(join(tmpdir(), "arkive-learn-"));
@@ -21,6 +22,7 @@ describe("Learning Progress API", () => {
     const result = createViewerServer(dir);
     app = result.app;
     server = result.server;
+    token = result.token;
     await new Promise<void>((resolve) => {
       server.listen(0, () => {
         const addr = server.address();
@@ -36,8 +38,10 @@ describe("Learning Progress API", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  const auth = () => ({ Authorization: `Bearer ${token}` });
+
   it("GET /api/learning/progress returns null when no progress file exists", async () => {
-    const res = await fetch(`${baseUrl}/api/learning/progress`);
+    const res = await fetch(`${baseUrl}/api/learning/progress`, { headers: auth() });
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data).toBeNull();
@@ -55,14 +59,14 @@ describe("Learning Progress API", () => {
 
     const putRes = await fetch(`${baseUrl}/api/learning/progress`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { ...auth(), "Content-Type": "application/json" },
       body: JSON.stringify(progress),
     });
     expect(putRes.status).toBe(200);
     const putData = (await putRes.json()) as { ok: boolean };
     expect(putData.ok).toBe(true);
 
-    const getRes = await fetch(`${baseUrl}/api/learning/progress`);
+    const getRes = await fetch(`${baseUrl}/api/learning/progress`, { headers: auth() });
     expect(getRes.status).toBe(200);
     const getData = (await getRes.json()) as { projectName: string; totalQuestions: number };
     expect(getData.projectName).toBe("test");
@@ -72,7 +76,7 @@ describe("Learning Progress API", () => {
   it("PUT /api/learning/progress rejects invalid body", async () => {
     const res = await fetch(`${baseUrl}/api/learning/progress`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { ...auth(), "Content-Type": "application/json" },
       body: JSON.stringify(null),
     });
     expect(res.status).toBe(400);
