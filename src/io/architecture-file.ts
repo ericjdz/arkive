@@ -1,17 +1,39 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { readFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { validateArchitecture } from "../schema/validate.js";
 import type { Architecture } from "../schema/types.js";
+import { writeFileAtomic, cleanupStaleTempFiles } from "./atomic-write.js";
+import { applyZodDefaults, contentHash } from "./preserve.js";
 
 export const ARCHITECTURE_FILENAME = "architecture.json";
 export const ARKIVE_DIR = "arkive";
 
+/**
+ * The document on disk is the user's, not ours. This type is the on-disk shape
+ * we are able to reason about — the schema's fields, plus the one integrity
+ * flag ADR-0006 requires. Keys neither of those knows about still round-trip
+ * through every read and write; see `preserve.ts`.
+ */
+export interface ArchitectureDocument extends Architecture {
+  /**
+   * Set when history entries have been dropped from this document. Truncation
+   * is never silent: the flag stays until a human removes it.
+   */
+  historyTruncated?: boolean;
+}
+
+/** ADR-0002: `history[]` is capped. The durable record is git. */
+export const MAX_HISTORY_ENTRIES = 50;
+
+/** ADR-0002: `arkive/history/` holds at most this many distinct states. */
+export const MAX_SNAPSHOTS = 10;
+
 export type ReadResult =
-  | { success: true; data: Architecture }
+  | { success: true; data: ArchitectureDocument }
   | { success: false; error: string };
 
 export type WriteResult =
-  | { success: true; data: Architecture }
+  | { success: true; data: ArchitectureDocument }
   | { success: false; error: string };
 
 export function arkiveDirPath(dir: string): string {
@@ -60,20 +82,41 @@ export function readArchitecture(dir: string): ReadResult {
     };
   }
 
-  return { success: true, data: validation.data };
+  // ADR-0006 §3. The schema produced *diagnostics*, not the document. What gets
+  // handed back is the parsed file, with schema defaults filling only the gaps
+  // it left. Writing `validation.data` here would strip every key this arkive
+  // version does not recognise — the silent-destruction class the ADR closes.
+  return { success: true, data: applyZodDefaults(parsed, validation.data) };
+}
+
+/**
+ * Trim `history[]` to the newest `MAX_HISTORY_ENTRIES` and say so.
+ *
+ * The flag is sticky: once entries have been dropped, the document says it
+ * forever. Un-setting it automatically would be a second, quieter loss.
+ */
+export function capHistory(document: Architecture): ArchitectureDocument {
+  if (!Array.isArray(document.history)) return document;
+  if (document.history.length <= MAX_HISTORY_ENTRIES) return document;
+
+  return {
+    ...document,
+    history: document.history.slice(-MAX_HISTORY_ENTRIES),
+    historyTruncated: true,
+  };
 }
 
 export function writeArchitecture(
   dir: string,
   architecture: Architecture
 ): WriteResult {
-  const next: Architecture = {
+  const next = {
     ...architecture,
     project: {
       ...architecture.project,
       lastUpdated: new Date().toISOString(),
     },
-  };
+  } as ArchitectureDocument;
 
   const validation = validateArchitecture(next);
   if (!validation.success) {
@@ -83,10 +126,13 @@ export function writeArchitecture(
     };
   }
 
+  // Same rule as the read: validate into a side channel, write the document.
+  const document = capHistory(applyZodDefaults(next, validation.data));
+
   const path = architecturePath(dir);
   mkdirSync(arkiveDirPath(dir), { recursive: true });
   try {
-    writeFileSync(path, JSON.stringify(validation.data, null, 2) + "\n", "utf-8");
+    writeFileAtomic(path, JSON.stringify(document, null, 2) + "\n");
   } catch (err) {
     return {
       success: false,
@@ -95,41 +141,94 @@ export function writeArchitecture(
   }
 
   try {
-    saveSnapshot(dir, validation.data);
+    saveSnapshot(dir, document);
   } catch {
     // Snapshot failure should not break the main write
   }
 
-  return { success: true, data: validation.data };
+  return { success: true, data: document };
 }
 
 const HISTORY_DIR = "history";
 
-export function saveSnapshot(dir: string, architecture: Architecture): string {
+/** Filesystem-safe stamp. `:` alone leaves `.` intact, so two writes in the
+ * same millisecond collide and the second silently overwrites the first. */
+function safeStamp(iso: string): string {
+  return iso.replace(/[:.]/g, "-");
+}
+
+/**
+ * The state of a document, with the volatile fields normalised out.
+ *
+ * `lastUpdated` changes on every single write, so hashing the document as-is
+ * would make every write a "distinct state" and defeat the dedup entirely.
+ */
+function snapshotState(document: ArchitectureDocument): unknown {
+  return { ...document, project: { ...document.project, lastUpdated: "" } };
+}
+
+function snapshotFileNames(historyDir: string): string[] {
+  if (!existsSync(historyDir)) return [];
+  return readdirSync(historyDir)
+    .filter((f) => f.endsWith(".json"))
+    .sort();
+}
+
+function pruneSnapshots(historyDir: string): void {
+  const names = snapshotFileNames(historyDir);
+  for (const name of names.slice(0, Math.max(0, names.length - MAX_SNAPSHOTS))) {
+    try {
+      unlinkSync(join(historyDir, name));
+    } catch {
+      // Another process may have pruned it first.
+    }
+  }
+}
+
+/**
+ * Record a state transition in `arkive/history/`.
+ *
+ * ADR-0002 rejected "full copy on every write, just cap the count" — that
+ * stores the same file 200 times and calls it history. States are deduplicated
+ * by content hash and the directory is capped at `MAX_SNAPSHOTS` distinct
+ * states, so what remains is a record of what actually changed.
+ *
+ * Returns the path of the snapshot for this state, which may predate the
+ * current write: that is the dedup working.
+ */
+export function saveSnapshot(dir: string, architecture: ArchitectureDocument): string {
   const historyDir = join(dir, ARKIVE_DIR, HISTORY_DIR);
   mkdirSync(historyDir, { recursive: true });
+  cleanupStaleTempFiles(historyDir);
 
-  const timestamp = (architecture.project.lastUpdated || new Date().toISOString()).replace(/:/g, "-");
-  const filename = `${timestamp}.json`;
-  const snapshotPath = join(historyDir, filename);
+  const state = snapshotState(architecture);
+  const hash = contentHash(state);
 
-  writeFileSync(snapshotPath, JSON.stringify(architecture, null, 2) + "\n", "utf-8");
+  const existing = snapshotFileNames(historyDir).find((name) =>
+    name.endsWith(`--${hash}.json`)
+  );
+  if (existing) {
+    return join(historyDir, existing);
+  }
+
+  const stamp = safeStamp(architecture.project.lastUpdated || new Date().toISOString());
+  const snapshotPath = join(historyDir, `${stamp}--${hash}.json`);
+
+  writeFileAtomic(snapshotPath, JSON.stringify(architecture, null, 2) + "\n");
+  pruneSnapshots(historyDir);
+
   return snapshotPath;
 }
 
 export function listSnapshots(dir: string): string[] {
-  const historyDir = join(dir, ARKIVE_DIR, HISTORY_DIR);
-
-  if (!existsSync(historyDir)) return [];
-
-  return readdirSync(historyDir)
-    .filter((f) => f.endsWith(".json"))
-    .map((f) => f.replace(/\.json$/, ""))
-    .sort();
+  return snapshotFileNames(join(dir, ARKIVE_DIR, HISTORY_DIR)).map((f) =>
+    f.replace(/\.json$/, "")
+  );
 }
 
 export function readSnapshot(dir: string, timestamp: string): ReadResult {
-  const snapshotPath = join(dir, ARKIVE_DIR, HISTORY_DIR, `${timestamp}.json`);
+  const historyDir = join(dir, ARKIVE_DIR, HISTORY_DIR);
+  const snapshotPath = join(historyDir, `${timestamp}.json`);
 
   if (!existsSync(snapshotPath)) {
     return {
@@ -166,5 +265,12 @@ export function readSnapshot(dir: string, timestamp: string): ReadResult {
     };
   }
 
-  return { success: true, data: validation.data };
+  return { success: true, data: applyZodDefaults(parsed, validation.data) };
+}
+
+/** Exported for tests that assert on the snapshot bound (ADR-0006 test L). */
+export function snapshotCount(dir: string): number {
+  const historyDir = join(dir, ARKIVE_DIR, HISTORY_DIR);
+  if (!existsSync(historyDir)) return 0;
+  return readdirSync(historyDir).filter((f) => f.endsWith(".json")).length;
 }

@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, writeFileSync, chmodSync, unlinkSync } from "node:fs";
+import { existsSync, readFileSync, chmodSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
+import { writeFileAtomic } from "../../io/atomic-write.js";
 
 const ARKIVE_BLOCK_START = "# arkive:start";
 const ARKIVE_BLOCK_END = "# arkive:end";
@@ -31,9 +32,9 @@ export function installGitHooks(dir: string): HookResult {
       result.skipped.push("post-commit");
       return result;
     }
-    writeFileSync(hookPath, existing.trimEnd() + "\n\n" + POST_COMMIT_BLOCK + "\n");
+    writeFileAtomic(hookPath, existing.trimEnd() + "\n\n" + POST_COMMIT_BLOCK + "\n");
   } else {
-    writeFileSync(hookPath, "#!/bin/sh\n\n" + POST_COMMIT_BLOCK + "\n");
+    writeFileAtomic(hookPath, "#!/bin/sh\n\n" + POST_COMMIT_BLOCK + "\n");
   }
 
   try {
@@ -65,7 +66,7 @@ export function uninstallGitHooks(dir: string): { removed: string[]; error?: str
   if (cleaned === "#!/bin/sh" || cleaned === "") {
     unlinkSync(hookPath);
   } else {
-    writeFileSync(hookPath, cleaned + "\n");
+    writeFileAtomic(hookPath, cleaned + "\n");
   }
 
   return { removed: ["post-commit"] };

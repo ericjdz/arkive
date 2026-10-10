@@ -5,6 +5,13 @@ import { tmpdir } from "node:os";
 import { execSync } from "node:child_process";
 import { ARKIVE_DIR } from "../../src/io/architecture-file.js";
 
+/**
+ * Every test in this file spawns `npx tsx`, which costs several seconds on a
+ * loaded machine. The default 5s budget, and even 20s, is not enough when
+ * several workers and a package build are competing for the CPU.
+ */
+const CLI_TIMEOUT = 60_000;
+
 describe("CLI init command", () => {
   let tempDir: string;
 
@@ -26,7 +33,7 @@ describe("CLI init command", () => {
     const arch = JSON.parse(readFileSync(archPath, "utf-8"));
     expect(arch.project.name).toBe("test-project");
     expect(arch.version).toBe("1.0.0");
-  }, 20000);
+  }, CLI_TIMEOUT);
 
   it("creates arkive directory structure with history and context subdirs", () => {
     execSync(`npx tsx src/cli/index.ts init --name test-project --dir "${tempDir}"`, {
@@ -35,7 +42,7 @@ describe("CLI init command", () => {
     expect(existsSync(join(tempDir, ARKIVE_DIR))).toBe(true);
     expect(existsSync(join(tempDir, ARKIVE_DIR, "history"))).toBe(true);
     expect(existsSync(join(tempDir, ARKIVE_DIR, "context", "sessions"))).toBe(true);
-  }, 20000);
+  }, CLI_TIMEOUT);
 
   it("creates CLAUDE.md in target directory", () => {
     execSync(`npx tsx src/cli/index.ts init --name test-project --dir "${tempDir}"`, {
@@ -48,7 +55,7 @@ describe("CLI init command", () => {
     expect(content).toContain("<!-- arkive:start -->");
     expect(content).toContain("arkive/architecture.json");
     expect(content).toContain("<!-- arkive:end -->");
-  }, 20000);
+  }, CLI_TIMEOUT);
 
   it("creates AGENTS.md in target directory", () => {
     execSync(`npx tsx src/cli/index.ts init --name test-project --dir "${tempDir}"`, {
@@ -61,7 +68,7 @@ describe("CLI init command", () => {
     expect(content).toContain("<!-- arkive:start -->");
     expect(content).toContain("arkive/architecture.json");
     expect(content).toContain("<!-- arkive:end -->");
-  }, 20000);
+  }, CLI_TIMEOUT);
 
   it("creates .cursor/rules directory and rule file", () => {
     execSync(`npx tsx src/cli/index.ts init --name test-project --dir "${tempDir}"`, {
@@ -69,7 +76,7 @@ describe("CLI init command", () => {
     });
     const cursorPath = join(tempDir, ".cursor", "rules", "architecture-tracker.mdc");
     expect(existsSync(cursorPath)).toBe(true);
-  }, 20000);
+  }, CLI_TIMEOUT);
 
   it("does not overwrite existing architecture.json", () => {
     mkdirSync(join(tempDir, "arkive"), { recursive: true });
@@ -83,7 +90,7 @@ describe("CLI init command", () => {
 
     const content = readFileSync(archPath, "utf-8");
     expect(content).toBe(existingContent);
-  }, 20000);
+  }, CLI_TIMEOUT);
 
   it("injects arkive block into existing AGENTS.md without replacing content", () => {
     const agentsPath = join(tempDir, "AGENTS.md");
@@ -98,7 +105,7 @@ describe("CLI init command", () => {
     expect(content).toContain(existingContent);
     expect(content).toContain("<!-- arkive:start -->");
     expect(content).toContain("<!-- arkive:end -->");
-  }, 20000);
+  }, CLI_TIMEOUT);
 
   it("injects arkive block into existing CLAUDE.md without replacing content", () => {
     const claudePath = join(tempDir, "CLAUDE.md");
@@ -113,7 +120,7 @@ describe("CLI init command", () => {
     expect(content).toContain(existingContent);
     expect(content).toContain("<!-- arkive:start -->");
     expect(content).toContain("<!-- arkive:end -->");
-  }, 20000);
+  }, CLI_TIMEOUT);
 
   it("replaces arkive block on re-run without duplicating", () => {
     execSync(`npx tsx src/cli/index.ts init --name test-project --dir "${tempDir}"`, {
@@ -127,7 +134,7 @@ describe("CLI init command", () => {
     const agentsPath = join(tempDir, "AGENTS.md");
     const content = readFileSync(agentsPath, "utf-8");
     expect(content.match(/<!-- arkive:start -->/g)).toHaveLength(1);
-  }, 20000);
+  }, CLI_TIMEOUT);
 
   it("generates full files with --standalone flag", () => {
     execSync(`npx tsx src/cli/index.ts init --name test-project --dir "${tempDir}" --standalone`, {
@@ -138,7 +145,7 @@ describe("CLI init command", () => {
     const content = readFileSync(claudePath, "utf-8");
     expect(content).toContain("The Three Rules");
     expect(content).not.toContain("<!-- arkive:start -->");
-  }, 20000);
+  }, CLI_TIMEOUT);
 
   it("infers project name from directory if not provided", () => {
     execSync(`npx tsx src/cli/index.ts init --dir "${tempDir}"`, {
@@ -147,5 +154,5 @@ describe("CLI init command", () => {
     const archPath = join(tempDir, "arkive", "architecture.json");
     const arch = JSON.parse(readFileSync(archPath, "utf-8"));
     expect(arch.project.name).toBeTruthy();
-  }, 20000);
+  }, CLI_TIMEOUT);
 });

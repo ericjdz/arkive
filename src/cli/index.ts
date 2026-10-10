@@ -31,6 +31,8 @@ program
   .option("--platform <platform>", `AI platform (auto-detected if omitted): ${Object.keys(PLATFORMS).join(", ")}`)
   .option("--skip-mcp", "Skip MCP server registration")
   .option("--skip-skills", "Skip skill installation")
+  .option("--skip-hooks", "Skip git hook installation (hooks are not installed by default)")
+  .option("--dry-run", "Print every path init would write, and write nothing")
   .action((options) => {
     const dir = resolve(options.dir);
     if (options.platform && !PLATFORMS[options.platform as PlatformName]) {
@@ -46,6 +48,8 @@ program
       platform: options.platform,
       skipMcp: options.skipMcp ?? false,
       skipSkills: options.skipSkills ?? false,
+      skipHooks: options.skipHooks ?? false,
+      dryRun: options.dryRun ?? false,
     });
   });
 

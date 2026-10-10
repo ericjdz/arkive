@@ -1,0 +1,90 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "arkive",
+    "description": "A living architecture document for AI-built projects.",
+    "created": "2026-05-07T00:00:00.000Z",
+    "lastUpdated": "2026-05-09T17:26:00.000Z"
+  },
+  "stack": {
+    "language": ["TypeScript"],
+    "runtime": ["Node.js"],
+    "framework": ["Vite", "React"],
+    "database": [],
+    "infrastructure": ["filesystem"]
+  },
+  "services": [
+    {
+      "id": "cli",
+      "name": "CLI",
+      "type": "backend",
+      "technology": "Node.js + Commander",
+      "description": "Command-line entrypoint for init, serve, reconcile, and export flows.",
+      "dependencies": ["architecture-store"]
+    },
+    {
+      "id": "viewer",
+      "name": "Viewer",
+      "type": "frontend",
+      "technology": "React + Vite",
+      "description": "Interactive UI for browsing architecture, decisions, and learning mode.",
+      "dependencies": ["architecture-store"]
+    },
+    {
+      "id": "architecture-store",
+      "name": "Architecture store",
+      "type": "storage",
+      "technology": "arkive/architecture.json",
+      "description": "Local JSON document that stores the tracked architecture state.",
+      "dependencies": []
+    }
+  ],
+  "connections": [
+    {
+      "from": "cli",
+      "to": "architecture-store",
+      "protocol": "filesystem",
+      "description": "CLI reads and writes architecture state on disk."
+    },
+    {
+      "from": "viewer",
+      "to": "architecture-store",
+      "protocol": "filesystem",
+      "description": "Viewer loads architecture data for visualization."
+    }
+  ],
+  "decisions": [],
+  "dataFlows": [],
+  "history": [
+    {
+      "timestamp": "2026-05-07T00:00:00.000Z",
+      "action": "initial_scaffold",
+      "summary": "Architecture document created"
+    },
+    {
+      "timestamp": "2026-05-07T21:51:25.000Z",
+      "action": "update",
+      "summary": "Added HTTP prompt queue endpoints to the viewer server"
+    },
+    {
+      "timestamp": "2026-05-08T10:00:00.000Z",
+      "action": "update_documentation",
+      "summary": "Updated README.md to reflect new MCP tools, resources, and prompt queue feature"
+    },
+    {
+      "timestamp": "2026-05-09T00:00:00.000Z",
+      "action": "update",
+      "summary": "Added compact session context MCP resource for token-efficient architecture retrieval"
+    },
+    {
+      "timestamp": "2026-05-09T17:26:00.000Z",
+      "action": "update",
+      "summary": "Added git hook installer and CLI command for auto-reconcile on post-commit"
+    },
+    {
+      "timestamp": "2026-05-10T00:00:00.000Z",
+      "action": "update",
+      "summary": "Recovered four decisions orphaned by the archlearn->arkive path migration: moved the stale root architecture.json to arkive/legacy-architecture.json (see docs/legacy-architecture.md) and un-ignored docs/, which had prevented the Plan 1-6 documents from ever being committed"
+    }
+  ]
+}

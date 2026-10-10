@@ -6,25 +6,39 @@ set -euo pipefail
 #   curl -fsSL https://raw.githubusercontent.com/arkive/arkive/main/scripts/install.sh | bash
 #   curl -fsSL https://raw.githubusercontent.com/arkive/arkive/main/scripts/install.sh | bash -s -- --dir /path/to/project
 
+# The published package. This MUST be the fully scoped name.
+#
+# A `curl | bash` installer that runs `npx -y <name>` resolves whatever
+# `<name>` points at on the public registry. An unscoped `arkive` is not this
+# package, and a registry takeover of that name — or a typo, or a homoglyph —
+# would run an attacker's code as the user, with the user's credentials, from a
+# command the user believed was arkive's installer. The scoped name is the only
+# thing tying the resolution to this project.
+# See docs/adr/0006-data-integrity-is-a-product-feature.md.
+ARKIVE_PACKAGE="@ericjdz/arkive"
+
 PROJECT_DIR="."
 PROJECT_NAME=""
+DRY_RUN=0
 SHOW_HELP=0
 
 print_help() {
-  cat <<'EOF'
+  cat <<EOF
 arkive installer
 
 Usage:
-  install.sh [--dir <path>] [--name <project-name>] [--help]
+  install.sh [--dir <path>] [--name <project-name>] [--dry-run] [--help]
 
 Options:
   --dir <path>     Target project directory (default: current directory)
   --name <name>    Project name (default: directory basename)
+  --dry-run        Print the full plan of what \`arkive init\` would write,
+                   and write nothing
   --help           Show this help and exit
 
 Behavior:
   1. Verifies node and npx are available.
-   2. Runs `npx -y arkive init` against the target directory.
+  2. Runs \`npx -y ${ARKIVE_PACKAGE} init\` against the target directory.
 
 Set ARCHLEARN_INSTALL_DRY_RUN=1 to print what would run without executing.
 EOF
@@ -39,6 +53,10 @@ while [ $# -gt 0 ]; do
     --name)
       PROJECT_NAME="$2"
       shift 2
+      ;;
+    --dry-run)
+      DRY_RUN=1
+      shift
       ;;
     --help|-h)
       SHOW_HELP=1
@@ -78,13 +96,39 @@ if [ "$NODE_MAJOR" -lt 18 ]; then
   exit 1
 fi
 
+# Refuse to run when a document already lives at a path arkive no longer reads.
+# Running init would otherwise scaffold an empty document beside the real one,
+# which is how commit 62066bc destroyed four recorded decisions. See ADR-0006.
+LEGACY_DOC="$PROJECT_DIR/architecture.json"
+if [ -f "$LEGACY_DOC" ]; then
+  cat >&2 <<EOF
+
+ERROR: an architecture document exists at $LEGACY_DOC
+
+  arkive reads $PROJECT_DIR/arkive/architecture.json. Writing a new one
+  would leave your real document orphaned at the old path, which is exactly the
+  failure that destroyed four recorded decisions in this repository.
+
+  Nothing has been written. Move it yourself, keep a copy until you have
+  confirmed the move, then re-run:
+
+    cp "$LEGACY_DOC" "$LEGACY_DOC.bak"
+    mv "$LEGACY_DOC" "$PROJECT_DIR/arkive/architecture.json"
+
+EOF
+  exit 1
+fi
+
 mkdir -p "$PROJECT_DIR"
 ABS_DIR="$(cd "$PROJECT_DIR" && pwd)"
 echo "==> Target directory: $ABS_DIR"
 
-CMD=(npx -y arkive init --dir "$ABS_DIR")
+CMD=(npx -y "$ARKIVE_PACKAGE" init --dir "$ABS_DIR")
 if [ -n "$PROJECT_NAME" ]; then
   CMD+=(--name "$PROJECT_NAME")
+fi
+if [ "$DRY_RUN" -eq 1 ]; then
+  CMD+=(--dry-run)
 fi
 
 echo "==> Running: ${CMD[*]}"
@@ -94,10 +138,13 @@ if [ "${ARCHLEARN_INSTALL_DRY_RUN:-0}" = "1" ]; then
   exit 0
 fi
 
+# `--dry-run` still executes: arkive's own dry run prints the complete plan and
+# writes nothing, so the user gets the real plan rather than this script's guess
+# at one.
 "${CMD[@]}"
 
 echo ""
 echo "==> Done. Next steps:"
 echo "    cd \"$ABS_DIR\""
-echo "    npx @ericjdz/arkive serve   # start MCP server + web viewer"
-echo "    npx @ericjdz/arkive status  # check architecture health"
+echo "    npx ${ARKIVE_PACKAGE} serve   # start MCP server + web viewer"
+echo "    npx ${ARKIVE_PACKAGE} status  # check architecture health"
