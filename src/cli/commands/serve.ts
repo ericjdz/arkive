@@ -117,61 +117,6 @@ export function viewerUrl(port: number, token: string, query?: string): string {
 }
 
 /**
- * Bootstrap script injected into the served HTML.
- *
- * The fragment arrives in `location.hash` and never reaches the server, so
- * something in the page has to move it into an `Authorization` header. Today
- * that something is this script: it is injected server-side, which keeps the
- * built viewer working unchanged and keeps the user flow to a single
- * `arkive serve` with nothing to copy.
- *
- * This is a bridge, not the destination. The proper fix is ~10 lines in the
- * viewer's own API module (see docs/issues/0016 for the follow-up); once that
- * lands this function and its injection point can be deleted outright.
- */
-export function buildViewerBootstrapScript(token: string): string {
-  return `(function () {
-  var TOKEN = ${JSON.stringify(token)};
-  var hash = window.location.hash || "";
-  var match = /(?:^|[#&])token=([^&]+)/.exec(hash);
-  if (!match) return;
-  var token = decodeURIComponent(match[1]);
-  // Drop the token from the address bar so it is not left in a copied URL or
-  // a screenshot, and so a reload still authenticates from the server-injected
-  // copy rather than the fragment.
-  if (hash) {
-    try {
-      window.history.replaceState(null, "", window.location.pathname + window.location.search);
-    } catch (e) { /* replaceState is best-effort */ }
-  }
-  if (token !== TOKEN) return;
-  var nativeFetch = window.fetch.bind(window);
-  window.fetch = function (input, init) {
-    try {
-      var url = typeof input === "string" ? input : (input && input.url) || "";
-      var resolved = new URL(url, window.location.href);
-      if (resolved.origin === window.location.origin) {
-        var headers = new Headers(
-          (init && init.headers) || (input && input.headers) || undefined
-        );
-        headers.set("Authorization", "Bearer " + token);
-        init = Object.assign({}, init, { headers: headers });
-      }
-    } catch (e) { /* fall through to the native call unchanged */ }
-    return nativeFetch(input, init);
-  };
-})();`;
-}
-
-/** Injects the bootstrap script into a built `index.html`. */
-export function injectBootstrap(html: string, token: string): string {
-  const tag = `<script>${buildViewerBootstrapScript(token)}</script>`;
-  if (html.includes("</head>")) return html.replace("</head>", `${tag}</head>`);
-  if (html.includes("<body")) return html.replace("<body", `${tag}<body`);
-  return tag + html;
-}
-
-/**
  * Force a loopback bind onto a server we hand out.
  *
  * `listen(port)` with no host argument binds `0.0.0.0` / `::`. Callers in this
@@ -351,7 +296,7 @@ export function createViewerServer(dir: string): ViewerServer {
         res.status(404).send("Viewer not built. Run `npm run build:viewer` first.");
         return;
       }
-      res.type("html").send(injectBootstrap(readFileSync(indexPath, "utf-8"), token));
+      res.type("html").send(readFileSync(indexPath, "utf-8"));
     };
     app.use(express.static(viewerDir, { index: false }));
     app.get("/index.html", sendIndex);

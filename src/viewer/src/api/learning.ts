@@ -1,3 +1,5 @@
+import { apiFetch } from "./auth.js";
+
 export interface ConceptMastery {
   conceptId: string;
   label: string;
@@ -17,7 +19,7 @@ export interface LearningProgress {
 }
 
 export async function fetchLearningProgress(): Promise<LearningProgress | null> {
-  const response = await fetch("/api/learning/progress");
+  const response = await apiFetch("/api/learning/progress");
   if (!response.ok) {
     throw new Error(`Failed to fetch learning progress: ${response.status}`);
   }
@@ -25,7 +27,7 @@ export async function fetchLearningProgress(): Promise<LearningProgress | null> 
 }
 
 export async function saveLearningProgress(progress: LearningProgress): Promise<void> {
-  const response = await fetch("/api/learning/progress", {
+  const response = await apiFetch("/api/learning/progress", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(progress),

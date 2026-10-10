@@ -13,6 +13,7 @@ import { usePromptQueue } from "./hooks/usePromptQueue.js";
 import { PromptQueuePanel } from "./components/PromptQueuePanel.js";
 import { fetchLearningProgress } from "./api/learning.js";
 import type { LearningProgress } from "./api/learning.js";
+import { apiFetch } from "./api/auth.js";
 
 export function App() {
   const {
@@ -122,7 +123,7 @@ export function App() {
         <button
           onClick={() => {
             if (window.confirm("Shut down the arkive viewer?")) {
-              fetch("/api/shutdown", { method: "POST" })
+              apiFetch("/api/shutdown", { method: "POST" })
                 .then(() => {
                   document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#888;font-family:system-ui">Viewer stopped. Close this tab.</div>';
                 })

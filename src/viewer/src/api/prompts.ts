@@ -1,5 +1,7 @@
 // src/viewer/src/api/prompts.ts
 
+import { apiFetch } from "./auth.js";
+
 export interface QueuedPrompt {
   id: string;
   targetServices: string[];
@@ -17,7 +19,7 @@ export interface PromptQueue {
 }
 
 export async function fetchPromptQueue(): Promise<PromptQueue> {
-  const response = await fetch("/api/prompts");
+  const response = await apiFetch("/api/prompts");
   if (!response.ok) {
     throw new Error(`Failed to fetch prompts: ${response.status} ${response.statusText}`);
   }
@@ -28,7 +30,7 @@ export async function submitPrompt(
   targetServices: string[],
   prompt: string
 ): Promise<QueuedPrompt> {
-  const response = await fetch("/api/prompts", {
+  const response = await apiFetch("/api/prompts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ targetServices, prompt }),
@@ -41,7 +43,7 @@ export async function submitPrompt(
 }
 
 export async function deletePrompt(id: string): Promise<void> {
-  const response = await fetch(`/api/prompts/${id}`, { method: "DELETE" });
+  const response = await apiFetch(`/api/prompts/${id}`, { method: "DELETE" });
   if (!response.ok) {
     throw new Error(`Failed to delete prompt: ${response.status}`);
   }

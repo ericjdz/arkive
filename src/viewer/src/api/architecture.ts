@@ -1,4 +1,5 @@
 import type { ServiceType } from "../../../schema/types.js";
+import { apiFetch } from "./auth.js";
 
 export interface Architecture {
   version: string;
@@ -62,7 +63,7 @@ export interface HistoryEntry {
 }
 
 export async function fetchArchitecture(): Promise<Architecture> {
-  const response = await fetch("/api/architecture");
+  const response = await apiFetch("/api/architecture");
   if (!response.ok) {
     throw new Error(`Failed to fetch architecture: ${response.status} ${response.statusText}`);
   }

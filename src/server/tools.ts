@@ -110,7 +110,7 @@ export const ARCHITECTURE_TOOLS: ToolDescriptor[] = [
     name: "open_viewer",
     title: "Open Viewer",
     description:
-      "Start the arkive web viewer if not already running. Returns the URL for the user to open.",
+      "Start the arkive web viewer if not already running. Returns the URL for the user to open; the returned URL carries a per-run access token in its fragment and must be opened as-is.",
   },
   {
     name: "list_prompts",
@@ -138,7 +138,9 @@ interface CallToolResult {
   isError?: boolean;
 }
 
-let activeViewerServer: { server: import("node:http").Server; port: number } | null = null;
+let activeViewerServer:
+  | { server: import("node:http").Server; port: number; token: string }
+  | null = null;
 
 function errorResult(message: string): CallToolResult {
   return {
@@ -366,22 +368,31 @@ export async function handleOpenViewer(
 
   const port = input.port ?? 4567;
 
+  // The viewer server requires a per-run bearer token on every `/api/*` request,
+  // so a bare `http://localhost:${port}` 401s on every call. The token rides in
+  // the URL fragment, which `viewerUrl` builds and the viewer reads on load.
+  // See docs/issues/0017-close-auth-followups.md.
   if (activeViewerServer && activeViewerServer.port === port) {
-    return jsonResult({ url: `http://localhost:${port}`, port, alreadyRunning: true });
+    const { viewerUrl } = await import("../cli/commands/serve.js");
+    return jsonResult({
+      url: viewerUrl(port, activeViewerServer.token),
+      port,
+      alreadyRunning: true,
+    });
   }
 
   try {
-    const { createViewerServer } = await import("../cli/commands/serve.js");
-    const { server } = createViewerServer(dir);
+    const { createViewerServer, viewerUrl } = await import("../cli/commands/serve.js");
+    const { server, token } = createViewerServer(dir);
 
     await new Promise<void>((resolve, reject) => {
       server.on("error", reject);
       server.listen(port, () => resolve());
     });
 
-    activeViewerServer = { server, port };
+    activeViewerServer = { server, port, token };
 
-    return jsonResult({ url: `http://localhost:${port}`, port, alreadyRunning: false });
+    return jsonResult({ url: viewerUrl(port, token), port, alreadyRunning: false });
   } catch (err) {
     return errorResult(`Failed to start viewer: ${(err as Error).message}`);
   }
