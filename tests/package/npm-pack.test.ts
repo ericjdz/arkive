@@ -56,7 +56,10 @@ describe("npm pack + install + bin invocation", () => {
     for (const r of required) {
       expect(files, `tarball should include ${r}`).toContain(r);
     }
-  });
+    // `npm pack --dry-run` walks the whole package. It reliably exceeds the
+    // 5s default when the suite runs in parallel with the install-based
+    // tests below, which each install a tarball of their own.
+  }, 60_000);
 
   it("installs and exposes the arkive bin", () => {
     const installDir = mkdtempSync(join(tmpdir(), "arkive-install-"));
