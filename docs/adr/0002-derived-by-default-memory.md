@@ -59,27 +59,38 @@ structurally derivable from the code is derived, never transcribed.**
 
 ### Node kinds
 
-| Kind | Status | Derivation |
-|---|---|---|
-| `module` | **Derived** | Directory tree plus import graph. `src/analysis/scanner.ts:38-75` already walks the tree; it needs to stop assuming `src` (see below). |
-| `external` | **Derived** | A third-party package the project imports. Already available: `normalizePackage` (`src/analysis/scanner.ts:77-89`) returns exactly this. |
-| `datastructure` | **Derived** | Type declarations and schema files. |
-| `service` | **Hybrid** | Derived *only* when a deployable artifact boundary is detectable (Dockerfile, serverless config, workspace package). Otherwise authored. |
-| `datastore` | **Hybrid** | Migrations and schema files are derived evidence that a datastore exists; "this is our primary datastore" is intent and is authored. |
-| `endpoint` | **Hybrid** | Route registration is derived; whether a route is public, internal, or deprecated is authored. |
+The split is binary, not a gradient. An earlier draft of this ADR presented
+derived / hybrid / authored as a completeness axis. It is not one, and the
+layout invited readers to assume the middle column was cheaper work than the
+right-hand end.
 
-Hybrid is honest, not a hedge. A `service` boundary is a human decision, and
-pretending the parser can find one would produce a confidently wrong graph.
+| Kind | Mechanically derived | Requires someone to have understood something |
+|---|---|---|
+| `module` | Directory tree, import graph (`src/analysis/scanner.ts:38-75` already walks it) | — |
+| `external` | Third-party package identity — `normalizePackage` (`scanner.ts:77-89`) already returns exactly this | — |
+| `datastructure` | Field names, types, and structure from type declarations | What the shape *means*, and which fields are load-bearing |
+| `service` | A deployable boundary, where one is mechanically detectable (Dockerfile, serverless config, workspace package) | Whether this grouping is the *right* boundary, and what it is for |
+| `datastore` | Migrations and schema files are evidence a datastore exists | "This is our primary datastore" is intent |
+| `endpoint` | Route registration | Whether a route is public, internal, or deprecated |
+
+Deriving a `service` boundary from a Dockerfile is evidence, not proof. A
+parser that confidently emitted one for every detected artefact would produce
+a confidently wrong graph, which is the single failure mode this ADR exists
+to prevent.
 
 ### Edge kinds
 
-| Kind | Status | Derivation |
+| Kind | Mechanically derived | Requires someone to have understood something |
 |---|---|---|
-| `imports` | **Derived** | Import graph. Evidence: file and line per edge. |
-| `calls` | **Derived** | Static call sites. Dynamic dispatch is not derivable and is the acknowledged limit. |
-| `reads` / `writes` | **Hybrid** | Derived when datastore access appears statically at a call site; authored when it sits behind an ORM, where only the author knows the access pattern. |
-| `derives_from` | **Authored** | "This schema was derived from that one" is a decision, not something a parser observes. |
-| `decided_by` | **Authored** | Projection of `decision.subjects` (ADR-0001). |
+| `imports` | Import graph. Evidence: file and line per edge. | — |
+| `calls` | Static call sites. Dynamic dispatch is not derivable and is an acknowledged limit. | — |
+| `reads` / `writes` | Datastore access visible statically at a call site | Access patterns hidden behind an ORM — only the author knows |
+| `derives_from` | — | Entirely. "This schema was derived from that one" is a claim no parser observes |
+| `decided_by` | — | Entirely. Decisions are not derivable; `Alternative.whyNot` (`src/schema/architecture.ts:47-50`) is the artifact the product exists to preserve |
+
+Three kinds are derivable. Three are not. `derives_from` and `decided_by` sit
+at the same level of effort — both are assertions that nothing ever checks —
+and neither is "later" or "weaker" than the other.
 
 ### Provenance is per element, and mandatory
 

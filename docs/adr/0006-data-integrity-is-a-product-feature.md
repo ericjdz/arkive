@@ -231,8 +231,22 @@ Two schema changes follow:
 - The `test` suite gains a round-trip assertion on a fixture containing unknown
   keys at every level of the document.
 
-This is the single highest-leverage change in this ADR. It is one line of
-discipline and it prevents an entire class of loss.
+This is nearly free and it is **third** in the risk ordering, not first.
+Correcting an earlier draft of this ADR, which ranked it above
+transactional writes — that inverts the actual risk. Preservation helps only
+*within a single process*: a crash between temp-write and rename (section 2)
+still truncates, and it says nothing about two concurrent writers, which
+ADR-0005's hooks make likely.
+
+The ordering of risk is:
+
+1. Transactional writes (§2) — a crash loses the whole document.
+2. Single-writer on the prompt queue (§5) — two agents silently lose work.
+3. Unknown-key preservation (§3) — a class of loss, scoped to one process.
+4. Consent and `--dry-run` (§4) — annoying, but loud.
+
+All four are done. The ranking only records what should have been built
+first.
 
 ### 4. `--dry-run` and explicit consent
 
@@ -340,11 +354,30 @@ chosen wrong and then deleted the backup.
 conclusion: a read that rewrites the file loses data to a tool someone ran while
 curious. Migration persists on write, never as a side effect of a read.
 
-**Use `.passthrough()` / `z.looseObject()` on the schemas.** Rejected. It stops
-the strip, but the read still returns a Zod-reconstructed object with defaulted
-fields materialised into it, so a future schema default silently writes itself
-into the user's document. Keeping `parsed` as the document and using Zod only
-for diagnostics is both simpler and more honest.
+**Use `.passthrough()` / `z.looseObject()` on the schemas.** Not rejected —
+**conditional on a property this ADR originally got wrong.**
+
+The first draft of this ADR rejected it because a Zod-reconstructed object
+materialises defaulted fields into the user's document. That reason is
+correct but incidental: it is a property of *the schema using the
+mechanism*, not of the mechanism. Stated that way the rule gives a future
+author no way to know when it stops applying, and reads as "never use
+`looseObject`" — which would have blocked the fix that actually solves §3.
+
+The rule is therefore:
+
+> **The document schema contains no `.default()` anywhere. `parse(x)` must be
+> deep-equal to `x`. Given that, `looseObject` is free and is the correct
+> choice.**
+
+Implemented in `src/schema/graph.ts`: v2 has no defaults, and
+`tests/schema/preserve-unknown-keys.test.ts` asserts `parse(input) === input`
+by reference identity. Adding any default fails the suite immediately, so the
+precondition is enforced rather than advised.
+
+Note that v1 still strips. v1 is left alone deliberately — loosening it would
+materialise *its* defaults into every existing user's file on the next write.
+The fix belongs on the write side (§3), not the schema side.
 
 **Keep full-document snapshots, just cap the count.** Rejected. A snapshot of
 the whole document per write is the growth problem; capping it keeps the wrong

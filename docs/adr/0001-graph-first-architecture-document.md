@@ -149,12 +149,30 @@ removed — but that cascade is silent. The v2 cascade is recorded.
    before the graph existed.
 5. `dataFlows[]` and `history[]` carry over unchanged.
 
+6. **Migrated elements are `authoredBy: "agent"`, never `derived: true`.** A
+   migration runs no analysis. Claiming a derivation rule produced something
+   no rule ever saw would be a fabrication, and it would be a fabrication
+   baked into every migrated document permanently. The provenance a user
+   inherits must be the one that is actually true.
+
 `flows` stays a separate authored array in v2. A data flow is an ordered
 narrative, not a graph element, and it is consumed as one
 (`src/viewer/src/views/DataFlowView.tsx`,
 `src/learning/questions.ts:144-165`). Modelling it as a path through the graph is
 correct and is not a v2 requirement; recording it as a wart is better than
 forcing it into a shape that does not fit.
+
+### On `decided_by` not being stored
+
+Storing decisions as `subjects` means "which decision explains the *absence*
+of an edge" is unanswerable, and that is accepted. The same reasoning applies
+to `derives_from`, which ADR-0002 classifies as authored: it is an assertion
+a derivation cannot confirm and nothing ever checks it.
+
+That is not an argument against the projection. Decisions genuinely are not
+derivable. It is a note that `decided_by` is not special — it is one of two
+edge kinds with no derivation path at all, and ADR-0002's table is formatted
+as a binary precisely so the other one is not mistaken for cheaper work.
 
 ## Consequences
 
