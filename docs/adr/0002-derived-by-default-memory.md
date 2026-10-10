@@ -124,14 +124,37 @@ framework that isn't a dependency" — is either derived or gone.
 `arkive watch` runs the same derivation on change. The `post-commit` git hook is
 removed (ADR-0005).
 
-### The scanner's `src` assumption becomes a correctness bug
+### The scanner's `src` assumption is a credibility bug, not a coverage bug
 
 `src/analysis/scanner.ts:15` must scan the project tree with an explicit ignore
 list (`node_modules`, `.git`, `dist`, build output, vendored directories),
 configurable, defaulting to the whole tree. Under derived-by-default a missing
 derivation does not produce a quiet report — it produces an empty graph that
-*looks* correct. A silent omission in a derived system is indistinguishable from
-a fact, which is the one failure mode that must never exist here.
+*looks* correct.
+
+An earlier draft of this ADR filed this as a coverage defect. It is worse than
+that, and the distinction matters enough to state plainly:
+
+**`reconcile` printed "No drift detected. arkive/architecture.json is in
+sync." on documents it never examined.** "In sync" is an output people trust
+without reading it — it is the one string in this product that a user acts on
+without verifying. A scanner that silently scans nothing therefore does not
+just miss drift; it asserts its absence with the full authority of the tool.
+
+Three consequences, all now implemented:
+
+1. The scan reports **coverage** — `parseCoverage`, `filesScanned`,
+   `filesUnreadable`, `filesTruncated`. A partial parse never reports "in sync".
+2. Drift findings carry a `conclusive` flag. `critical` now actually emits
+   (`incomplete-scan`, `missing-manifest`, `dangling-edge`, `orphan-subject`).
+3. Import rules are **suppressed rather than run on half-evidence**. A rule
+   that fires on 40% of the files is worse than one that does not fire: it
+   produces findings the user cannot trust.
+
+`arkive status` and `arkive reconcile` exit non-zero when the scan is
+inconclusive. **This changes CI behaviour for anyone gating on their exit
+code** — it is the intended change, and it is called out here because it will
+surface as a surprise otherwise.
 
 ### The `trust the document` instruction is deleted
 

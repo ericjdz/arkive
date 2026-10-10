@@ -1,0 +1,112 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "v1-populated",
+    "description": "A v1 document with every top-level array populated, including a connection that dangles and a dependency that duplicates it.",
+    "created": "2026-05-05T00:00:00.000Z",
+    "lastUpdated": "2026-05-06T12:00:00.000Z"
+  },
+  "stack": {
+    "language": ["TypeScript"],
+    "runtime": ["Node.js"],
+    "framework": ["Express"],
+    "database": ["PostgreSQL"],
+    "infrastructure": ["npm"]
+  },
+  "services": [
+    {
+      "id": "web",
+      "name": "Web Client",
+      "type": "frontend",
+      "technology": "Next.js",
+      "description": "Server-rendered React app",
+      "ports": ["3000"],
+      "dependencies": ["api"]
+    },
+    {
+      "id": "api",
+      "name": "API Server",
+      "type": "backend",
+      "technology": "Express",
+      "description": "REST API",
+      "dependencies": ["db"]
+    },
+    {
+      "id": "db",
+      "name": "Database",
+      "type": "database",
+      "technology": "PostgreSQL",
+      "description": "Primary data store",
+      "dependencies": [],
+      "source": "inferred",
+      "confidence": 0.3
+    },
+    {
+      "id": "cache",
+      "name": "Cache",
+      "type": "cache",
+      "technology": "Redis",
+      "description": "Session cache",
+      "dependencies": [],
+      "source": "human-verified",
+      "confidence": 1
+    }
+  ],
+  "connections": [
+    {
+      "from": "web",
+      "to": "api",
+      "protocol": "HTTP/REST",
+      "description": "Browser calls the API",
+      "source": "human-verified",
+      "confidence": 1
+    },
+    {
+      "from": "api",
+      "to": "db",
+      "protocol": "TCP/SQL",
+      "description": "Queries",
+      "source": "inferred",
+      "confidence": 0.4
+    },
+    {
+      "from": "api",
+      "to": "deleted-service",
+      "protocol": "stdio",
+      "description": "A service that was removed without cleaning this up"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "dec-001",
+      "topic": "Database choice",
+      "decision": "PostgreSQL",
+      "rationale": "Relational model fits the domain",
+      "alternatives": [{ "name": "MongoDB", "whyNot": "Adds modelling complexity" }],
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "relatedServices": ["db", "api"]
+    }
+  ],
+  "dataFlows": [
+    {
+      "name": "Login",
+      "steps": [
+        { "actor": "web", "action": "submits credentials" },
+        { "actor": "api", "action": "validates" }
+      ]
+    }
+  ],
+  "history": [
+    {
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "action": "initial_scaffold",
+      "summary": "created"
+    },
+    {
+      "timestamp": "2026-05-06T12:00:00.000Z",
+      "action": "add_service",
+      "summary": "added the cache",
+      "agent": "codex"
+    }
+  ]
+}

@@ -4,7 +4,7 @@
     "name": "arkive",
     "description": "A living architecture document for AI-built projects.",
     "created": "2026-05-07T00:00:00.000Z",
-    "lastUpdated": "2026-05-09T17:26:00.000Z"
+    "lastUpdated": "2026-10-11T00:00:00.000Z"
   },
   "stack": {
     "language": ["TypeScript"],
@@ -85,6 +85,11 @@
       "timestamp": "2026-05-10T00:00:00.000Z",
       "action": "update",
       "summary": "Recovered four decisions orphaned by the archlearn->arkive path migration: moved the stale root architecture.json to arkive/legacy-architecture.json (see docs/legacy-architecture.md) and un-ignored docs/, which had prevented the Plan 1-6 documents from ever being committed"
+    },
+    {
+      "timestamp": "2026-10-11T00:00:00.000Z",
+      "action": "update",
+      "summary": "Moved the viewer's bearer-token handoff out of a server-injected script that monkey-patched window.fetch and into the viewer itself (src/viewer/src/api/auth.ts); open_viewer now returns a fragment URL carrying the run token (docs/issues/0017-close-auth-followups.md)"
     }
   ]
 }

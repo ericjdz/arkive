@@ -1,0 +1,61 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "v1-decisions-only",
+    "description": "The 62066bc shape, isolated: a document whose entire value is decisions, with no services at all.",
+    "created": "2026-05-05T00:00:00.000Z",
+    "lastUpdated": "2026-05-06T12:00:00.000Z"
+  },
+  "stack": {
+    "language": [],
+    "runtime": [],
+    "framework": [],
+    "database": [],
+    "infrastructure": []
+  },
+  "services": [],
+  "connections": [],
+  "decisions": [
+    {
+      "id": "dec-001",
+      "topic": "Packaging surface",
+      "decision": "Bundle the CLI in dist/ and publish templates alongside it.",
+      "rationale": "Keeps the installed package self-contained.",
+      "alternatives": [
+        {
+          "name": "Ship only source files",
+          "whyNot": "Would require a build step after install and make the package harder to use."
+        }
+      ],
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "relatedServices": []
+    },
+    {
+      "id": "dec-002",
+      "topic": "React version for viewer",
+      "decision": "Force React 19 via Vite aliases to deduplicate with the root project",
+      "rationale": "Viewer nested in src/viewer/ caused React 18 vs 19 duplicate, breaking hooks.",
+      "alternatives": [
+        {
+          "name": "Pin viewer to React 18 independently",
+          "whyNot": "Would still cause duplicate React instances since root has React 19"
+        }
+      ],
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "relatedServices": ["viewer"]
+    }
+  ],
+  "dataFlows": [
+    {
+      "name": "Nothing",
+      "steps": [{ "actor": "nobody", "action": "does nothing" }]
+    }
+  ],
+  "history": [
+    {
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "action": "initial_scaffold",
+      "summary": "created"
+    }
+  ]
+}

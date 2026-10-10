@@ -32,7 +32,13 @@ describe("CLI init command", () => {
 
     const arch = JSON.parse(readFileSync(archPath, "utf-8"));
     expect(arch.project.name).toBe("test-project");
-    expect(arch.version).toBe("1.0.0");
+    // A new project is born at the current schema version, not at v1 and
+    // migrated on first write. `version` is gone: it was a defaulted semver
+    // string that nothing branched on (ADR-0001:121-127).
+    expect(arch.schemaVersion).toBe(2);
+    expect(arch.version).toBeUndefined();
+    expect(arch.nodes).toEqual([]);
+    expect(arch.edges).toEqual([]);
   }, CLI_TIMEOUT);
 
   it("creates arkive directory structure with history and context subdirs", () => {

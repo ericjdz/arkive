@@ -1,6 +1,6 @@
 # 0017 — Close the auth follow-ups from 0016
 
-status: open
+status: done
 stream: security
 blocked_by: 0003
 
@@ -63,14 +63,65 @@ precisely so this can be deleted.
 
 ## Acceptance criteria
 
-- [ ] A viewer URL produced by the MCP `open_viewer` tool renders a working
-      viewer, authenticated.
-- [ ] No `fetch` monkey-patch remains anywhere in the codebase.
-- [ ] `buildViewerBootstrapScript` and its injection are deleted.
-- [ ] The fragment is stripped from the address bar on load.
-- [ ] Manual URL entry still works when the token is present, and 401s clearly
-      when it is not.
-- [ ] `npm run lint` and `npm test` pass.
+- [x] A viewer URL produced by the MCP `open_viewer` tool renders a working
+      viewer, authenticated. Verified against a real MCP server over stdio: the
+      returned URL's token returns 200, and the same URL without the token
+      returns 401.
+- [x] No `fetch` monkey-patch remains anywhere in the codebase. Verified by
+      grep over `src/` for `window.fetch =` and `globalThis.fetch =`: no matches.
+      The served HTML from a real run contains no injected script.
+- [x] `buildViewerBootstrapScript` and its injection are deleted. 57 lines
+      removed from `serve.ts`.
+- [x] The fragment is stripped from the address bar on load. Verified in a real
+      headless browser: address bar reads `http://localhost:PORT/` after load.
+- [x] Manual URL entry still works when the token is present, and 401s clearly
+      when it is not. Verified in a real browser: a hand-typed URL with session
+      memory cleared renders an explicit "401 Unauthorized" error, not a blank
+      page and not a silent fallback.
+- [x] `npm run lint` and `npm test` pass.
+
+### Deviation: two of 0016's 23 cases were removed, with cause
+
+`tests/cli/serve-security.test.ts` went from 23 cases to 21. Both removals
+asserted the mechanism this issue deletes, not the behaviour:
+
+- `"injects the bootstrap script into the viewer document"` called
+  `injectBootstrap(html, token)`. The function no longer exists; there is
+  nothing to inject.
+- `"attaches the bearer header to same-origin API calls, and only those"`
+  executed the injected script via `new Function` against a fake `window`.
+
+The behaviour moved, it did not weaken. `tests/viewer/api-auth.test.ts`
+asserts it against the real viewer code: a same-origin call gets
+`Bearer <token from the fragment>`, a call to `https://evil.example` gets no
+header at all. All 21 remaining boundary cases are unmodified — bare-URL 401,
+wrong token, non-bearer scheme, cross-origin 403, preflight 403, exact origin,
+no-wildcard, Host validation, rebound Host, shutdown 401/403, DELETE 401, and
+"401s every /api route".
+
+### Deviation: the token goes into `sessionStorage`
+
+Not in the original scope, and necessary. Stripping the fragment is an
+acceptance criterion, but once the bridge is gone the server no longer
+re-injects a copy into every HTML response — so stripping the fragment would
+make F5 permanently break the viewer. `sessionStorage` is per-origin and
+per-tab, so a hostile page cannot read it, and the server still requires the
+token on every `/api/*`.
+
+Cost: the token dies with the tab or with a site-data clear, and you re-open
+the URL `serve` / `open_viewer` printed.
+
+## Follow-ups raised during implementation
+
+1. **`open_viewer`'s `alreadyRunning` branch is module state.** If the MCP
+   server restarts while the viewer keeps running, the tool forgets the token
+   and the live server becomes unreachable. Pre-existing, but the same shape as
+   the bug this issue fixed, and now more visible because the URL depends on
+   the token. Needs a health endpoint that returns the current token, or a
+   pidfile.
+2. **`arkive stop`** must be checked against the token-gated `/api/shutdown`.
+3. **Consider a TTL or a visible indicator** in the viewer header. The token is
+   now long-lived for the tab rather than per-request.
 
 ## Do not regress
 

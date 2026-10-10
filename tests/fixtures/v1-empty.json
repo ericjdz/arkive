@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "v1-empty",
+    "description": "The smallest document a v1 arkive could write: a scaffold and nothing else.",
+    "created": "2026-05-05T00:00:00.000Z",
+    "lastUpdated": "2026-05-05T00:00:00.000Z"
+  },
+  "stack": {
+    "language": [],
+    "runtime": [],
+    "framework": [],
+    "database": [],
+    "infrastructure": []
+  },
+  "services": [],
+  "connections": [],
+  "decisions": [],
+  "dataFlows": [],
+  "history": [
+    {
+      "timestamp": "2026-05-05T00:00:00.000Z",
+      "action": "initial_scaffold",
+      "summary": "Architecture document created"
+    }
+  ]
+}

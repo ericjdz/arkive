@@ -87,10 +87,31 @@ joining `decision.subjects` against the graph, never stored. Consequences:
 - A decision whose subject no longer exists is detectable (`subjects[]` entry
   that resolves to nothing) and is reported, not deleted.
 
-### `services` survives as a computed projection, never stored
+### `services` survives as a derived view — persisted, never authored
 
-`services[]` is removed from the document. `project(services: Service[])` is a
-pure function of the graph, exposed at the existing consumers:
+**Correcting an earlier draft of this ADR**, which said `services[]` is
+"removed from the document... never stored." That does not survive contact
+with two installed skills that edit `arkive/architecture.json` as text.
+Removing the field creates a second source of truth the moment any agent or
+human writes to it, which is worse than the duplication this section was
+trying to prevent.
+
+The resolution:
+
+| Property | Rule |
+|---|---|
+| Persisted? | Yes, for compatibility with existing consumers |
+| Authorable? | **Never.** Read recomputes it; write regenerates it from the graph |
+| Removal | Only through the view **if the v1 document could have produced it** (`legacyType` / `legacyEdge`) |
+
+That last rule is load-bearing. Without it the derived view deletes the graph
+it is derived from: a caller adds to `nodes[]` without updating the stale
+`services[]` sitting beside it, the write folds the view onto the graph, and
+the node is silently tombstoned. That was a real bug, caught during
+implementation and now covered by a regression test.
+
+`project(services: Service[])` remains a pure function of the graph, exposed
+at the existing consumers:
 
 | Consumer | Current | v2 |
 |---|---|---|
@@ -99,9 +120,9 @@ pure function of the graph, exposed at the existing consumers:
 | `src/learning/questions.ts:59-102` | `arch.services` | projection (then deleted, ADR-0003) |
 | `src/cli/commands/export.ts:22-26` | `generateMermaid(arch.services, arch.connections)` | projection |
 
-No dual source of truth. Nothing is written twice, so nothing can disagree.
-Existing clients keep working because the *resource shape* is unchanged even
-though the *storage shape* is not.
+The view does not survive v0.3. It exists so existing consumers keep working
+during the transition, and it is deleted once the skills stop teaching it.
+Full reasoning in `docs/decisions/services-projection.md`.
 
 ### Node deletion
 
@@ -154,6 +175,21 @@ removed — but that cascade is silent. The v2 cascade is recorded.
    no rule ever saw would be a fabrication, and it would be a fabrication
    baked into every migrated document permanently. The provenance a user
    inherits must be the one that is actually true.
+7. **The migration preserves unknown v1 keys.** `migrateV1ToV2` is a semantic
+   transform — it drops `type`, `source`, and `confidence` — and a semantic
+   transform built with `z.object()` deletes every key the v1 schema did not
+   know. **That reintroduces ADR-0006 §3's exact failure class through the
+   migration path**, which is the one place a user cannot see it happen.
+
+   `carryV1UnknownKeys` (`src/io/`) re-attaches them onto the migrated nodes
+   and edges. Recorded here because anyone reimplementing the migration will
+   hit this, and because the loss is silent by construction.
+
+**Enforcement point moved.** `readArchitecture` does **not** enforce
+referential integrity: migration preserves dangling references by design (step
+3 above), so it cannot reject them without discarding data. Enforcement is in
+`writeArchitecture`, which is also where it belongs — a document that cannot
+be written is one that cannot be lost.
 
 `flows` stays a separate authored array in v2. A data flow is an ordered
 narrative, not a graph element, and it is consumed as one
