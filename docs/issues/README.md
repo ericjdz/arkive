@@ -11,7 +11,8 @@ Status: `open` · `in-flight` · `blocked` · `done`
 | Wave | Issues | Gate to start | Depends on |
 |---|---|---|---|
 | 0 | 0001, 0002 | — | — |
-| 1 | 0003, 0013, 0016 | Wave 0 | 0001, 0002 |
+| 1 | 0003, 0013, ~~0016~~ | Wave 0 | 0001, 0002 |
+| 1b | 0017, 0018 | 0016 done | 0016 |
 | 2 | 0004 | Wave 1 | 0003, 0013 |
 | 3 | 0005, 0006, 0011, 0012 | Wave 2 | 0004 |
 | 4 | 0008, 0007 | Wave 3 | 0004 |
@@ -38,7 +39,9 @@ Status: `open` · `in-flight` · `blocked` · `done`
 | 0013 | Data integrity | integrity | open | 0004 |
 | 0014 | Self-dogfood arkive | meta | open | 0005, 0006, 0008 |
 | 0015 | Retire quiz learning mode | comprehend | open | 0009 |
-| 0016 | Viewer server trust boundary | security | open | — |
+| 0016 | Viewer server trust boundary | security | done | 0017 |
+| 0017 | Close the auth follow-ups from 0016 | security | open | — |
+| 0018 | Viewer build hygiene | view | open | 0010 |
 
 ## Critical path
 
@@ -52,6 +55,23 @@ Status: `open` · `in-flight` · `blocked` · `done`
 `0013` (data integrity) and `0016` (server trust boundary) are both on the
 critical path. They exist because the product has already destroyed user data
 silently, and currently exposes an unauthenticated server on every interface.
+
+`0016` is **done**, verified with before/after evidence against a live server.
+It produced `0017`, which carries its own two follow-ups — including a live
+regression it could not fix inside its file boundary.
+
+## Corrections log
+
+Sub-agent claims that verification disproved. Recorded so the same claim is not
+re-litigated later.
+
+- **"The static viewer is never served in the packaged build"** (reported by the
+  0016 agent). **False.** `serve.ts:346` resolves `resolve(__dirname,
+  "../viewer")`, which from `dist/cli/index.js` is `dist/viewer` — exactly where
+  Vite emits. Verified by running `npm run build:viewer` and listing the output
+  (`dist/viewer/index.html`, `dist/viewer/assets/index-*.js`). The *directory
+  contents* observation was accurate — only stray `.d.ts` files were present at
+  that moment — but the causal claim was not. Split out as `0018`.
 
 ## Parallelism constraints
 
