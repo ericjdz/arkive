@@ -149,21 +149,24 @@ describe("regression E — unknown keys survive a full read -> write cycle", () 
     writeFileSync(architecturePath(tempDir), JSON.stringify(original, null, 2), "utf-8");
 
     // `lastUpdated` is the one field a write is expected to change, so it is
-    // normalised out of every comparison. Everything else must be identical to
-    // what the user had on disk.
-    const withVolatilePinned = (doc: Record<string, unknown>): Record<string, unknown> => {
+    // normalised out of every comparison.
+    const stripVolatile = (doc: unknown): string => {
       const clone = JSON.parse(JSON.stringify(doc)) as Record<string, unknown>;
-      (clone.project as Record<string, unknown>).lastUpdated =
-        (original.project as Record<string, unknown>).lastUpdated;
-      return clone;
+      (clone.project as Record<string, unknown>).lastUpdated = "<volatile>";
+      return stableStringify(clone);
     };
 
+    // The first write is where the *shape* changes: a v1 document becomes a v2
+    // graph. That is the point of the migration, and it is asserted directly by
+    // `migration.test.ts`. What must not change is a single byte of the user's
+    // own data — so the invariant this test guards is measured from the first
+    // write onward, once the shape has settled.
     const read = readArchitecture(tempDir);
     expect(read.success).toBe(true);
     if (!read.success) return;
     expect(writeArchitecture(tempDir, read.data).success).toBe(true);
 
-    const afterFirstWrite = withVolatilePinned(
+    const afterFirstWrite = stripVolatile(
       JSON.parse(readFileSync(architecturePath(tempDir), "utf-8"))
     );
 
@@ -172,12 +175,68 @@ describe("regression E — unknown keys survive a full read -> write cycle", () 
     if (!second.success) return;
     expect(writeArchitecture(tempDir, second.data).success).toBe(true);
 
-    const afterSecondWrite = withVolatilePinned(
+    const afterSecondWrite = stripVolatile(
       JSON.parse(readFileSync(architecturePath(tempDir), "utf-8"))
     );
 
-    expect(afterFirstWrite).toEqual(original);
-    expect(afterSecondWrite).toEqual(original);
+    expect(afterSecondWrite).toBe(afterFirstWrite);
+  });
+
+  it("every unknown key in a v1 fixture survives the v1 -> v2 migration", () => {
+    // The migration is a *semantic* transform: it reads named fields and builds
+    // a fresh object. Anything it does not name falls on the floor — which is
+    // the class ADR-0006 §3 exists to close, reintroduced by the upgrade itself.
+    // `carryV1UnknownKeys` is what puts each key back on the element it came from.
+    const original = fixtureWithUnknownKeys();
+    writeFileSync(architecturePath(tempDir), JSON.stringify(original, null, 2), "utf-8");
+
+    const read = readArchitecture(tempDir);
+    expect(read.success).toBe(true);
+    if (!read.success) return;
+    expect(writeArchitecture(tempDir, read.data).success).toBe(true);
+
+    const after = JSON.parse(readFileSync(architecturePath(tempDir), "utf-8")) as Record<
+      string,
+      unknown
+    >;
+
+    // Document level.
+    expect(after["x-document-level"]).toEqual({
+      addedBy: "a human",
+      why: "not in the schema",
+    });
+    expect((after.project as Record<string, unknown>)["x-project-level"]).toBe("kept");
+    expect((after.stack as Record<string, unknown>)["x-stack-level"]).toEqual([1, 2, 3]);
+
+    // Node level — `services[0]` became `nodes[0]`.
+    const node = (after.nodes as Array<Record<string, unknown>>)[0];
+    expect(node["x-service-level"]).toEqual({ owner: "platform-team" });
+
+    // Edge level — the one connection became one edge.
+    const edge = (after.edges as Array<Record<string, unknown>>).find(
+      (e) => e.label === "loopback"
+    );
+    expect(edge?.["x-connection-level"]).toBe("kept");
+
+    // Decision, alternative, dataFlow, step, history.
+    const decision = (after.decisions as Array<Record<string, unknown>>)[0];
+    expect(decision["x-decision-level"]).toBe("kept");
+    expect(decision["alternatives_with_unknowns"]).toEqual([
+      { name: "Strip them", whyNot: "loss", "x-alternative-level": "kept" },
+    ]);
+    const flow = (after.dataFlows as Array<Record<string, unknown>>)[0];
+    expect(flow["x-dataflow-level"]).toBe("kept");
+    expect((flow.steps as Array<Record<string, unknown>>)[0]["x-step-level"]).toBe("kept");
+    expect((after.history as Array<Record<string, unknown>>)[0]["x-history-level"]).toBe("kept");
+
+    // And the same keys are still readable through the deprecated projection,
+    // so a v1 consumer editing the file directly cannot lose them either.
+    const reread = readArchitecture(tempDir);
+    expect(reread.success).toBe(true);
+    if (!reread.success) return;
+    expect(
+      (reread.data.services[0] as unknown as Record<string, unknown>)["x-service-level"]
+    ).toEqual({ owner: "platform-team" });
   });
 
   it("preserves a hand-added key across an update that touches a known field", () => {
@@ -228,9 +287,13 @@ describe("regression E — unknown keys survive a full read -> write cycle", () 
       expect(read.success).toBe(true);
       if (!read.success) return;
       expect(writeArchitecture(tempDir, read.data).success).toBe(true);
-      expected = stripVolatile(
+      const onDisk = stripVolatile(
         JSON.parse(readFileSync(architecturePath(tempDir), "utf-8"))
       );
+      // Every cycle after the first must be byte-identical to the one before.
+      // The first is exempt: that is where v1 becomes v2.
+      if (i > 0) expect(onDisk).toBe(expected);
+      expected = onDisk;
     }
 
     const final = JSON.parse(readFileSync(architecturePath(tempDir), "utf-8"));
@@ -260,6 +323,12 @@ describe("regression E — unknown keys survive a full read -> write cycle", () 
     expect(read.success).toBe(true);
     if (!read.success) return;
 
+    // Sparse v1 documents still produce a usable v2 graph: `migrateDocument`
+    // calls `migrateV1ToV2`, which reads `v1.services.map(...)`, so the v1
+    // schema's defaults have to be merged in before the migration runs. Without
+    // that, this used to throw `Cannot read properties of undefined`.
+    expect(read.data.schemaVersion).toBe(2);
+    expect(read.data.nodes).toEqual([]);
     expect(read.data.services).toEqual([]);
     expect(read.data.connections).toEqual([]);
     expect(read.data.decisions).toEqual([]);

@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { join, basename } from "node:path";
-import { createEmptyArchitecture } from "../../schema/validate.js";
+import { createEmptyArchitectureV2 } from "../../schema/validate-graph.js";
 import { renderTemplate } from "../../templates/render.js";
 import { injectArkiveBlock } from "./inject.js";
 import {
@@ -150,7 +150,7 @@ function buildPlan(
       run: () => {},
     });
   } else {
-    const scaffold = createEmptyArchitecture(projectName, description);
+    const scaffold = createEmptyArchitectureV2(projectName, description);
     steps.push({
       action: "create",
       path: archPath,

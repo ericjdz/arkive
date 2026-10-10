@@ -14,8 +14,19 @@ import {
   saveSnapshot,
   writeArchitecture,
 } from "../../src/io/architecture-file.js";
-import { createEmptyArchitecture } from "../../src/schema/validate.js";
-import type { Architecture } from "../../src/schema/types.js";
+import { createEmptyArchitectureV2 } from "../../src/schema/validate-graph.js";
+import type { GraphNode } from "../../src/schema/graph.js";
+
+/** A distinct v2 node, so every write below produces a genuinely new state. */
+function node(id: string, name: string): GraphNode {
+  return {
+    id,
+    kind: "service",
+    name,
+    summary: `state for ${name}`,
+    provenance: { derived: false, authoredBy: "agent" },
+  };
+}
 
 /**
  * Growth bounds. ADR-0002 and ADR-0006 §2.
@@ -40,7 +51,7 @@ describe("regression K — history[] is bounded and says so", () => {
   });
 
   it("caps 200 sequential updates at 50 entries with an explicit flag", () => {
-    const arch = createEmptyArchitecture("growing", "Grows a lot");
+    const arch = createEmptyArchitectureV2("growing", "Grows a lot");
     expect(writeArchitecture(tempDir, arch).success).toBe(true);
 
     for (let i = 0; i < 200; i += 1) {
@@ -75,7 +86,7 @@ describe("regression K — history[] is bounded and says so", () => {
   }, 120_000);
 
   it("keeps the newest entries, not the oldest", () => {
-    const arch = createEmptyArchitecture("newest", "Newest wins");
+    const arch = createEmptyArchitectureV2("newest", "Newest wins");
     for (let i = 0; i < 60; i += 1) {
       arch.history.push({
         timestamp: new Date(Date.UTC(2026, 0, 1, 0, 0, i)).toISOString(),
@@ -92,16 +103,16 @@ describe("regression K — history[] is bounded and says so", () => {
   });
 
   it("leaves a document at or under the cap completely alone", () => {
-    const arch = createEmptyArchitecture("small", "Small");
+    const arch = createEmptyArchitectureV2("small", "Small");
     const capped = capHistory(arch);
     expect(capped).toBe(arch);
     expect(capped.historyTruncated).toBeUndefined();
   });
 
   it("the flag is sticky — it is not cleared once history fits again", () => {
-    const arch = createEmptyArchitecture("sticky", "Sticky") as Architecture & {
-      historyTruncated?: boolean;
-    };
+    const arch = createEmptyArchitectureV2("sticky", "Sticky") as ReturnType<
+      typeof createEmptyArchitectureV2
+    > & { historyTruncated?: boolean };
     for (let i = 0; i < 60; i += 1) {
       arch.history.push({
         timestamp: new Date(Date.UTC(2026, 0, 1, 0, 0, i)).toISOString(),
@@ -118,9 +129,9 @@ describe("regression K — history[] is bounded and says so", () => {
   });
 
   it("a flag written by hand is not a reason to refuse the document", () => {
-    const arch = createEmptyArchitecture("flagged", "Already flagged") as Architecture & {
-      historyTruncated?: boolean;
-    };
+    const arch = createEmptyArchitectureV2("flagged", "Already flagged") as ReturnType<
+      typeof createEmptyArchitectureV2
+    > & { historyTruncated?: boolean };
     arch.historyTruncated = true;
     const write = writeArchitecture(tempDir, arch);
     expect(write.success).toBe(true);
@@ -142,15 +153,8 @@ describe("regression L — snapshots are bounded and deduplicated", () => {
 
   it("200 distinct writes produce at most 10 snapshot files", () => {
     for (let i = 0; i < 200; i += 1) {
-      const arch = createEmptyArchitecture("snapshots", "Bounded");
-      arch.services.push({
-        id: `svc-${i}`,
-        name: `Service ${i}`,
-        type: "other",
-        technology: "none",
-        description: "distinct state",
-        dependencies: [],
-      });
+      const arch = createEmptyArchitectureV2("snapshots", "Bounded");
+      arch.nodes.push(node(`svc-${i}`, `Service ${i}`));
       const write = writeArchitecture(tempDir, arch);
       expect(write.success).toBe(true);
     }
@@ -164,7 +168,7 @@ describe("regression L — snapshots are bounded and deduplicated", () => {
   it("identical content at a different timestamp is the same state, not a new one", () => {
     // `lastUpdated` changes on every write. Hashing the document as-is would
     // make every single write a "distinct state" and defeat the dedup.
-    const base = createEmptyArchitecture("dedup", "Dedup");
+    const base = createEmptyArchitectureV2("dedup", "Dedup");
 
     const first = saveSnapshot(tempDir, base);
     const second = saveSnapshot(tempDir, {
@@ -183,27 +187,13 @@ describe("regression L — snapshots are bounded and deduplicated", () => {
     // two writes landing on the same millisecond produced the *same* file and
     // the second silently overwrote the first.
     const stamp = "2026-05-07T00:00:00.123Z";
-    const a = createEmptyArchitecture("collision", "A");
+    const a = createEmptyArchitectureV2("collision", "A");
     a.project.lastUpdated = stamp;
-    a.services.push({
-      id: "a",
-      name: "A",
-      type: "other",
-      technology: "x",
-      description: "first state",
-      dependencies: [],
-    });
+    a.nodes.push(node("a", "A"));
 
-    const b = createEmptyArchitecture("collision", "B");
+    const b = createEmptyArchitectureV2("collision", "B");
     b.project.lastUpdated = stamp; // Same millisecond, different content.
-    b.services.push({
-      id: "b",
-      name: "B",
-      type: "other",
-      technology: "y",
-      description: "second state",
-      dependencies: [],
-    });
+    b.nodes.push(node("b", "B"));
 
     const firstPath = saveSnapshot(tempDir, a);
     const secondPath = saveSnapshot(tempDir, b);
@@ -218,9 +208,9 @@ describe("regression L — snapshots are bounded and deduplicated", () => {
   });
 
   it("filenames are filesystem-safe and sorted oldest-first", () => {
-    const a = createEmptyArchitecture("sorted", "First");
+    const a = createEmptyArchitectureV2("sorted", "First");
     a.project.lastUpdated = "2026-05-01T00:00:00.000Z";
-    const b = createEmptyArchitecture("sorted", "Second");
+    const b = createEmptyArchitectureV2("sorted", "Second");
     b.project.lastUpdated = "2026-05-09T00:00:00.000Z";
 
     saveSnapshot(tempDir, a);
@@ -236,9 +226,9 @@ describe("regression L — snapshots are bounded and deduplicated", () => {
   });
 
   it("a snapshot round-trips and keeps unknown keys", () => {
-    const arch = createEmptyArchitecture("snap-keys", "Snapshot keys") as Architecture & {
-      "x-custom"?: string;
-    };
+    const arch = createEmptyArchitectureV2("snap-keys", "Snapshot keys") as ReturnType<
+      typeof createEmptyArchitectureV2
+    > & { "x-custom"?: string };
     arch["x-custom"] = "preserved in snapshots too";
 
     const path = saveSnapshot(tempDir, arch);
@@ -252,16 +242,9 @@ describe("regression L — snapshots are bounded and deduplicated", () => {
   });
 
   it("does not recurse into snapshots when it prunes", () => {
-    const arch = createEmptyArchitecture("prune", "Prune me");
+    const arch = createEmptyArchitectureV2("prune", "Prune me");
     for (let i = 0; i < 20; i += 1) {
-      arch.services.push({
-        id: `s-${i}`,
-        name: `S${i}`,
-        type: "other",
-        technology: "t",
-        description: `state ${i}`,
-        dependencies: [],
-      });
+      arch.nodes.push(node(`s-${i}`, `S${i}`));
       saveSnapshot(tempDir, arch);
     }
 
@@ -285,7 +268,7 @@ describe("existing snapshot behaviour is unchanged where it matters", () => {
 
   it("writeArchitecture auto-saves exactly one snapshot", () => {
     mkdirSync(join(tempDir, ARKIVE_DIR), { recursive: true });
-    expect(writeArchitecture(tempDir, createEmptyArchitecture("auto", "Auto")).success).toBe(true);
+    expect(writeArchitecture(tempDir, createEmptyArchitectureV2("auto", "Auto")).success).toBe(true);
     expect(readdirSync(join(tempDir, ARKIVE_DIR, "history")).filter((f) => f.endsWith(".json"))).toHaveLength(1);
   });
 

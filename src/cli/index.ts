@@ -78,9 +78,13 @@ program
   .command("reconcile")
   .description("Detect drift between arkive/architecture.json and codebase")
   .option("-d, --dir <path>", "Project directory containing arkive/architecture.json", ".")
+  .option(
+    "--quiet",
+    "Print nothing. Used by the post-commit hook (src/cli/commands/hooks.ts); the exit code still reports critical findings."
+  )
   .action(async (options) => {
     const dir = resolve(options.dir);
-    await reconcileCommand({ dir });
+    await reconcileCommand({ dir, quiet: options.quiet ?? false });
   });
 
 program

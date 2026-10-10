@@ -1,9 +1,10 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
 import { readArchitecture } from "../io/architecture-file.js";
+import type { ArchitectureDocument } from "../io/architecture-file.js";
 import { readPromptQueue } from "../io/prompt-queue.js";
 import { buildSessionContext } from "./session-context.js";
-import type { Architecture } from "../schema/types.js";
+import { CURRENT_SCHEMA_VERSION } from "../schema/graph.js";
 
 export interface ArchitectureResourceDescriptor {
   name: string;
@@ -71,7 +72,7 @@ export const ARCHITECTURE_RESOURCES: ArchitectureResourceDescriptor[] = [
   },
 ];
 
-function loadOrThrow(dir: string): Architecture {
+function loadOrThrow(dir: string): ArchitectureDocument {
   const result = readArchitecture(dir);
   if (!result.success) {
     throw new Error(result.error);
@@ -97,10 +98,22 @@ export async function readOverview(
 ): Promise<ReadResourceResult> {
   const arch = loadOrThrow(dir);
   return jsonResource(uri, {
-    version: arch.version,
+    // `schemaVersion`, not `version`. `version` was a defaulted semver string
+    // that nothing branched on and that only ever got echoed back here
+    // (ADR-0001:121-127); a caller that wants to know whether this document has
+    // been migrated needs the field that actually gates the migration.
+    schemaVersion: arch.schemaVersion,
+    // `version === "1.0.0"` means the file on disk still has no `schemaVersion`.
+    // It is in memory as v2; only a write persists that (issue 0004 §3 — a read
+    // never rewrites the file).
+    pendingMigration: arch.version === "1.0.0",
+    currentSchemaVersion: CURRENT_SCHEMA_VERSION,
     project: arch.project,
     stack: arch.stack,
     counts: {
+      nodes: arch.nodes.length,
+      edges: arch.edges.length,
+      /** The deprecated v1 view, kept so existing clients see the same shape. */
       services: arch.services.length,
       connections: arch.connections.length,
       decisions: arch.decisions.length,
@@ -115,7 +128,16 @@ export async function readServices(
   uri: URL
 ): Promise<ReadResourceResult> {
   const arch = loadOrThrow(dir);
+  // The projection, not the graph. ADR-0001:90-104 — the resource *shape* is
+  // unchanged even though the storage shape is not, which is what keeps every
+  // existing client working while consumers migrate. `nodes`/`edges` are
+  // included so a caller that has moved to v2 can stop reading a projection.
   return jsonResource(uri, {
+    _deprecated:
+      "services/connections are a computed projection of nodes/edges. Edit the " +
+      "graph; read nodes/edges if you have migrated.",
+    nodes: arch.nodes,
+    edges: arch.edges,
     services: arch.services,
     connections: arch.connections,
   });
@@ -126,6 +148,9 @@ export async function readDecisions(
   uri: URL
 ): Promise<ReadResourceResult> {
   const arch = loadOrThrow(dir);
+  // Each decision carries both `subjects` (v2, authoritative) and
+  // `relatedServices` (projected from the node subjects) so a v1 consumer keeps
+  // reading the same field.
   return jsonResource(uri, { decisions: arch.decisions });
 }
 

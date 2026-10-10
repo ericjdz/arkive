@@ -16,13 +16,17 @@ export function exportArchitecture(options: ExportOptions): void {
     process.exit(1);
   }
 
+  // The v1 shape is what the mermaid exporter and the markdown generator both
+  // take. `readArchitecture` attaches it as a computed projection of
+  // `nodes`/`edges`, so nothing here reaches into the graph or invents fields
+  // the projection already provides.
   const arch = read.data;
   let content: string;
 
   if (options.format === "mermaid") {
     content = generateMermaid(arch.services, arch.connections);
   } else {
-    content = generateMarkdown(arch as Parameters<typeof generateMarkdown>[0]);
+    content = generateMarkdown(arch as unknown as Parameters<typeof generateMarkdown>[0]);
   }
 
   if (options.output) {

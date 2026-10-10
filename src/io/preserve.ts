@@ -63,6 +63,69 @@ export function applyZodDefaults<T>(document: unknown, zodOutput: T): T {
 }
 
 /**
+ * Copy every key `zodSource` does not recognise from `source` onto `target`.
+ *
+ * `migrateV1ToV2` is a *semantic* transform: it reads named fields off a v1
+ * document and builds a fresh v2 one, so a key the v1 schema did not know is
+ * dropped on the floor. That is correct for the fields it renames and wrong
+ * for everything else, and "wrong" here means a user field destroyed by the
+ * next write — the exact class ADR-0006 §3 closes. v1 is still a stripping
+ * schema and is left that way deliberately (loosening it would materialise its
+ * `.default()`s into every existing user's file); the fix belongs on the write
+ * side, and this is the write side.
+ *
+ * `zodSource` is the oracle, not a hand-written key list: whatever Zod knew
+ * about is known, and whatever it did not is by definition the user's.
+ *
+ * A key the target already has is never overwritten. The migrated object is
+ * authoritative for everything the schema knows about; this only fills in what
+ * the schema does not have an opinion on.
+ */
+export function carryUnknownKeys<T>(
+  source: unknown,
+  zodSource: unknown,
+  target: T,
+  omit: ReadonlySet<string> = new Set()
+): T {
+  if (Array.isArray(source) && Array.isArray(zodSource)) {
+    source.forEach((item, index) => {
+      const zodItem = zodSource[index];
+      const targetItem = Array.isArray(target) ? target[index] : undefined;
+      if (zodItem !== undefined && targetItem !== undefined) {
+        carryUnknownKeys(item, zodItem, targetItem, omit);
+      }
+    });
+    return target;
+  }
+
+  if (!isPlainObject(source) || !isPlainObject(zodSource) || !isPlainObject(target)) {
+    return target;
+  }
+
+  const sink = target as Record<string, unknown>;
+  for (const key of Object.keys(source)) {
+    if (omit.has(key)) continue;
+
+    const zodValue = zodSource[key];
+    if (zodValue === undefined) {
+      // Zod has never heard of it, so it is the user's. Never clobber.
+      if (!(key in sink)) sink[key] = source[key];
+      continue;
+    }
+
+    const targetValue = sink[key];
+    if (
+      (Array.isArray(source[key]) && Array.isArray(targetValue)) ||
+      (isPlainObject(source[key]) && isPlainObject(targetValue))
+    ) {
+      carryUnknownKeys(source[key], zodValue, targetValue, omit);
+    }
+  }
+
+  return target;
+}
+
+/**
  * `JSON.stringify` with object keys sorted, so two structurally identical
  * documents hash the same regardless of key order.
  */
