@@ -188,7 +188,7 @@ After init, **immediately scan the codebase** and populate `arkive/architecture.
 
 ### Step 5: Use session context on every session start
 
-Read `architecture://session-context` at the start of every session instead of `arkive/architecture.json` directly. It returns a compact, token-efficient summary (stack, top services, recent decisions, active drift warnings) without dumping the full document into context.
+Read `architecture://session-context` at the start of every session instead of `arkive/architecture.json` directly. It returns a ranked summary **bounded at 2,000 tokens — typically ~1,700 for a large project** — and prints its own measurement per section. It names what it dropped and points at the resource that returns the rest.
 
 ### Manual MCP Registration (if auto-detection fails)
 
@@ -373,7 +373,7 @@ If MCP registration is not possible in your environment, arkive still works:
 | `architecture://history` | Chronological change log. |
 | `architecture://hooks` | Lifecycle rules for maintaining the architecture document. |
 | `architecture://prompts` | Queued architecture prompts with summary counts. |
-| `architecture://session-context` | Token-efficient session summary with stack, top services, recent decisions, and drift warnings. |
+| `architecture://session-context` | Token-bounded session summary (≤ 2,000 tokens, measured and printed per section) with ranked nodes, edges, decisions and recent changes. Truncation is always disclosed. |
 
 ---
 
