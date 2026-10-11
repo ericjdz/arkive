@@ -117,7 +117,12 @@ describe("reconcile never claims agreement it did not verify", () => {
   it("a polyglot repository lowers coverage and says so", () => {
     mkdirSync(join(tempDir, "src"), { recursive: true });
     writeFileSync(join(tempDir, "src", "a.ts"), `import express from "express";`, "utf-8");
-    writeFileSync(join(tempDir, "src", "b.py"), `import requests`, "utf-8");
+    // Ruby, not Python: arkive now derives Python, so a `.py` file is no
+    // longer an unreadable language and this test would be asserting that a
+    // capability we have does not exist. The point of the test is that a
+    // language with no extractor drags coverage down *and says which*, and Ruby
+    // still demonstrates exactly that.
+    writeFileSync(join(tempDir, "src", "b.rb"), `require 'json'`, "utf-8");
     writeFileSync(
       join(tempDir, "package.json"),
       JSON.stringify({ dependencies: { express: "^4.0.0" } }),
@@ -128,7 +133,8 @@ describe("reconcile never claims agreement it did not verify", () => {
 
     expect(exit.output).not.toMatch(/is in sync/i);
     expect(exit.output).toMatch(/50\.0%/);
-    expect(exit.output).toMatch(/not JavaScript\/TypeScript/);
+    expect(exit.output).toMatch(/no extractor/i);
+    expect(exit.output).toMatch(/\.rb/);
   }, CLI_TIMEOUT);
 
   it("reports the scan coverage alongside any other findings", () => {
