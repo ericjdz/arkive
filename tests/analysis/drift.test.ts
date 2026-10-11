@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { detectDrift } from "../../src/analysis/drift.js";
-import type { DriftReport } from "../../src/analysis/drift.js";
-import type { ScanResult } from "../../src/analysis/scanner.js";
+import type { DriftReport, DriftScan } from "../../src/analysis/drift.js";
 import { createEmptyArchitecture } from "../../src/schema/validate.js";
 import type { Architecture } from "../../src/schema/types.js";
 
@@ -12,8 +11,12 @@ import type { Architecture } from "../../src/schema/types.js";
  * The default is `filesScanned: 1` with `parseCoverage: 1`. A rule that reports
  * nothing because it looked at nothing is not reporting agreement, and this
  * file's whole reason for existing is to stop that reading as agreement.
+ *
+ * Typed as `DriftScan` rather than `ScanResult` on purpose: a rule's input is
+ * what the rule reads, and widening it back to the whole scan would make every
+ * future field a breaking change here.
  */
-function scan(overrides: Partial<ScanResult> = {}): ScanResult {
+function scan(overrides: Partial<DriftScan> = {}): DriftScan {
   return {
     hasPackageJson: true,
     dependencies: [],

@@ -29,7 +29,9 @@ export type DriftKind =
   | "incomplete-scan"
   | "missing-manifest"
   | "orphan-subject"
-  | "dangling-edge";
+  | "dangling-edge"
+  | "vanished-module"
+  | "unresolved-import";
 
 export interface DriftWarning {
   kind: DriftKind;
@@ -38,6 +40,36 @@ export interface DriftWarning {
   message: string;
   suggestion: string;
 }
+
+/**
+ * The summary half of a scan — the part `detectDrift` reasons over.
+ *
+ * Narrower than `ScanResult` on purpose. A scan also carries a file index,
+ * per-file extraction and a byte count that no rule below reads, and depending
+ * on all of it would make every future scan field a breaking change for the
+ * whole analysis layer. The one optional member is documented at its use site.
+ */
+export type DriftScan = Pick<
+  ScanResult,
+  | "hasPackageJson"
+  | "dependencies"
+  | "imports"
+  | "parseCoverage"
+  | "filesScanned"
+  | "filesUnreadable"
+  | "filesTruncated"
+  | "bytesScanned"
+  | "roots"
+  | "truncated"
+  | "scanNotes"
+> & {
+  /**
+   * Optional so a caller holding only the summary shape still type-checks. When
+   * present it lets the module rules confirm a `module` node's `path` against
+   * the filesystem; when absent they fall back to the tombstone alone.
+   */
+  fileIndex?: ReadonlySet<string>;
+};
 
 export interface DriftReport {
   warnings: DriftWarning[];
@@ -72,9 +104,25 @@ const TOOLING_DENYLIST = new Set([
   "@modelcontextprotocol/sdk",
 ]);
 
+/**
+ * Derivation output a rule needs and the document cannot supply.
+ *
+ * Narrower than `DerivationResult` for the same reason `DriftScan` is narrower
+ * than `ScanResult`: `drift.ts` should not have to know how a graph was built.
+ */
+export interface DriftDerivation {
+  unresolved: ReadonlyArray<{
+    from: string;
+    specifier: string;
+    line: number;
+    candidates: string[];
+  }>;
+}
+
 export function detectDrift(
   architecture: Architecture,
-  scan: ScanResult
+  scan: DriftScan,
+  derivation?: DriftDerivation
 ): DriftReport {
   const warnings: DriftWarning[] = [];
   let conclusive = true;
@@ -159,9 +207,14 @@ export function detectDrift(
   }
 
   // --- 3. imports that map to no tracked service ----------------------------
+  //
+  // `services` is read through the deprecated v1 view when it exists, and
+  // through the graph when it does not. A pure v2 document has no `services`
+  // until `project.ts` runs, and a rule that throws on one is a rule that
+  // silently stops running on the shape the graph is stored in.
   if (scan.filesScanned > 0 && scan.parseCoverage >= 1) {
     const serviceTechs = new Set(
-      architecture.services.map((s) => (s.technology ?? "").toLowerCase()).filter(Boolean)
+      readServiceTechnologies(architecture).map((tech) => tech.toLowerCase()).filter(Boolean)
     );
     for (const imp of scan.imports) {
       if (TOOLING_DENYLIST.has(imp)) continue;
@@ -178,7 +231,14 @@ export function detectDrift(
   }
 
   // --- 4. low-confidence services -------------------------------------------
-  for (const svc of architecture.services) {
+  //
+  // ADR-0002:105-107 deletes `confidence` outright. The rule is kept because
+  // `src/io/v1-authoring.ts` still *carries* the field across a v1 migration, so
+  // a document that arrived with a low number still has one — and a detector
+  // that quietly stopped reading it would report fewer findings after an
+  // upgrade, which is the opposite of what an upgrade should do.
+  const legacyServices = (architecture as { services?: unknown }).services;
+  for (const svc of Array.isArray(legacyServices) ? legacyServices : []) {
     const conf = (svc as { confidence?: unknown }).confidence;
     if (typeof conf === "number" && conf < 0.6) {
       warnings.push({
@@ -199,8 +259,54 @@ export function detectDrift(
   // resolves to nothing, and only a human can say whether to fix or remove it.
   const asGraph = architecture as unknown as {
     edges?: Array<Record<string, unknown>>;
-    nodes?: Array<{ id: string }>;
+    nodes?: Array<{
+      id: string;
+      kind?: string;
+      path?: string;
+      deletedAt?: string;
+      provenance?: { derived?: boolean; rule?: string; evidence?: string[] };
+    }>;
   };
+
+  // A derived `module` node the current run cannot reproduce. Issue 0005 §5
+  // asks for exactly this to be `critical` rather than silence, and it is the
+  // single most load-bearing check on this page: the old scanner reported "in
+  // sync" on trees it had never opened, so a missing module is precisely the
+  // class of fact that used to go unreported.
+  //
+  // It fires on two signals, because they catch different failures: a tombstone
+  // means derivation ran and found nothing, while a path that is absent from
+  // the file index catches a document written by a build that never tombstoned.
+  const moduleNodes = Array.isArray(asGraph.nodes) ? asGraph.nodes : [];
+  for (const node of moduleNodes) {
+    if (node.kind !== "module" || node.provenance?.derived !== true) continue;
+
+    const tombstoned = node.deletedAt !== undefined;
+    const missingOnDisk =
+      scan.fileIndex !== undefined &&
+      typeof node.path === "string" &&
+      node.path.length > 0 &&
+      !scan.fileIndex.has(node.path);
+
+    if (!tombstoned && !missingOnDisk) continue;
+
+    warnings.push({
+      kind: "vanished-module",
+      severity: "critical",
+      subject: node.id,
+      message:
+        `Derived module "${node.path ?? node.id}" no longer exists. ` +
+        (tombstoned
+          ? `It was tombstoned at ${node.deletedAt}; the file is gone from the tree.`
+          : `"${node.path}" is not in the scanned file index.`) +
+        ` It was derived by rule "${node.provenance?.rule ?? "(unknown)"}" from ` +
+        `${(node.provenance?.evidence ?? []).slice(0, 3).join(", ") || "(no evidence)"}.`,
+      suggestion:
+        `If the module was deleted on purpose, remove or retire the node deliberately. ` +
+        `If it was moved, re-point the node at its new path. Do not do nothing: a graph ` +
+        `that still contains a module nobody can open is not a graph of this repository.`,
+    });
+  }
 
   const dangling = Array.isArray(asGraph.edges)
     ? asGraph.edges.filter((edge) => edge?.dangling === true)
@@ -219,13 +325,34 @@ export function detectDrift(
     });
   }
 
+  // An `imports` edge derivation could not resolve. Same class as a deleted
+  // module and reported at the same severity, because from a reader's point of
+  // view they are the same fact: source refers to something that is not there.
+  //
+  // Passed in rather than read off the document because it is a property of
+  // *this* run, not of the stored graph — the document cannot know what the
+  // scanner failed to resolve until the scanner has run.
+  for (const miss of derivation?.unresolved ?? []) {
+    warnings.push({
+      kind: "unresolved-import",
+      severity: "critical",
+      subject: `${miss.from}:${miss.line}`,
+      message:
+        `${miss.from}:${miss.line} imports "${miss.specifier}", which resolves to no ` +
+        `file in this repository. Tried: ${miss.candidates.slice(0, 4).join(", ") || "nothing"}.`,
+      suggestion:
+        `Restore the module, fix the import, or exclude the file. Until then the derived ` +
+        `graph is incomplete — the edge was kept and flagged dangling rather than dropped.`,
+    });
+  }
+
   const decisions = Array.isArray(architecture.decisions)
     ? architecture.decisions
     : [];
   const nodeIds = new Set(
     Array.isArray(asGraph.nodes)
       ? asGraph.nodes.map((n) => n.id)
-      : architecture.services.map((s) => s.id)
+      : (Array.isArray(legacyServices) ? (legacyServices as Array<{ id: string }>).map((s) => s.id) : [])
   );
   for (const decision of decisions) {
     const related = (decision as { relatedServices?: unknown }).relatedServices;
@@ -247,6 +374,29 @@ export function detectDrift(
   }
 
   return finalize(warnings, conclusive);
+}
+
+/**
+ * Service technologies, from whichever shape the document is in.
+ *
+ * The v1 view carries `technology` verbatim, so it is preferred. A pure v2
+ * document has no `services[]` until `project.ts` projects one, and the graph's
+ * `tech` field is the next best thing — better than throwing, and better than
+ * returning an empty set, which would turn every declared dependency into an
+ * `untracked-service` finding.
+ */
+function readServiceTechnologies(architecture: Architecture): string[] {
+  const legacy = (architecture as { services?: Array<{ technology?: unknown }> }).services;
+  if (Array.isArray(legacy)) {
+    return legacy
+      .map((service) => (typeof service.technology === "string" ? service.technology : ""))
+      .filter((technology) => technology.length > 0);
+  }
+  const nodes = (architecture as unknown as { nodes?: Array<{ tech?: unknown }> }).nodes;
+  if (!Array.isArray(nodes)) return [];
+  return nodes
+    .map((node) => (typeof node.tech === "string" ? node.tech : ""))
+    .filter((tech) => tech.length > 0);
 }
 
 function matchesAnyDep(stackEntry: string, deps: Set<string>): boolean {
@@ -286,6 +436,8 @@ function finalize(warnings: DriftWarning[], conclusive: boolean): DriftReport {
     "missing-manifest": 0,
     "orphan-subject": 0,
     "dangling-edge": 0,
+    "vanished-module": 0,
+    "unresolved-import": 0,
   };
   for (const warning of warnings) {
     bySeverity[warning.severity] += 1;
