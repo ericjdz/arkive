@@ -11,10 +11,22 @@ import { statusCommand } from "./commands/status.js";
 import { stopViewer } from "./commands/stop.js";
 import { PLATFORMS, installMcp } from "./commands/install.js";
 import { installSkills } from "./commands/install-skill.js";
-import { installGitHooks, uninstallGitHooks } from "./commands/hooks.js";
+import { installGitHooks, uninstallGitHooks, installClaudeHooks, uninstallClaudeHooks } from "./commands/hooks.js";
+import { HOOK_EVENTS } from "../hooks/contract.js";
 import type { PlatformName } from "./commands/install.js";
 
 const program = new Command();
+
+/**
+ * Commander collapses a repeated option into a plain value when it is seen once
+ * and into an array when it is seen twice. Every caller below wants a list, and
+ * a caller that forgot this produced `include: "src"` typed as `string[]` —
+ * which is a `TypeError` at runtime in `withinFilters`, thrown from a scan.
+ */
+function toList(value: string | string[] | undefined): string[] | undefined {
+  if (value === undefined) return undefined;
+  return Array.isArray(value) ? value : [value];
+}
 
 program
   .name("arkive")
@@ -80,11 +92,29 @@ program
   .option("-d, --dir <path>", "Project directory containing arkive/architecture.json", ".")
   .option(
     "--quiet",
-    "Print nothing. Used by the post-commit hook (src/cli/commands/hooks.ts); the exit code still reports critical findings."
+    "Print nothing on success. The exit code still reports critical findings. Used by the git hook (src/cli/commands/hooks.ts)."
+  )
+  .option(
+    "--include <path>",
+    "Restrict the scan to this path prefix. Repeatable. Overrides arkive.config.json."
+  )
+  .option(
+    "--exclude <path>",
+    "Never walk this path prefix. Repeatable. Overrides arkive.config.json."
+  )
+  .option(
+    "--no-graph",
+    "Suppress the derived-graph summary (node/edge counts, per-language coverage, unresolved imports)."
   )
   .action(async (options) => {
     const dir = resolve(options.dir);
-    await reconcileCommand({ dir, quiet: options.quiet ?? false });
+    await reconcileCommand({
+      dir,
+      quiet: options.quiet ?? false,
+      include: toList(options.include),
+      exclude: toList(options.exclude),
+      graph: options.graph ?? true,
+    });
   });
 
 program
@@ -141,12 +171,43 @@ program
     }
   });
 
-program
+const hooksCommand = program
   .command("hooks")
-  .description("Install or remove arkive git hooks")
+  .description("Install or remove arkive git hooks and agent hook settings")
   .option("--remove", "Remove arkive git hooks")
+  .option("--claude", "Install Claude Code hook settings (.claude/settings.json)")
+  .option("--remove-claude", "Remove Claude Code hook settings")
+  .option("--dry-run", "Print what would change without writing anything")
   .option("--dir <path>", "Project directory", process.cwd())
   .action((opts) => {
+    if (opts.removeClaude) {
+      const result = uninstallClaudeHooks(opts.dir);
+      process.stdout.write(
+        result.removed.length > 0
+          ? `Removed Claude Code hooks: ${result.removed.join(", ")}\n`
+          : "No Claude Code hooks found.\n"
+      );
+      return;
+    }
+
+    if (opts.claude) {
+      const result = installClaudeHooks(opts.dir, { dryRun: opts.dryRun });
+      if (result.installed.length > 0) {
+        process.stdout.write(
+          `Installed Claude Code hooks: ${result.installed.join(", ")}\n`
+        );
+      }
+      if (result.skipped.length > 0) {
+        process.stdout.write(
+          `Already installed: ${result.skipped.join(", ")}\n`
+        );
+      }
+      if (result.error) {
+        process.stderr.write(`Warning: ${result.error}\n`);
+      }
+      return;
+    }
+
     if (opts.remove) {
       const result = uninstallGitHooks(opts.dir);
       if (result.removed.length > 0) {
@@ -155,7 +216,7 @@ program
         process.stdout.write("No arkive hooks found.\n");
       }
     } else {
-      const result = installGitHooks(opts.dir);
+      const result = installGitHooks(opts.dir, { dryRun: opts.dryRun });
       if (result.installed.length > 0) {
         process.stdout.write(`Installed hooks: ${result.installed.join(", ")}\n`);
       }
@@ -166,6 +227,26 @@ program
         process.stderr.write(`Warning: ${result.error}\n`);
       }
     }
+  });
+
+/**
+ * `hooks run <event>` is what an installed hook actually invokes — both
+ * `.git/hooks/pre-commit` and the generated `.claude/settings.json` shell out
+ * to exactly this string. Without it every installed hook fails open and
+ * enforces nothing, which is the precise failure mode ADR-0005 exists to
+ * eliminate. It is registered here rather than left as a follow-up.
+ *
+ * `main()` is imported lazily so an ordinary CLI invocation does not pay for
+ * the hook surface.
+ */
+hooksCommand
+  .command("run")
+  .description("Run one arkive hook. Called by installed hooks; rarely run by hand.")
+  .argument("<event>", `One of: ${HOOK_EVENTS.join(", ")}`)
+  .option("-d, --dir <path>", "Project directory", ".")
+  .action(async (event: string, opts) => {
+    const { main } = await import("../hooks/main.js");
+    process.exitCode = main([event, "--dir", resolve(opts.dir)]);
   });
 
 program

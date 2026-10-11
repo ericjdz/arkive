@@ -292,22 +292,22 @@ function buildPlan(
   if (options.skipHooks) {
     steps.push({
       action: "skip",
-      path: join(projectDir, ".git", "hooks", "post-commit"),
+      path: join(projectDir, ".git", "hooks", "pre-commit"),
       detail: "git hooks skipped (--skip-hooks)",
       run: () => {},
     });
   } else if (!options.installHooks) {
     steps.push({
       action: "skip",
-      path: join(projectDir, ".git", "hooks", "post-commit"),
+      path: join(projectDir, ".git", "hooks", "pre-commit"),
       detail: "git hooks NOT installed by default — run `arkive hooks` to opt in",
       run: () => {},
     });
   } else {
     steps.push({
       action: "register",
-      path: join(projectDir, ".git", "hooks", "post-commit"),
-      detail: "install the post-commit auto-reconcile hook",
+      path: join(projectDir, ".git", "hooks", "pre-commit"),
+      detail: "install the pre-commit drift gate",
       run: () => {
         const hookResult = installGitHooks(projectDir);
         if (hookResult.installed.length > 0) {

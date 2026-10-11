@@ -158,13 +158,20 @@ describe("regression — init installs no git hook unless asked", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  const hookPath = (): string => join(tempDir, ".git", "hooks", "post-commit");
+  // ADR-0005 replaced `post-commit` with `pre-commit`: `post-commit` fires after
+  // the commit exists and therefore can never gate anything. These assertions
+  // follow the decision. What they are *for* — that `init` writes nothing into
+  // `.git/hooks` without being asked (ADR-0006 §4) — is unchanged, and the
+  // last two cases still prove the opt-in path works.
+  const hookPath = (): string => join(tempDir, ".git", "hooks", "pre-commit");
 
-  it("does not create .git/hooks/post-commit", () => {
+  it("does not create .git/hooks/pre-commit", () => {
     const exit = runCli(["init", "--dir", tempDir, "--skip-mcp", "--skip-skills"]);
 
     expect(exit.status).toBe(0);
     expect(existsSync(hookPath())).toBe(false);
+    // And it does not resurrect the hook ADR-0005 deleted.
+    expect(existsSync(join(tempDir, ".git", "hooks", "post-commit"))).toBe(false);
   }, CLI_TIMEOUT);
 
   it("says so, rather than silently omitting it", () => {
@@ -182,7 +189,7 @@ describe("regression — init installs no git hook unless asked", () => {
     expect(existsSync(hookPath())).toBe(false);
   }, CLI_TIMEOUT);
 
-  it("leaves an existing post-commit hook exactly as it found it", () => {
+  it("leaves an existing git hook exactly as it found it", () => {
     const existing = "#!/bin/sh\necho 'do not touch'\n";
     writeFileSync(hookPath(), existing, "utf-8");
 
@@ -194,7 +201,7 @@ describe("regression — init installs no git hook unless asked", () => {
   it("the opt-in path still works: `arkive hooks` installs it", () => {
     // init stopped doing it; the dedicated command is how you ask for it.
     const result = installGitHooks(tempDir);
-    expect(result.installed).toContain("post-commit");
+    expect(result.installed).toContain("pre-commit");
     expect(existsSync(hookPath())).toBe(true);
   });
 

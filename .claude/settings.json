@@ -1,0 +1,59 @@
+{
+  "arkiveHooks": {
+    "writtenBy": "arkive hooks install-claude",
+    "schema": 1,
+    "note": "arkive's own repository is the worked example (docs/VISION.md, definition of done 4). These hooks hand the agent arkive/architecture.json at session start instead of asking it to go and read the file; they never block. The gate that can block is .git/hooks/pre-commit, which is not committed because .git/hooks is not committed — install it with `arkive hooks`. Remove these with `arkive hooks --remove-claude`, or turn them all off for one run with ARKIVE_HOOK_DISABLE=1."
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "arkive hooks run session-start",
+            "timeout": 5,
+            "onFailure": "continue"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "arkive hooks run pre-tool-use",
+            "timeout": 5,
+            "onFailure": "continue"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "manual|auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "arkive hooks run pre-compact",
+            "timeout": 30,
+            "onFailure": "continue"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "arkive hooks run stop",
+            "timeout": 30,
+            "onFailure": "continue"
+          }
+        ]
+      }
+    ]
+  }
+}
