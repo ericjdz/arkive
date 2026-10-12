@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { ArchitectureDocumentV2, GraphEdge, GraphNode } from "../schema/graph.js";
 import { derivedFrom } from "../schema/provenance.js";
 import { defaultRegistry } from "./extractors/registry.js";
@@ -8,6 +10,10 @@ import { resolveJsSpecifier, resolveRepoPath } from "./resolve.js";
 import type { ResolveContext, Resolution } from "./resolve.js";
 import { scanProject } from "./scanner.js";
 import type { ScanOptions, ScanResult } from "./scanner.js";
+import { loadConfig } from "./config.js";
+import { deriveStructures, moduleId } from "./structures/derive.js";
+import type { StructureDerivation } from "./structures/derive.js";
+import type { StructureRegistry } from "./structures/registry.js";
 
 /**
  * Module derivation — the layer where the product's premise gets tested.
@@ -59,6 +65,30 @@ const LANGUAGE_EXTENSIONS: Record<string, readonly string[]> = {
 export interface DeriveOptions extends ScanOptions {
   /** Keep only nodes whose path starts with one of these prefixes. */
   onlyModules?: readonly string[];
+  /**
+   * A different structure-extractor registry.
+   *
+   * Separate from `registry` on purpose. The import registry throws when two
+   * extractors claim one extension, because one language means one set of
+   * specifiers. Structure extraction needs the opposite: a `.ts` file declares
+   * interfaces *and* Zod schemas, and both are shapes. See
+   * `src/analysis/structures/registry.ts`.
+   */
+  structureRegistry?: StructureRegistry;
+  /**
+   * `false` skips data-structure extraction entirely.
+   *
+   * From `arkive.config.json`. The escape hatch exists because the structure
+   * pass re-reads every scanned file and ADR-0005's hooks have a 200ms budget, so
+   * a repository that needs the module graph now and the shape graph later has to
+   * be able to say so.
+   *
+   * It is a **note, never a silent default**. `deriveFromScan` pushes a line into
+   * `notes` saying the graph has no shapes in it, and `reconcile` prints `notes`
+   * on every path including "in sync". A flag that quietly narrowed the graph
+   * would be the same defect `config.ts` documents for `include`.
+   */
+  structures?: boolean;
 }
 
 export interface UnresolvedImport {
@@ -78,19 +108,40 @@ export interface DerivationResult {
   /** Import sites that named a module which is not on disk. */
   unresolved: UnresolvedImport[];
   /**
-   * Fraction of discovered source files that produced a fully-parsed module
-   * node. The same number as `scan.parseCoverage`, restated because this is the
-   * value a caller *displaying the graph* needs, and a graph that is 40%
-   * derived must say so everywhere it is shown.
+   * Fraction of discovered source files that produced a fully-derived graph
+   * element — the **minimum** of the import pass and the data-structure pass.
+   *
+   * This is the number a caller displaying the graph must show, and it is the
+   * only one. A graph that is 40% derived must say 40% everywhere it is shown,
+   * and a caller handed two coverage figures will display the flattering one.
+   *
+   * Before issue 0006 this was `scan.parseCoverage` restated. It is no longer
+   * equal to it by construction: a repository whose imports parse cleanly but
+   * whose Zod schemas cannot be read has a module graph and no shape graph, and
+   * reporting the import pass's 100% would describe a graph that does not exist.
+   * `scan.parseCoverage` remains available on the scan itself for callers that
+   * specifically want the import half.
    */
   coverage: number;
+  /** The import pass's coverage, restated for the same reason `coverage` is. */
+  importCoverage: number;
+  /** The data-structure pass's coverage. See `StructureDerivation.coverage`. */
+  structureCoverage: number;
   /** Restated counts, so a graph-only consumer need not hold the scan. */
   counts: { parsed: number; unreadable: number; truncated: number };
   /** Directory nodes emitted. */
   directories: number;
   /** Per-language file/import counts. */
   byLanguage: Record<string, { files: number; imports: number; incomplete: number }>;
-  /** Everything the scan wants the reader to know. */
+  /**
+   * The data-structure pass in full.
+   *
+   * Carried rather than folded away because "is it 60% covered" and "which 60%"
+   * are different questions, and a number without its composition is half an
+   * answer. `coverage` is the headline; this is the composition.
+   */
+  structures: StructureDerivation;
+  /** Everything the scan and the structure pass want the reader to know. */
   notes: string[];
 }
 
@@ -307,6 +358,75 @@ export function deriveFromScan(
     });
   }
 
+  // --- data structures --------------------------------------------------------
+  //
+  // Run after the module graph, and against the same file list, so a file that
+  // produced a `module` node either produced shapes or is counted as not having
+  // been fully derived. The two passes share the scan's `complete` flag per file;
+  // what they do not share is the ability to read the file, so the sources are
+  // re-read here.
+  //
+  // **The re-read is the cost, and it is paid on the hook path.** ADR-0005 gives
+  // the `pre-commit` and `PreCompact` hooks a 200ms budget and `watch` re-walks
+  // on every cycle. `arkive.config.json` can turn structure extraction off with
+  // `structures: false`, and when it is off the coverage figure says so rather
+  // than quietly reporting the import pass's number — a configuration that
+  // silently reduced what the graph contains would reintroduce exactly the bug
+  // this file's predecessor shipped.
+  const notes: string[] = [...scan.scanNotes];
+
+  // `arkive.config.json` is the default; an explicit option wins. The config is
+  // loaded here rather than read off `ScanResult` because the scan carries only
+  // the config's *path* — and because a caller who has already loaded it should
+  // not pay for a second read to find out what it said.
+  const structuresEnabled = options.structures ?? loadConfig(scan.root).config.structures !== false;
+
+  if (structuresEnabled === false) {
+    notes.push(
+      `data-structure extraction is disabled by arkive.config.json (structures: false); ` +
+        `the derived graph has module nodes and no shapes in it, and the coverage ` +
+        `figure below describes the module graph only`
+    );
+  }
+
+  const structureSources =
+    structuresEnabled === false
+      ? []
+      : readSources(scan.root, structureCandidatePaths(scan), notes);
+
+  const structures: StructureDerivation =
+    structuresEnabled === false
+      ? {
+          nodes: [],
+          edges: [],
+          coverage: 1,
+          filesRead: 0,
+          filesIncomplete: 0,
+          unsupported: [],
+          byFormat: {},
+          unresolved: [],
+          notes: [],
+        }
+      : deriveStructures(
+          structureSources,
+          {
+            hasFile: (relPath) => scan.fileIndex.has(relPath),
+            hasDirectory: (relPath) => scan.directoryIndex.has(relPath),
+          },
+          options.structureRegistry !== undefined
+            ? { registry: options.structureRegistry }
+            : {}
+        );
+
+  for (const node of structures.nodes) nodes.set(node.id, node);
+  for (const edge of structures.edges) {
+    // A structure edge whose module endpoint was filtered out is dropped with
+    // it, for the same reason `imports` edges are: an edge to a node that is not
+    // in the graph is a dangling reference, and `validateGraphDocument` reports
+    // those as `critical`.
+    if (nodes.has(edge.from) && nodes.has(edge.to)) edges.set(edge.id, edge);
+  }
+
   const filtered =
     options.onlyModules === undefined
       ? [...nodes.values()]
@@ -315,13 +435,20 @@ export function deriveFromScan(
         );
   const live = new Set(filtered.map((node) => node.id));
 
+  notes.push(...structures.notes);
+
   return {
     nodes: filtered.sort(byId),
     edges: [...edges.values()].filter((edge) => live.has(edge.from)).sort(byId),
     unresolved: unresolved.sort((a, b) =>
       a.from === b.from ? a.line - b.line : a.from < b.from ? -1 : 1
     ),
-    coverage: scan.parseCoverage,
+    // The headline. One number, the minimum of the two passes, and the reason is
+    // in the `DerivationResult.coverage` doc comment: a caller handed two
+    // coverage figures displays the flattering one.
+    coverage: Math.min(scan.parseCoverage, structures.coverage),
+    importCoverage: scan.parseCoverage,
+    structureCoverage: structures.coverage,
     counts: {
       parsed: scan.filesScanned,
       unreadable: scan.filesUnreadable,
@@ -329,8 +456,71 @@ export function deriveFromScan(
     },
     directories: directories.size,
     byLanguage: scan.byLanguage,
-    notes: scan.scanNotes,
+    structures,
+    notes,
   };
+}
+
+/**
+ * Every file the structure pass should look at, from what the scan discovered.
+ *
+ * **Not `scan.files`.** That list holds only files an *import* extractor
+ * claimed, so a `.sql` file — which `scanner.ts:189-193` lists as known source
+ * with no extractor — never reaches the structure pass, and a `sql-ddl`
+ * extractor finds nothing in a repository full of DDL. The walk already indexed
+ * the file (`ScanResult.fileIndex`); it did not extract it, because extraction is
+ * a different job.
+ *
+ * So the candidate set is `scan.files` plus every indexed file whose extension
+ * the scan itself classified as *source with no extractor*
+ * (`scan.unsupported`). That deliberately excludes everything else in the index
+ * — `.md`, `.json`, `.txt`, `.yml` — because reading a repository's entire
+ * markdown to discover it contains no shapes is a cost with no possible payoff.
+ *
+ * A format arkive knows nothing about, and which the import scanner also knows
+ * nothing about, is not in this set. That is a real limit of building on the
+ * scanner's index rather than taking a second walk, and it is recorded as a
+ * follow-up rather than papered over.
+ */
+function structureCandidatePaths(scan: ScanResult): string[] {
+  const sourceExtensions = new Set(scan.unsupported.map((entry) => entry.extension));
+  const paths = new Set(scan.files.map((file) => file.path));
+
+  for (const path of scan.fileIndex) {
+    const extension = extnameOf(path);
+    if (extension !== "" && sourceExtensions.has(extension)) paths.add(path);
+  }
+
+  return [...paths].sort();
+}
+
+/**
+ * Read every candidate file's source for the structure pass.
+ *
+ * The scan already read them and threw the text away (`ScannedFile` carries
+ * imports, not source), and `scanner.ts` is not this issue's file to change. So
+ * this re-reads, and records a note for every file it could not read - which
+ * drops the structure coverage, because a file whose contents were unavailable
+ * has not been searched and reporting "no structures here" from a read that
+ * never happened is the one lie this layer is not allowed to tell.
+ */
+function readSources(
+  root: string,
+  paths: readonly string[],
+  notes: string[]
+): Array<{ path: string; source: string }> {
+  const out: Array<{ path: string; source: string }> = [];
+  for (const path of paths) {
+    try {
+      out.push({ path, source: readFileSync(join(root, path), "utf-8") });
+    } catch (err) {
+      notes.push(
+        `could not re-read ${path} for data-structure extraction: ${(err as Error).message}; ` +
+          `no shapes were read from it`
+      );
+    }
+  }
+  return out;
 }
 
 /**
@@ -763,12 +953,21 @@ export function isHumanVerified(element: GraphNode | GraphEdge): boolean {
 /**
  * Node kinds an authored node of which can be *corroborated* by derivation.
  *
- * `datastructure` is deliberately absent: issue 0006 wires the extractor
- * registry, and until a rule emits one of these there is no evidence to compare
- * against. Adding it here before the rule exists would make every authored
- * `datastructure` in every project an orphan, for no reason but an enum.
+ * `datastructure` joined this set with issue 0006. Before that issue no rule
+ * emitted one, and an authored `datastructure` was not contradicted by the
+ * absence of a derivation — there was no derivation to be absent from. Now there
+ * is, and an authored `datastructure` the current run cannot reproduce is a real
+ * finding rather than a false alarm.
+ *
+ * The second half of the rule still guards it: the verdict only fires when this
+ * run derived at least one node of the kind, so a repository whose `.go` files
+ * yield no shapes does not accuse an authored shape of not existing.
  */
-const ORPHANABLE_KINDS: ReadonlySet<string> = new Set(["module", "external"]);
+const ORPHANABLE_KINDS: ReadonlySet<string> = new Set([
+  "module",
+  "external",
+  "datastructure",
+]);
 
 /**
  * Fields a human may have written onto a node derivation owns structurally.

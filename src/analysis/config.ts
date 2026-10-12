@@ -56,6 +56,21 @@ export interface ArkiveConfig {
    * number the user can see rather than a silence they must interpret.
    */
   unsupportedExtensions?: string[];
+  /**
+   * Data-structure extraction. `false` turns it off.
+   *
+   * The extraction runs unless a user sets this to `false`. The flag exists
+   * because the structure pass re-reads every scanned file and ADR-0005's hooks
+   * have a 200ms budget, so a repository that needs the module graph now and the
+   * shape graph later has to be able to say so.
+   *
+   * **It is reported, never silent.** Turning it off pushes a note into
+   * derivation's `notes`, which `reconcile` prints on every path — including the
+   * "in sync" path, which is the one a user reads without reading. A flag that
+   * quietly narrowed what the graph contains would be `include` all over again,
+   * and the whole file header is about not doing that.
+   */
+  structures?: boolean;
 }
 
 export const CONFIG_FILENAME = "arkive.config.json";
@@ -155,6 +170,24 @@ function readConfigFile(dir: string, notes: string[]): ArkiveConfig {
     config.aliases = record.aliases as Record<string, string[]>;
   } else if (record.aliases !== undefined) {
     notes.push(`${CONFIG_FILENAME}: "aliases" must be an object; ignored`);
+  }
+
+  if (record.structures !== undefined) {
+    if (typeof record.structures !== "boolean") {
+      // Not silently coerced. `structures: "false"` would otherwise read as
+      // truthy and turn the extractor *on* for a user who asked for the
+      // opposite — and the only sign would be a coverage number that never moved.
+      notes.push(`${CONFIG_FILENAME}: "structures" must be true or false; ignored`);
+    } else {
+      config.structures = record.structures;
+      if (record.structures === false) {
+        notes.push(
+          `${CONFIG_FILENAME}: data-structure extraction is off; the derived graph ` +
+            `will contain module nodes and no data shapes, and the coverage figure ` +
+            `will describe the module graph only`
+        );
+      }
+    }
   }
 
   for (const key of ["maxFiles", "maxBytes", "maxFileBytes"] as const) {
