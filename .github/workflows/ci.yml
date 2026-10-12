@@ -56,5 +56,8 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Performance (runs alone — wall-clock budget)
+        run: npm run test:perf
+
       - name: Build
         run: npm run build
