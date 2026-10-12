@@ -1,11 +1,12 @@
 #!/usr/bin/env node
-import { Command } from "commander";
+import { Command, InvalidArgumentError } from "commander";
 import { resolve } from "node:path";
 import { PACKAGE_VERSION } from "../version.js";
 import { initProject } from "./commands/init.js";
 import { exportArchitecture } from "./commands/export.js";
 import { createLearnCommand } from "./commands/learn.js";
 import { reconcileCommand } from "./commands/reconcile.js";
+import { describeOutcome, reconcileOnce, startWatch } from "../analysis/watch.js";
 import { serveProject } from "./commands/serve.js";
 import { statusCommand } from "./commands/status.js";
 import { stopViewer } from "./commands/stop.js";
@@ -26,6 +27,22 @@ const program = new Command();
 function toList(value: string | string[] | undefined): string[] | undefined {
   if (value === undefined) return undefined;
   return Array.isArray(value) ? value : [value];
+}
+
+/**
+ * A positive integer flag, or a Commander usage error.
+ *
+ * `parseInt("abc")` is `NaN`, and `NaN` as a `setTimeout` delay is `0` — a
+ * watcher that reconciles in a tight loop and never yields. Failing loudly at
+ * parse time is the only outcome where the user learns why their watcher
+ * melted the CPU.
+ */
+function parseIntOption(value: string): number {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    throw new InvalidArgumentError("Expected a positive number of milliseconds.");
+  }
+  return parsed;
 }
 
 program
@@ -106,6 +123,10 @@ program
     "--no-graph",
     "Suppress the derived-graph summary (node/edge counts, per-language coverage, unresolved imports)."
   )
+  .option(
+    "--apply",
+    "Persist the derived half. Off by default: reconcile is a diagnostic (ADR-0002:113-114), and `arkive watch` is where continuous persistence belongs."
+  )
   .action(async (options) => {
     const dir = resolve(options.dir);
     await reconcileCommand({
@@ -114,7 +135,92 @@ program
       include: toList(options.include),
       exclude: toList(options.exclude),
       graph: options.graph ?? true,
+      apply: options.apply ?? false,
     });
+  });
+
+/**
+ * `arkive watch` — continuous reconciliation.
+ *
+ * Registered inline rather than in `src/cli/commands/watch.ts` because the
+ * behaviour is entirely `startWatch`'s: there is no command-specific logic to
+ * unit-test separately from the loop, and a file whose only content is an
+ * argument object is a file that drifts from its options. When the loop grows
+ * options of its own, this becomes a command module.
+ *
+ * Exits non-zero only on an initial failure. A watcher that ran for an hour and
+ * then found something cannot retroactively set an exit code its shell already
+ * consumed, so findings are reported as they happen and the exit code reflects
+ * only what was true at startup — which is what CI reads.
+ */
+program
+  .command("watch")
+  .description("Reconcile the derived graph on every change and report the delta")
+  .option("-d, --dir <path>", "Project directory containing arkive/architecture.json", ".")
+  .option("--include <path>", "Restrict the scan to this path prefix. Repeatable.")
+  .option("--exclude <path>", "Never walk this path prefix. Repeatable.")
+  .option(
+    "--interval <ms>",
+    "Milliseconds between reconciliations (default 1000).",
+    parseIntOption
+  )
+  .action(async (options) => {
+    const dir = resolve(options.dir);
+    const include = toList(options.include);
+    const exclude = toList(options.exclude);
+
+    // Fail fast and loudly if there is nothing to reconcile into. A watcher that
+    // silently watches a directory with no document is a process that looks like
+    // it is working and is not.
+    const probe = reconcileOnce(dir, {
+      ...(include !== undefined ? { include } : {}),
+      ...(exclude !== undefined ? { exclude } : {}),
+      apply: false,
+    });
+    if (probe.status === "absent") {
+      process.stderr.write(
+        `arkive/architecture.json not found in ${dir}. Run \`arkive init\` first.\n`
+      );
+      process.exit(1);
+    }
+    if (probe.status === "unreadable") {
+      process.stderr.write(`Failed to read arkive/architecture.json: ${probe.error}\n`);
+      process.exit(1);
+    }
+
+    process.stdout.write(
+      `arkive watch: reconciling ${dir} every ${options.interval ?? 1000}ms. ` +
+        `Ctrl-C to stop.\n`
+    );
+    // The first cycle is the probe we already paid for; print it so the user
+    // sees the state they are about to be responsible for. Not written — the
+    // loop below writes on its first tick, and a probe that persisted would mean
+    // two writes per change.
+    process.stdout.write(describeOutcome(probe, false) + "\n");
+
+    const handle = startWatch({
+      dir,
+      ...(include !== undefined ? { include } : {}),
+      ...(exclude !== undefined ? { exclude } : {}),
+      ...(options.interval !== undefined ? { intervalMs: options.interval } : {}),
+      onCycle: (outcome) => {
+        process.stdout.write(`\n${describeOutcome(outcome, true)}\n`);
+        if (outcome.writeError !== null) process.exitCode = 1;
+      },
+      onError: (error) => {
+        process.stderr.write(`arkive watch: ${(error as Error).message}\n`);
+      },
+    });
+
+    // The loop is the process. Ctrl-C unwinds it; without this, the handle's
+    // pending timer would keep the event loop alive after the signal.
+    const stop = (): void => {
+      handle.stop();
+      process.stdout.write("\narkive watch: stopped.\n");
+      process.exit(0);
+    };
+    process.on("SIGINT", stop);
+    process.on("SIGTERM", stop);
   });
 
 program

@@ -1,10 +1,7 @@
-import { existsSync } from "node:fs";
-import { architecturePath, readArchitecture } from "../../io/architecture-file.js";
-import { scanProject } from "../../analysis/scanner.js";
-import { detectDrift } from "../../analysis/drift.js";
-import type { DriftReport } from "../../analysis/drift.js";
-import { deriveFromScan } from "../../analysis/derive.js";
+import { architecturePath } from "../../io/architecture-file.js";
 import type { DerivationResult } from "../../analysis/derive.js";
+import type { DriftReport } from "../../analysis/drift.js";
+import { describeOutcome, reconcileOnce } from "../../analysis/watch.js";
 
 export interface ReconcileOptions {
   dir: string;
@@ -35,45 +32,68 @@ export interface ReconcileOptions {
    * finds out which 60% they are not looking at.
    */
   graph?: boolean;
+  /**
+   * Persist the derived half and exit.
+   *
+   * `reconcile` is a diagnostic (ADR-0002:113-114). Off by default, and a test
+   * asserts the default never rewrites the document — a command that quietly
+   * rewrote a user's architecture file on every invocation is not a command
+   * anyone can run from a git hook. `--apply` is the one-shot escape from
+   * `arkive watch`, which is where continuous persistence belongs.
+   */
+  apply?: boolean;
 }
 
 export async function reconcileCommand(options: ReconcileOptions): Promise<void> {
-  const archPath = architecturePath(options.dir);
-  if (!existsSync(archPath)) {
+  // One walk, five consumers. `reconcileOnce` runs the scan once and hands the
+  // same result to the drift rules, the derivation, the orphan check and the
+  // authored-drift check. Paying for the scan twice to print two views of the
+  // same data is the kind of waste that makes people stop running the command.
+  const outcome = reconcileOnce(options.dir, {
+    ...(options.include !== undefined ? { include: options.include } : {}),
+    ...(options.exclude !== undefined ? { exclude: options.exclude } : {}),
+    apply: options.apply === true,
+  });
+
+  if (outcome.status === "absent") {
     process.stderr.write(
-      `arkive/architecture.json not found at ${archPath}. Run \`arkive init\` first.\n`
+      `arkive/architecture.json not found at ${architecturePath(options.dir)}. ` +
+        `Run \`arkive init\` first.\n`
     );
     process.exit(1);
   }
 
-  const result = readArchitecture(options.dir);
-  if (!result.success) {
-    process.stderr.write(`Failed to read arkive/architecture.json: ${result.error}\n`);
+  if (outcome.status === "unreadable") {
+    process.stderr.write(`Failed to read arkive/architecture.json: ${outcome.error}\n`);
     process.exit(1);
   }
 
-  // One walk, two consumers. `deriveModules` would scan again, and a scan is the
-  // most expensive thing this command does — paying for it twice to print two
-  // views of the same data is the kind of waste that makes people stop running
-  // the command.
-  const filters = {
-    ...(options.include !== undefined ? { include: options.include } : {}),
-    ...(options.exclude !== undefined ? { exclude: options.exclude } : {}),
-  };
-  const scan = scanProject(options.dir, filters);
-  const derivation = deriveFromScan(scan, filters);
-  const report = detectDrift(result.data, scan, derivation);
+  const { scan, derivation, drift: report } = outcome;
 
   const out = (line: string): void => {
     if (!options.quiet) process.stdout.write(line);
   };
+
+  // The delta and the authored findings come first, always.
+  //
+  // They are the two things this command produces that a structural drift report
+  // cannot: what derivation would change, and what a human's claim is no longer
+  // supported by. Without `--apply` the delta is explicitly prospective, and it
+  // is printed before the graph summary — which *is* a full redump — because the
+  // delta is the part a reader acts on and the graph is context for it.
+  out(describeOutcome(outcome, options.apply === true) + "\n");
 
   // "No drift detected" is a claim about the codebase, and this scan may never
   // have looked at the codebase. `report.conclusive` is the whole point of
   // running the scanner's coverage numbers: an empty warning list over a
   // partial view is not a clean bill of health, and saying so is the only
   // honest reading of it.
-  if (report.conclusive && report.warnings.length === 0) {
+  //
+  // An authored finding blocks this line too. "In sync" over a document that
+  // asserts a human-verified service running technology the manifest does not
+  // declare would be the same false assurance ADR-0002 was written against, one
+  // layer up.
+  if (report.conclusive && report.warnings.length === 0 && outcome.findings.length === 0) {
     out(`No drift detected. arkive/architecture.json is in sync.\n`);
     out(`  ${describeScan(scan)}. The graph it could derive is ${describeGraph(derivation)}.\n`);
     // Even on the clean path the scan has to say what it did and did not look
@@ -85,26 +105,26 @@ export async function reconcileCommand(options: ReconcileOptions): Promise<void>
     return;
   }
 
+  if (report.warnings.length > 0) {
+    out(`Found ${report.warnings.length} drift warning(s):\n\n`);
+    for (const warning of report.warnings) {
+      const icon = warning.severity === "critical" ? "🔴" : warning.severity === "warning" ? "🟡" : "🔵";
+      // The kind is printed because it is the part a reader can act on or report:
+      // the prose is a sentence, `incomplete-scan` is a search term.
+      out(`${icon} [${warning.severity}] (${warning.kind}) ${warning.message}\n`);
+      if (warning.suggestion) {
+        out(`  → ${warning.suggestion}\n`);
+      }
+      out("\n");
+    }
+  }
+
   if (!report.conclusive && report.warnings.length === 0) {
     out(
       `arkive could not verify arkive/architecture.json against this codebase.\n` +
         `  ${describeScan(scan)}.\n` +
         `  This is NOT "in sync". Resolve the scan coverage before trusting it.\n`
     );
-    out(describeScanNotes(derivation.notes));
-    return;
-  }
-
-  out(`Found ${report.warnings.length} drift warning(s):\n\n`);
-  for (const warning of report.warnings) {
-    const icon = warning.severity === "critical" ? "🔴" : warning.severity === "warning" ? "🟡" : "🔵";
-    // The kind is printed because it is the part a reader can act on or report:
-    // the prose is a sentence, `incomplete-scan` is a search term.
-    out(`${icon} [${warning.severity}] (${warning.kind}) ${warning.message}\n`);
-    if (warning.suggestion) {
-      out(`  → ${warning.suggestion}\n`);
-    }
-    out("\n");
   }
 
   out(`Scan coverage: ${(scan.parseCoverage * 100).toFixed(1)}% ${describeScan(scan)}.\n`);
@@ -115,7 +135,11 @@ export async function reconcileCommand(options: ReconcileOptions): Promise<void>
 
   // A critical finding must not be swallowed by the `|| true` in the post-commit
   // hook, so it gets a non-zero exit the hook can act on and CI can gate on.
-  if (report.summary.bySeverity.critical > 0) {
+  // Authored findings count too: a human-verified node the manifest contradicts
+  // is the same class of defect as a dangling edge — the document asserts
+  // something about the system that the system does not support.
+  const authoredCriticals = outcome.findings.filter((f) => f.severity === "critical").length;
+  if (report.summary.bySeverity.critical > 0 || authoredCriticals > 0) {
     process.exitCode = 1;
   }
 }
