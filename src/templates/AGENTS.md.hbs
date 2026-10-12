@@ -4,46 +4,65 @@ This project uses a living architecture document, `{{architectureFile}}`. You �
 
 > **arkive is installed.** MCP server available via `npx @ericjdz/arkive serve --stdio`. Use MCP tools when connected; edit `{{architectureFile}}` directly when not.
 
-## Rules
+## The Two Rules
 
-1. **On every session start**: Read `{{architectureFile}}` first. It is your cross-session memory.
-2. **Before any major change**: Re-read `{{architectureFile}}`.
-3. **After any major change**: Update `{{architectureFile}}` and append a `history` entry.
+1. **Structure is derived. You author intent.** The module tree, the third-party packages, and the import graph are produced by static analysis (`npx @ericjdz/arkive reconcile --apply`). You record what the code cannot say: `summary`, `owner`, `stack`, `dataFlows`, and decisions with their rationale and rejected alternatives.
+2. **Read the document for context, never as an authority over the code.** When it and the code disagree, the code is right — run `reconcile --apply` and take the derived half from the scan.
 
 ## Major Changes
 
-Add/remove a service, database, or external API · change communication protocols · modify infrastructure · adopt a new framework · refactor module boundaries.
+Add/remove a service, datastore, or external API · change communication protocols · modify infrastructure · adopt a new framework · refactor module boundaries.
+
+**Before any major change**, re-read `{{architectureFile}}` to learn what exists and why.
+
+**After any major change**: run `npx @ericjdz/arkive reconcile --apply`, append a `history` entry, and record the decision if one was made.
 
 ## How to Update
 
-**MCP tools (preferred):** `update_architecture`, `record_decision`, `check_drift`
-**Fallback:** Edit `{{architectureFile}}` directly — add services/connections/decisions/dataFlows, append history, update `project.lastUpdated`.
+**Derive structure:** `npx @ericjdz/arkive reconcile --apply` — writes `nodes[]` and `edges[]` from the code with `rule` + `evidence` on every element.
+**Author intent:** `update_architecture` (MCP) or edit `{{architectureFile}}` directly — `summary`, `owner`, `stack`, `dataFlows`, and `decisions`.
+**Verify:** `npx @ericjdz/arkive reconcile` reports drift without writing.
+
+Do NOT hand-transcribe the module tree, the dependency list, or the import graph. A transcribed edge is a claim nothing checks, and it drifts from the first commit.
 
 ## Schema (compact)
 
-- **Service**: `{ id, name, type, technology, description, dependencies[] }`
-  - `type`: `frontend | backend | database | cache | queue | gateway | cdn | storage | auth | search | monitoring | other`
-- **Connection**: `{ from, to, protocol, description }`
-- **Decision**: `{ id, topic, decision, rationale, alternatives[{name, whyNot}], timestamp, relatedServices[] }`
-  - MUST include at least one rejected alternative with `whyNot`
+- **Node**: `{ id, kind, name, summary, provenance }`
+  - `kind`: `module | service | datastore | external | datastructure | endpoint`
+  - `tech`, `path`, `ports`, `owner`, `deletedAt` are optional.
+- **Edge**: `{ id, from, to, kind, provenance }`
+  - `kind`: `imports | calls | reads | writes | derives_from`. `decided_by` is computed from `decision.subjects` and is never stored. `label` is transport naming only, never semantic.
+- **Provenance** (required on every node and edge, exactly one shape):
+  - `{ "derived": true, "rule": "<rule-id>", "evidence": ["file:line"] }`
+  - `{ "derived": false, "authoredBy": "agent | human", "reviewedAt": "<ISO 8601>" }`
+  - **No `confidence` field exists.** It was declared and read but written by no code path; a number an LLM assigns to itself is not evidence. `evidence: ["file:line"]` is.
+- **Decision**: `{ id, topic, decision, rationale, alternatives[{name, whyNot}], timestamp, subjects[{kind: "node|edge", ref}] }`
+  - MUST include at least one rejected alternative with a non-empty `whyNot`.
+  - `subjects` names nodes *and* edges.
 - **DataFlow**: `{ name, steps[{actor, action}] }`
-- **History entry**: `{ timestamp, action, summary }`
+- **History entry**: `{ timestamp, action, summary, agent? }`
+
+The document's discriminator is `"schemaVersion": 2`. There is no v1 `version` string, and a document carrying one is a v1 file this build refuses to write over.
+
+`services[]` and `connections[]` may appear in the file. They are a **derived view computed from `nodes[]` / `edges[]` on every read and rewritten from the graph on every write.** Never write to them; anything you put there is replaced on the next write without a warning.
 
 ## Validation Rules
 
-- Every `connection.from`/`to` must reference an existing `service.id`.
-- Every `service.dependencies[]` entry must reference an existing `service.id`.
+- Node, edge, and decision ids are unique. Every `edge.from`/`to` names an existing node.
+- Every derived element cites `evidence` with a `file:line` someone can open.
 - Every decision must include at least one rejected alternative with `whyNot`.
-- All timestamps are ISO 8601.
-- Update `project.lastUpdated` on every change.
+- A decision whose `subjects` no longer resolve is reported, never deleted.
+- All timestamps are ISO 8601. `project.lastUpdated` is set on every write.
 
 ## CLI Commands
 
+- `npx @ericjdz/arkive reconcile --apply` — derive structure from the code and write it
+- `npx @ericjdz/arkive reconcile` — report drift without writing anything
+- `npx @ericjdz/arkive watch` — re-derive on every change
 - `npx @ericjdz/arkive serve` — MCP server + web viewer
 - `npx @ericjdz/arkive serve --stdio` — MCP server only (agent integration)
-- `npx @ericjdz/arkive status` — architecture health check
-- `npx @ericjdz/arkive reconcile` — detect drift
-- `npx @ericjdz/arkive export <format>` — export (markdown, mermaid, png, svg)
+- `npx @ericjdz/arkive status` — counts, schema version, drift verdict
+- `npx @ericjdz/arkive export <markdown|mermaid>` — export
 - `npx @ericjdz/arkive learn` — web viewer in Learning Mode
 - `npx @ericjdz/arkive install <platform>` — register MCP server in your AI platform config
 

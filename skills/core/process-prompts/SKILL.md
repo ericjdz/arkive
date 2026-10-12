@@ -27,12 +27,12 @@ Loop until no pending prompts remain:
 1. Call `claim_next_prompt` — this atomically claims the oldest pending prompt and returns:
    - `id` — the prompt ID
    - `prompt` — the text of the architecture change request
-   - `targetServices` — array of service IDs this prompt is scoped to
+   - `targetServices` — array of node ids this prompt is scoped to (the tool's field name predates v2; the ids are node ids)
 2. Read `arkive/architecture.json` (or `architecture://session-context`) to understand current state
 3. Execute the prompt:
-   - If it requests adding/modifying services → call `update_architecture`
-   - If it requests an architectural decision → call `record_decision`
-   - If it requests code changes → make the changes, then update architecture
+   - If it requests a structural change (a new module, a removed dependency, a new package) → make the code change first, then `npx @ericjdz/arkive reconcile --apply`. The derived half comes from the code; do not hand-edit `nodes[]` / `edges[]`.
+   - If it requests a boundary, a `summary`, `owner`, or a data flow → `update_architecture`, with `"provenance": { "derived": false, "authoredBy": "agent" }`
+   - If it requests an architectural decision → `record_decision`, with `subjects` naming the nodes/edges it explains and at least one rejected alternative with a non-empty `whyNot`
 4. Call `ack_prompt` with the prompt `id` and outcome:
    - `"done"` — if successfully executed
    - `"failed"` — if the prompt cannot be executed (explain why in the message)
@@ -49,7 +49,7 @@ After draining the queue, tell the user:
 
 - Process prompts **one at a time** in FIFO order — do not skip or reorder
 - Always `ack_prompt` after each prompt, even if it failed
-- Update `arkive/architecture.json` after each prompt that changes the architecture
+- Run `reconcile --apply` after any prompt that changed the code's structure
 - Append a `history` entry for each architectural change
 
 ## MUST NOT
@@ -58,3 +58,4 @@ After draining the queue, tell the user:
 - Do NOT leave prompts in `claimed` state — always ack as done or failed
 - Do NOT batch multiple prompts into a single architecture update — process individually so each has its own ack
 - Do NOT execute prompts that are ambiguous or dangerous without asking the user first
+- Do NOT write `services[]`, `connections[]`, or `relatedServices`. They are a derived view of `nodes[]` / `edges[]`, regenerated from the graph on every write, so an edit to them is lost without a warning

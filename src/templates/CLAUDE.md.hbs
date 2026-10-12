@@ -6,56 +6,91 @@ This project uses a living architecture document, `{{architectureFile}}`. You �
 
 ## The Three Rules
 
-1. **On every session start**: Read `{{architectureFile}}` first. It is your memory across sessions, compaction, and model switches. Do not re-derive the architecture from the codebase if this file exists.
-2. **Before any major change**: Re-read `{{architectureFile}}` to align your changes with the existing system.
-3. **After any major change**: Update `{{architectureFile}}` to reflect what changed and why (see "How to Update" below).
+1. **On every session start**: Read `{{architectureFile}}` (or `architecture://session-context`). It is your memory across sessions, compaction, and model switches.
+2. **Before any major change**: Re-read `{{architectureFile}}` to learn what exists and why, and read the decisions attached to the part you are about to touch.
+3. **After any major change**: Run `npx @ericjdz/arkive reconcile --apply`, append a `history` entry, and record the decision if one was made.
+
+**Before claiming any task is complete**: re-run `reconcile --apply`. Confirm the derived half matches the code and the authored half carries every choice you made. If either does not, you are not done.
 
 ## What Counts as a Major Change
 
-- Adding, removing, or replacing a service, database, or external API
-- Changing how services communicate (new protocols, new endpoints)
-- Adding or modifying infrastructure (hosting, CI/CD, caching, CDN, queues)
+- Adding, removing, or replacing a service, datastore, or external API
+- Changing how components communicate (new protocols, new endpoints)
+- Adding or modifying infrastructure (hosting, CI/CD, caching, CDN)
 - Adopting a new framework or major library for a significant function
 - Refactoring that changes module boundaries or data flow
 
+## What you write, and what you derive
+
+**Structure is derived. You author intent.** A transcribed edge is a claim nothing checks, and it drifts from the first commit.
+
+| Derive — never hand-write | Author — nothing else can observe it |
+|---|---|
+| `nodes[]` for modules and external packages | `summary` — what a node is *for* |
+| `edges[]` of kind `imports` / `calls` | `owner` — a person decided this |
+| Anything the scan can cite a `file:line` for | `stack`, `dataFlows` |
+| | `service` / `datastore` / `endpoint` nodes — boundaries the code does not declare |
+| | `derives_from` edges, and `note` on any element |
+| | `decisions[]` — the artifact this product exists to preserve |
+
 ## How to Update
 
-### MCP tools (preferred — if arkive MCP server is connected):
-- `update_architecture` — add, modify, or remove services, connections, data flows, and stack entries
-- `record_decision` — record an architectural decision with rationale and rejected alternatives
-- `check_drift` — verify architecture.json matches the codebase
+### 1. Derive the structure
+```bash
+npx @ericjdz/arkive reconcile --apply
+```
 
-### Direct file editing (fallback — if MCP is not available):
+### 2. Record the intent (MCP preferred)
+- `update_architecture` — add or remove `nodes`, `edges`, `decisions`, `dataFlows`, `stack`. A decision sent in the same call attaches to everything that call created, so you never maintain the link by hand.
+- `record_decision` — a decision with rationale, a rejected alternative, and the nodes/edges it explains via `subjects`.
+- `why_does_this_exist` — resolve a node id to the decisions that explain it, with each claim's provenance.
+- `check_drift` — static analysis comparing the document against the code.
+
+### 3. Record the intent (direct file editing, if MCP is unavailable)
 1. Read `{{architectureFile}}`
-2. Add/update entries in `services`, `connections`, `dataFlows`, `stack`
-3. Add decision entries to `decisions` — MUST include at least one rejected alternative with `whyNot`
+2. Add/update `nodes[]` / `edges[]` **only** where derivation cannot reach, each with `"provenance": { "derived": false, "authoredBy": "agent" }`
+3. Add entries to `decisions[]` — MUST include at least one rejected alternative with a non-empty `whyNot`
 4. Append to `history` with `timestamp`, `action`, `summary`
-5. Update `project.lastUpdated` to current ISO 8601 timestamp
-6. Write the complete valid JSON back
+5. Write the complete valid JSON back
 
 ## Schema Reference
 
-### Service
+### Node
 ```json
 {
   "id": "kebab-case-id",
+  "kind": "module|service|datastore|external|datastructure|endpoint",
   "name": "Human Readable Name",
-  "type": "frontend|backend|database|cache|queue|gateway|cdn|storage|auth|search|monitoring|other",
-  "technology": "Specific tech (e.g., 'Next.js', 'PostgreSQL')",
-  "description": "What this service does in one sentence",
-  "dependencies": ["ids-of-services-this-depends-on"]
+  "summary": "What this node is for. \"\" is honest when nothing observed one.",
+  "tech": "optional",
+  "path": "src/schema (meaningful for module, optional)",
+  "owner": "optional",
+  "provenance": { "derived": true, "rule": "ts-js/module-node", "evidence": ["src/schema/graph.ts:1"] }
 }
 ```
 
-### Connection
+### Edge
 ```json
 {
-  "from": "service-id-that-initiates",
-  "to": "service-id-that-receives",
-  "protocol": "HTTP/REST|GraphQL|WebSocket|gRPC|TCP/SQL|AMQP|...",
-  "description": "What data flows through this connection"
+  "id": "kebab-case-id",
+  "from": "<node-id>",
+  "to": "<node-id>",
+  "kind": "imports|calls|reads|writes|derives_from",
+  "label": "HTTP/REST",
+  "note": "optional human note",
+  "provenance": { "derived": true, "rule": "ts-js/import-edge", "evidence": ["src/cli/index.ts:5"] }
 }
 ```
+
+`label` is transport naming only and is never semantic — `kind` is. `decided_by` is computed from `decision.subjects` and is never stored.
+
+### Provenance — exactly one shape, required on every node and edge
+```json
+{ "derived": true,  "rule": "<rule-id>", "evidence": ["src/x.ts:42"] }
+{ "derived": false, "authoredBy": "agent|human", "reviewedAt": "<ISO 8601>" }
+```
+
+**No `confidence` field exists and you must not add one.** It was declared on every v1 service and connection, read by two call sites, and written by no code path — a number an LLM assigns to itself is not evidence. `evidence: ["file:line"]` is, because anyone can open it.
 
 ### Decision (the most important — never skip)
 ```json
@@ -67,38 +102,53 @@ This project uses a living architecture document, `{{architectureFile}}`. You �
   "alternatives": [
     { "name": "Alternative A", "whyNot": "Why this was rejected" }
   ],
-  "timestamp": "<ISO 8601>",
-  "relatedServices": ["service-ids-affected"]
+  "timestamp": "2026-01-01T00:00:00.000Z",
+  "subjects": [
+    { "kind": "node", "ref": "kebab-case-id" }
+  ]
 }
 ```
 
-Always include at least one rejected alternative. Decisions without alternatives are not decisions — they are defaults.
+At least one alternative must carry a non-empty `whyNot` — a record with no rejected alternative is an observation, not a decision. `subjects` names **nodes and edges**; the ids are the same strings the old `relatedServices` field used. A subject that no longer resolves is reported, never deleted.
 
 ### History entry (append on every change)
 ```json
 {
   "timestamp": "<ISO 8601>",
-  "action": "added_service|architecture_decision|refactor|reconciliation|...",
-  "summary": "One-line summary"
+  "action": "reconciliation|architecture_decision|refactor|...",
+  "summary": "One-line summary",
+  "agent": "optional"
 }
 ```
 
+Capped at 50 entries; a truncated document carries `"historyTruncated": true` and keeps saying so until a human removes it.
+
+The document's discriminator is `"schemaVersion": 2`. There is no v1 `version` string, and a document carrying one is a v1 file this build refuses to write over.
+
+## The fields you must not write
+
+`services[]` and `connections[]` may appear in `{{architectureFile}}`. They are a **derived view**, computed from `nodes[]` / `edges[]` on every read and rewritten from the graph on every write. `decisions[].relatedServices` is likewise computed from the `kind: "node"` subjects.
+
+Anything you put in them is folded back into the graph and then replaced by the recomputed projection on the next write — silently. Send `nodes` and `edges` instead.
+
 ## Validation Rules
 
-1. Every `connection.from` and `connection.to` must reference an existing `service.id`.
-2. Every `service.dependencies[]` entry must reference an existing `service.id`.
-3. All timestamps must be ISO 8601.
-4. Update `project.lastUpdated` on every change.
+1. Node, edge, and decision ids are unique.
+2. Every `edge.from` and `edge.to` must reference an existing node. An endpoint that resolves to nothing is preserved as `dangling: true` and reported, not dropped.
+3. Every derived element cites `evidence` with a `file:line` someone can open.
+4. All timestamps must be ISO 8601.
 
 ## CLI Commands
 
 | Command | Action |
 |---|---|
+| `npx @ericjdz/arkive reconcile --apply` | Derive structure from the code and write it |
+| `npx @ericjdz/arkive reconcile` | Report drift without writing anything |
+| `npx @ericjdz/arkive watch` | Re-derive on every change |
 | `npx @ericjdz/arkive serve` | Start MCP server + web viewer |
 | `npx @ericjdz/arkive serve --stdio` | MCP server only (for agent integration) |
-| `npx @ericjdz/arkive status` | Architecture health check |
-| `npx @ericjdz/arkive reconcile` | Detect drift between doc and code |
-| `npx @ericjdz/arkive export <format>` | Export as markdown, mermaid, png, svg |
+| `npx @ericjdz/arkive status` | Counts, schema version, drift verdict |
+| `npx @ericjdz/arkive export <markdown\|mermaid>` | Export as markdown or Mermaid |
 | `npx @ericjdz/arkive learn` | Web viewer in Learning Mode |
 | `npx @ericjdz/arkive install <platform>` | Register MCP server in your AI platform config |
 

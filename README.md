@@ -23,6 +23,9 @@ npx @ericjdz/arkive init
 # Or with curl
 curl -fsSL https://raw.githubusercontent.com/ericjdz/arkive/main/scripts/install.sh | bash
 
+# Derive the structure from the code and write it
+npx @ericjdz/arkive reconcile --apply
+
 # Start the MCP server + web viewer
 npx @ericjdz/arkive serve
 
@@ -32,8 +35,10 @@ npx @ericjdz/arkive learn
 
 After `init`, your repo gains:
 
-- `arkive/` — contains `architecture.json` and `history/`
-- A small tracking block injected into your existing `CLAUDE.md` and `AGENTS.md` (created if missing)
+- `arkive/architecture.json` — the document
+- `arkive/history/` — content-hashed snapshots, capped at 10 distinct states
+- `arkive/context/sessions/` — bounded session context
+- A tracking block injected into your existing `CLAUDE.md` and `AGENTS.md` (created if missing)
 - `.cursor/rules/architecture-tracker.mdc` — Cursor auto-apply rule
 
 arkive extends your existing instruction files — it never overwrites them. Use `--standalone` to generate full instruction files instead.
@@ -51,11 +56,14 @@ Install arkive for architecture tracking in this project. Read the instructions 
 ## Features
 
 - **Cross-session memory for AI agents** — the architecture file survives compaction, session resets, and model switches.
+- **Derived structure, authored intent** — the module tree, the dependency set, and the import graph are read out of the code by static analysis. Your agent records what the code cannot say: what a component is *for*, who owns it, and what was chosen over what.
+- **Provenance you can open** — every node and edge carries either the rule that derived it and the `file:line` it read, or the name of whoever authored it.
 - **MCP server** — agents pull live architecture context via the Model Context Protocol (stdio + HTTP).
 - **Interactive web viewer** — six views: System Topology, Data Flow, Decision Log, Component Tree, Stack Overview, Learning Mode.
 - **Prompt queue** — select nodes in the viewer, write scoped architecture prompts, and your AI agent consumes them via MCP or clipboard.
-- **Decisions are first-class** — every architectural choice records what was chosen, why, and what was rejected.
-- **Drift detection** — `arkive reconcile` compares the doc against the actual code and flags mismatches.
+- **Decisions are first-class** — every architectural choice records what was chosen, why, what was rejected, and which nodes and edges it explains.
+- **Honest diagnostics** — `arkive reconcile` reports what derivation would change and what a human's claim no longer supports, and prints the scan's own coverage so a partial scan never reads as a clean bill of health.
+- **Continuous reconciliation** — `arkive watch` re-derives on every change.
 - **Learning Mode** — Socratic gating that quizzes you on architectural decisions and tracks concept mastery.
 - **Multi-platform** — Claude Code (marketplace + CLAUDE.md), Cursor (.cursor/rules), Codex / OpenCode / Copilot (AGENTS.md), or any agent via the MCP server.
 - **Try before you install** — drop the standalone `CLAUDE.md` or `AGENTS.md` into any repo and your agent maintains the doc with no install.
@@ -65,8 +73,8 @@ Install arkive for architecture tracking in this project. Read the instructions 
 The prompt queue lets you direct your AI agent from the viewer.
 
 1. Open the viewer (`npx @ericjdz/arkive serve`)
-2. Click any service node to open its detail panel
-3. Write an architecture change prompt scoped to that service
+2. Click any node to open its detail panel
+3. Write an architecture change prompt scoped to that node
 4. Click "Copy All" to paste into your agent's chat, or let the agent read `architecture://prompts` directly
 5. The agent claims prompts via `claim_next_prompt`, executes them, and acknowledges with `ack_prompt`
 
@@ -80,36 +88,57 @@ Prompts are stored in `arkive/prompt-queue.json` and survive session resets.
 | `npx @ericjdz/arkive init --platform <p>` | Same as above, but explicitly specify the platform instead of auto-detecting |
 | `npx @ericjdz/arkive init --standalone` | Generate full `AGENTS.md`/`CLAUDE.md` files (for platforms without MCP) |
 | `npx @ericjdz/arkive install <platform>` | Register MCP server in your AI platform config |
-| `npx @ericjdz/arkive install-skill <platform>` | Install arkive skills for your AI platform (7 skills: architecture tracking, init, import, view, learning, decisions, reconciliation) |
+| `npx @ericjdz/arkive install-skill <platform>` | Install arkive skills for your AI platform (8 skills: architecture tracking, init, import, view, prompt queue, learning, decisions, reconciliation) |
 | `npx @ericjdz/arkive serve` | Start the MCP server and open the web viewer |
 | `npx @ericjdz/arkive serve --stdio` | Run the MCP server in stdio mode (for direct agent integration) |
-| `npx @ericjdz/arkive status` | Show architecture health (last updated, drift warnings, coverage) |
-| `npx @ericjdz/arkive reconcile` | Run static analysis to detect drift and suggest fixes |
-| `npx @ericjdz/arkive export <format>` | Export as `markdown`, `mermaid`, `png`, or `svg` |
+| `npx @ericjdz/arkive status` | Counts, schema version, drift warnings, and a conclusive/inconclusive verdict |
+| `npx @ericjdz/arkive reconcile` | Derive the graph from the code, report the delta and the authored findings, write nothing |
+| `npx @ericjdz/arkive reconcile --apply` | The same, and persist the derived half |
+| `npx @ericjdz/arkive watch` | Re-derive on every change and report the delta |
+| `npx @ericjdz/arkive export <format>` | Export as `markdown` or `mermaid` |
 | `npx @ericjdz/arkive learn` | Open the web viewer in Learning Mode |
-| `npx @ericjdz/arkive hooks install` | Install post-commit git hook for auto-reconcile |
-| `npx @ericjdz/arkive hooks uninstall` | Remove the auto-reconcile git hook |
+| `npx @ericjdz/arkive stop` | Stop a running viewer |
+| `npx @ericjdz/arkive hooks` | Install the git hooks (not installed by `init`) |
+| `npx @ericjdz/arkive hooks --remove` | Remove them |
+| `npx @ericjdz/arkive hooks --claude` | Install the Claude Code agent hooks in `.claude/settings.json` |
 
 Run `npx @ericjdz/arkive <command> --help` for command-specific options.
+
+`arkive status` and `arkive reconcile` exit non-zero when the scan is
+inconclusive. That is the intended behaviour — it is what stops a partial scan
+from reporting as a clean one — but it will surface in CI that gates on their
+exit code.
 
 ## Configuration
 
 `init` accepts the following flags:
 
 - `--name <name>` — project name (defaults to directory name)
-- `--dir <path>` — target directory (defaults to current directory)
+- `-d, --dir <path>` — target directory (defaults to current directory)
 - `--description <text>` — project description
+- `--standalone` — write full instruction files instead of injecting a block
 - `--platform <platform>` — AI platform (auto-detected if omitted): claude-desktop, claude-code, cursor, opencode, vscode, windsurf, cline
 - `--skip-mcp` — skip MCP server registration
 - `--skip-skills` — skip skill installation
+- `--skip-hooks` — skip git hook installation (hooks are not installed by default)
+- `--dry-run` — print every path `init` would write, and write nothing
 
 `serve` accepts:
 
-- `--stdio` — run MCP server over stdio (no HTTP, no viewer)
-- `--port <n>` — HTTP/viewer port (default: 4317)
+- `--stdio` — run the MCP server over stdio (no HTTP, no viewer)
+- `-p, --port <n>` — HTTP/viewer port (default: 4567)
 - `--no-open` — do not auto-open the browser
 
-The architecture document lives at `./arkive/architecture.json` by default.
+`reconcile` accepts:
+
+- `--apply` — persist the derived half. Off by default: `reconcile` is a diagnostic, and `arkive watch` is where continuous persistence belongs.
+- `--include <path>` / `--exclude <path>` — narrow or prune the scan. Repeatable, and overrides `arkive.config.json`.
+- `--no-graph` — suppress the derived-graph summary
+
+The architecture document lives at `./arkive/architecture.json` by default. A
+document at `./architecture.json` is a v1 file at a path arkive no longer
+reads, and `init` refuses to run rather than scaffolding a second one beside
+it.
 
 ## Distribution Surfaces
 
@@ -125,17 +154,108 @@ The architecture document lives at `./arkive/architecture.json` by default.
 
 ## Architecture Document Schema
 
-`arkive/architecture.json` is a structured, view-agnostic document:
+`arkive/architecture.json` is a **graph**. Structure is derived from the code;
+intent is authored. Validated by Zod. See `src/schema/graph.ts` and
+`src/schema/provenance.ts` for the full schema.
 
-- `project` — name, description, timestamps
-- `stack` — language, runtime, framework, database, infrastructure
-- `services` — every component (frontend, backend, db, cache, queue, ...) — each may carry optional `source` (`agent-scanned` | `human-verified` | `inferred`) and `confidence` (0–1) fields
-- `connections` — how services communicate (HTTP, WebSocket, gRPC, ...) — also supports `source` and `confidence`
-- `decisions` — what was chosen, why, and what was rejected — also supports `source` and `confidence`
-- `dataFlows` — important user-facing flows step by step
-- `history` — chronological change log
+```json
+{
+  "schemaVersion": 2,
+  "project": { "name": "...", "description": "...", "created": "...", "lastUpdated": "..." },
+  "stack": { "language": [], "runtime": [], "framework": [], "database": [], "infrastructure": [] },
+  "nodes": [],
+  "edges": [],
+  "decisions": [],
+  "dataFlows": [],
+  "history": []
+}
+```
 
-Validated by Zod. See `src/schema/architecture.ts` for the full schema.
+| Field | What it holds |
+|---|---|
+| `schemaVersion` | Must be exactly `2`. The only discriminator, and it has no default — a v1 file fails to parse loudly rather than being read by the wrong parser. |
+| `project` | Name, description, timestamps. |
+| `stack` | Five string arrays. |
+| `nodes` | The structure. **Authoritative.** |
+| `edges` | The relationships. **Authoritative.** |
+| `decisions` | What was chosen, why, what was rejected, and which elements it explains. |
+| `dataFlows` | User-facing flows, step by step. |
+| `history` | Chronological change log, capped at 50 entries. |
+
+### Nodes
+
+`{ id, kind, name, summary, provenance }`, plus optional `tech`, `path`, `ports`,
+`owner`, `deletedAt`.
+
+Six kinds: `module` · `service` · `datastore` · `external` · `datastructure` · `endpoint`.
+
+The v1 `type` enum is gone — the twelve deployment labels (a frontend, a
+backend, a database, a cache, a queue, and so on). It was a taxonomy of
+deployment concerns that overlapped `kind` and answered no structural question.
+A cache is a `datastore`; a queue is a `datastore` with an `endpoint` on it.
+
+### Edges
+
+`{ id, from, to, kind, provenance }`, plus optional `label` (transport naming
+only — never semantic), `note`, `dangling`.
+
+Six kinds: `imports` · `calls` · `reads` · `writes` · `derives_from` ·
+`decided_by`. `decided_by` is a **projection** of `decision.subjects` computed by
+joining against the graph; it is never stored and never authored.
+
+### Provenance — required on every node and edge
+
+Exactly one of two shapes, discriminated on `derived`. Mixing the branches' keys
+is a hard parse error, and claiming `derived: true` with no `evidence` is
+refused.
+
+```json
+{ "derived": true,  "rule": "ts-js/module-node", "evidence": ["src/schema/graph.ts:1"] }
+{ "derived": false, "authoredBy": "agent", "reviewedAt": "2026-01-01T00:00:00.000Z" }
+```
+
+**`confidence` is gone, and there is no replacement for it.** v1 declared
+`source` and `confidence` on every service and connection. Two call sites read
+them; **no code path in the repository ever wrote them.** They survived only
+because a markdown instruction told agents to set them, so the drift warning
+they triggered could fire only if an agent voluntarily obeyed prose. A number an
+LLM assigns to itself is not evidence. `evidence: ["src/x.ts:42"]` is, because
+anyone can open it and check.
+
+### Decisions
+
+`{ id, topic, decision, rationale, alternatives[{name, whyNot}], timestamp, subjects[{kind, ref}] }`
+
+`subjects` replaces v1's `relatedServices` and names **nodes and edges**, so a
+decision can explain a relationship as well as a component. The ids are the same
+strings, so a `relatedServices` list moves across mechanically. At least one
+alternative must carry a non-empty `whyNot`: a record with no rejected
+alternative is an observation, not a decision.
+
+A subject that no longer resolves is reported, never deleted. A decision that
+explains something which no longer exists is the thing you most want to know.
+
+### `services[]` and `connections[]` — read them, never write them
+
+These fields still appear in the file. They are a **derived view**: computed
+from `nodes[]` / `edges[]` on every read and rewritten from the graph on every
+write. `decisions[].relatedServices` is likewise computed from the `kind: "node"`
+subjects. They exist so a pre-v2 reader — an older arkive, the viewer, a human
+in an editor — still gets a usable document.
+
+An edit to a stored copy is folded back into the graph and then replaced by the
+recomputed projection. **It disappears on the next write without a warning.** Send
+`nodes` and `edges` instead.
+
+### The rule this encodes
+
+**Structure is derived. Agents and humans own intent. Anything structurally
+derivable from the code is derived, never transcribed.**
+
+An agent that hand-writes an `imports` edge has created a second source of truth
+that drifts from the first one on the next commit, and nothing reports the
+drift. An agent that runs `arkive reconcile --apply` gets an edge carrying the
+line number it came from.
 
 ## For Agents — Self-Install Guide
 
@@ -152,12 +272,12 @@ npx -y @ericjdz/arkive init --platform <platform>
 ```
 
 This single command:
-- Creates `arkive/architecture.json` and `arkive/history/`
+- Creates `arkive/architecture.json` (an empty v2 scaffold), `arkive/history/` and `arkive/context/sessions/`
 - Injects tracking blocks into `AGENTS.md` and `CLAUDE.md` (created if missing)
 - Creates `.cursor/rules/architecture-tracker.mdc`
 - **Registers the MCP server** in the platform's config file
-- **Installs 7 arkive skills** (architecture-tracker, arkive-init, arkive-import, arkive-view, learning-mode, explain-decisions, reconciliation)
-- **Optionally installs the git hook** — run `npx @ericjdz/arkive hooks install` after init to enable auto-reconcile on every commit
+- **Installs 8 arkive skills** (architecture-tracker, arkive-init, arkive-import, arkive-view, process-prompts, learning-mode, explain-decisions, reconciliation)
+- **Does not install git hooks.** Run `npx @ericjdz/arkive hooks` to opt in
 
 If files already exist, they are not overwritten. If `--platform` is omitted, arkive auto-detects by checking for `opencode.json`, `.mcp.json`, `.cursor/`, `.vscode/`, or environment variables.
 
@@ -173,18 +293,34 @@ npx @ericjdz/arkive status
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | npx -y @ericjdz/arkive serve --stdio
 ```
 
-The MCP response should list eight tools: `update_architecture`, `record_decision`, `check_drift`, `scaffold_project`, `open_viewer`, `list_prompts`, `claim_next_prompt`, `ack_prompt`.
+`status` must report `Schema: v2` and a **conclusive** verdict. The MCP response
+should list nine tools: `update_architecture`, `record_decision`, `check_drift`,
+`scaffold_project`, `open_viewer`, `list_prompts`, `claim_next_prompt`,
+`ack_prompt`, `why_does_this_exist`.
 
-### Step 4: Start maintaining the architecture
+### Step 4: Derive the structure, then record the intent
 
-After init, **immediately scan the codebase** and populate `arkive/architecture.json`:
+After init, derive the document from the code — do not transcribe it.
 
-1. Read `package.json`, folder structure, and imports
-2. Use the `update_architecture` MCP tool (or edit `arkive/architecture.json` directly) to populate `stack`, `services`, and `connections`
-3. When adding services from a code scan, set `"source": "agent-scanned"` and `"confidence": 0.8`. Set `"source": "human-verified"` and `"confidence": 1.0` only when the user explicitly confirms a service. Entries with confidence below 0.6 are flagged as drift warnings.
-4. Record any existing architectural decisions via `record_decision`
+```bash
+npx @ericjdz/arkive reconcile --apply
+```
 
-**From this point forward**, update `arkive/architecture.json` after every major change (adding/removing services, changing protocols, new frameworks, infrastructure changes).
+This reads the directory tree and the import graph and writes `nodes[]` and
+`edges[]`, each carrying `{"derived": true, "rule": "...", "evidence": ["file:line"]}`.
+It prints the scan's coverage and the per-language breakdown, so you can see
+what it did not read.
+
+Then record what the scan cannot observe:
+
+1. **Read** `package.json`, the folder structure, and the imports to understand the project
+2. **Author intent**, via the `update_architecture` MCP tool (or by editing `arkive/architecture.json` directly): a `summary` for each significant node saying what it is *for*, `owner` where you know it, and the `stack` as you understand it
+3. **Author boundaries** the code does not declare — a `service`, a `datastore`, an `endpoint`, a `derives_from` edge — with `"provenance": { "derived": false, "authoredBy": "agent" }`, or `"authoredBy": "human"` when the user confirmed it
+4. **Record existing architectural decisions** via `record_decision`, each with at least one rejected alternative and a non-empty `whyNot`, and with `subjects` naming the nodes or edges it explains
+5. **Do not write `services[]`, `connections[]`, or `relatedServices`.** They are a derived view of `nodes[]` / `edges[]` and anything you put in them is overwritten on the next write without a warning
+6. **Do not write a `confidence` number.** There is no such field. Evidence is `["file:line"]`
+
+**From this point forward**, after every change to the code's structure run `npx @ericjdz/arkive reconcile --apply`, and record the decision if one was made. `npx @ericjdz/arkive watch` does the re-derivation continuously if the user wants it on.
 
 ### Step 5: Use session context on every session start
 
@@ -339,27 +475,29 @@ npx @ericjdz/arkive status
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | npx -y @ericjdz/arkive serve --stdio
 ```
 
-The MCP response should list eight tools: `update_architecture`, `record_decision`, `check_drift`, `scaffold_project`, `open_viewer`, `list_prompts`, `claim_next_prompt`, `ack_prompt`.
+The MCP response should list nine tools: `update_architecture`, `record_decision`, `check_drift`, `scaffold_project`, `open_viewer`, `list_prompts`, `claim_next_prompt`, `ack_prompt`, `why_does_this_exist`.
 
 ### Fallback (no MCP)
 
 If MCP registration is not possible in your environment, arkive still works:
 
 - **Read/write `arkive/architecture.json` directly** — follow the schema in `AGENTS.md` or `CLAUDE.md`
-- **CLI commands** — `npx @ericjdz/arkive status`, `reconcile`, `export`
+- **Derive the structure with the CLI** — `npx @ericjdz/arkive reconcile --apply` writes `nodes[]` / `edges[]` from the code, with provenance, and does not need MCP
+- **CLI commands** — `npx @ericjdz/arkive status`, `reconcile`, `watch`, `export`
 - **No dependencies required** — the JSON file is self-contained
 
 ### MCP Tools Reference
 
 | Tool | Description |
 |---|---|
-| `update_architecture` | Merge services, connections, data flows, and stack entries into `arkive/architecture.json`. Supports `removeServiceIds`, `removeConnectionKeys`, `removeDataFlowNames` for deletions. |
-| `record_decision` | Append an architectural decision with rationale and at least one rejected alternative. |
-| `check_drift` | Static analysis comparing `arkive/architecture.json` against `package.json` and source imports. Returns mismatches. |
+| `update_architecture` | Add or remove `nodes`, `edges`, `decisions`, `dataFlows`, and `stack` entries. A decision passed in the same call attaches to everything that call created, so the link is never maintained by hand. `removeServiceIds` takes **node** ids; `removeConnectionKeys` and `removeDataFlowNames` handle deletions. The `services` / `connections` inputs still exist for pre-v2 callers but are folded into the graph and then recomputed — prefer `nodes` / `edges`. |
+| `record_decision` | Append a decision with rationale and at least one rejected alternative carrying a non-empty `whyNot`. `subjects` names the nodes and edges it explains; omit them and the decision is recorded unattached, which `arkive reconcile` reports. Sending `relatedServices` is **refused with an error naming its replacement** rather than silently stripped. |
+| `why_does_this_exist` | Resolve a node id to the decisions that explain it: rationale, rejected alternatives, and the provenance of every claim — derived by a rule with evidence, authored, or no longer resolving. A decision on a parent path is found from its module children. |
+| `check_drift` | Static analysis comparing `arkive/architecture.json` against `package.json` and source imports. Returns mismatches, plus the scan's own coverage so a partial scan is never reported as "in sync". |
 | `scaffold_project` | Generate a project scaffold from the architecture document. |
-| `open_viewer` | Open the web viewer in the default browser. |
+| `open_viewer` | Open the web viewer in the default browser. The returned URL carries a per-run access token in its fragment and must be opened as given. |
 | `list_prompts` | List queued architecture prompts from the viewer. Optionally filter by status. |
-| `claim_next_prompt` | Atomically claim the oldest pending prompt. Returns prompt text and target services. |
+| `claim_next_prompt` | Atomically claim the oldest pending prompt. Returns prompt text and the node ids it is scoped to. |
 | `ack_prompt` | Mark a claimed prompt as done or failed after execution. |
 
 ### MCP Resources Reference
@@ -367,7 +505,7 @@ If MCP registration is not possible in your environment, arkive still works:
 | Resource | Description |
 |---|---|
 | `architecture://overview` | Project metadata, stack, and summary statistics. |
-| `architecture://services` | All services with dependencies and connections. |
+| `architecture://services` | The derived view of `nodes[]` / `edges[]` — every node and how they connect. Computed, not stored. |
 | `architecture://decisions` | Full decision log with rationale and alternatives. |
 | `architecture://dataflows` | Data flow definitions with step-by-step sequences. |
 | `architecture://history` | Chronological change log. |

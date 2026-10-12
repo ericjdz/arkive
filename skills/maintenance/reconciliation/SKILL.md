@@ -1,57 +1,97 @@
 ---
 name: reconciliation
-description: Detect drift between arkive/architecture.json and the actual codebase.
-trigger: User says "check drift", "reconcile", "is the architecture up to date", or when returning to a project after a break.
+description: Derive the architecture graph from the code and report what a human's claims no longer support.
+trigger: User says "check drift", "reconcile", "is the architecture up to date", "derive the graph", or when returning to a project after a break.
 ---
 
-# Reconciliation — Drift Detection
+# Reconciliation — Derive, then report
 
 ## When to Use
 
 - When returning to a project after a break
-- When multiple developers or AI agents have made changes
-- When you suspect the architecture doc is out of date
+- After a change to the module tree, the dependency list, or the source layout
+- When the document and the code may disagree
 - Periodically as a health check
+
+## What reconciliation is for
+
+Structure comes from static analysis. `reconcile` runs the derivation over the
+code and reports the delta against the document. The derived half cannot drift,
+because nothing structural is stored — so this is not a search for a
+transcription that has gone stale.
+
+What it *does* report is the gap between the code and the **authored** half:
+a `service` node claiming a technology the manifest does not declare, a decision
+explaining something that no longer exists, a node a previous run derived and
+this run cannot reproduce.
 
 ## How to Reconcile
 
-### Option A: Via CLI (recommended)
+### Report (default)
 
-Run: `npx @ericjdz/arkive reconcile`
+```bash
+npx @ericjdz/arkive reconcile
+```
 
-This scans `package.json` and source imports under `src/`, then reports mismatches against `arkive/architecture.json`.
+Scans the project, prints what derivation *would* change, and writes nothing.
 
-### Option B: Via MCP tool
+It prints the scan's own coverage — files scanned, unreadable, not reached — and
+a per-language breakdown of the derived graph. An empty warning list over a
+partial scan is **not** a clean bill of health, and the command says so: look
+for the `coverage:` line and for a `note:` about what it skipped. If it says
+arkive could not verify the document, that is the finding.
 
-Call the `check_drift` tool. It returns the same report as the CLI command.
+### Persist
 
-### Option C: Manual scan
+```bash
+npx @ericjdz/arkive reconcile --apply
+```
 
-If neither CLI nor MCP is available:
+Writes the derived half and exits. This is the one-shot escape from `watch`.
 
-1. Read `arkive/architecture.json`
-2. Check these files for ground truth:
-   - `package.json` / `requirements.txt` / `go.mod` → actual dependencies vs `stack`
-   - Import statements across source files → actual connections vs `connections`
-3. For each mismatch, note:
-   - What the doc says vs what the code shows
-   - Severity: Critical (service missing), Warning (dependency mismatch), Info (minor drift)
+Narrow the scan with `--include <path>` / `--exclude <path>` (both repeatable,
+both overriding `arkive.config.json`), and suppress the graph summary with
+`--no-graph`.
 
-**Current scanner limitations:** The automated scanner checks `package.json` dependencies and `src/` import statements. It does NOT currently scan Docker, nginx, env files, or infrastructure configs. For those, do a manual review.
+### Continuous
+
+```bash
+npx @ericjdz/arkive watch
+```
+
+Runs the same derivation on every change and reports the delta. Exits non-zero
+only if the *initial* scan failed — a watcher cannot retroactively set an exit
+code its shell already read.
+
+### Scope with `--include` or `--exclude`
+
+```bash
+npx @ericjdz/arkive reconcile --include src --exclude src/generated
+```
+
+A narrowing is reported in the coverage line. A scan that quietly covered half a
+repository would otherwise read as a scan that covered all of it.
 
 ## After Reconciliation
 
-Update `arkive/architecture.json` to reflect reality. MUST append a history entry:
+The derived half is now correct by construction. Record what you learned in the
+authored half:
 
 ```json
 {
-  "timestamp": "ISO 8601 now",
+  "timestamp": "<ISO 8601 now>",
   "action": "reconciliation",
-  "summary": "Reconciled arkive/architecture.json with codebase — fixed N mismatches"
+  "summary": "Reconciled — derived 412 module nodes and 87 external nodes"
 }
 ```
 
+If the run reported an authored claim the code does not support, fix the claim
+or remove it — do not edit the code to match the document.
+
 ## MUST NOT
 
-- Do NOT silently fix drift without reporting what changed
-- Do NOT remove entries from arkive/architecture.json without verifying they are truly gone from the codebase
+- Do NOT hand-edit `nodes[]` or `edges[]` to make a report go away. The derived half is rewritten from the code on the next `--apply` or `watch` cycle, and your edit disappears without a warning.
+- Do NOT treat "No drift detected" as proof of anything without reading the coverage line above it.
+- Do NOT silently fix authored findings without reporting what changed.
+- Do NOT remove an authored element without verifying it is genuinely gone from the codebase. `reconcile` reports a dangling reference rather than dropping it, and that is deliberate.
+- Do NOT add a `confidence` field to resolve a finding. It was deleted because it was declared and read but written by no code path; a number an LLM assigns to itself is not evidence. `evidence: ["file:line"]` is.

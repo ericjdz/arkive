@@ -9,17 +9,19 @@ This project uses `{{architectureFile}}` as a living architecture document. arki
 
 ## Rules
 
-1. **On session start**: Read `{{architectureFile}}` first — it is your cross-session memory.
-2. **Before major changes**: Re-read `{{architectureFile}}` to align changes with existing architecture.
-3. **After major changes**: Update via MCP tools (`update_architecture`, `record_decision`) or edit `{{architectureFile}}` directly.
+1. **Structure is derived. You author intent.** The module tree, the third-party packages, and the import graph come out of the code via `npx @ericjdz/arkive reconcile --apply`. Never hand-transcribe them. What you write is what no rule can observe: `summary`, `owner`, `stack`, `dataFlows`, decisions, and boundaries the code does not declare.
+2. **On session start**: Read `{{architectureFile}}` (or `architecture://session-context`) first — the decisions and rejected alternatives are the reason to read it. When it disagrees with the code, the code is right.
+3. **After major changes**: Run `npx @ericjdz/arkive reconcile --apply`, then record intent via MCP tools (`update_architecture`, `record_decision`) or by editing `{{architectureFile}}` directly.
 
 ## Major Changes
 
-Adding/removing services · changing protocols · new frameworks · infrastructure changes · module boundary refactors.
+Adding/removing modules or services · changing protocols · new frameworks · infrastructure changes · module boundary refactors.
 
 ## Requirements
 
-- Every decision MUST include at least one rejected alternative with `whyNot`.
-- Every connection MUST reference existing service IDs.
-- Always update `project.lastUpdated` and append to `history`.
-- Use `npx @ericjdz/arkive reconcile` to detect drift.
+- Every derived element cites `evidence: ["file:line"]`. Every authored element carries `"provenance": { "derived": false, "authoredBy": "agent|human" }`.
+- There is no `confidence` field and no `relatedServices`. Decisions attach with `subjects: [{ "kind": "node"|"edge", "ref": "<id>" }]`.
+- `services[]` / `connections[]` are a derived view of `nodes[]` / `edges[]`. Writing them is a no-op that gets overwritten.
+- The document's discriminator is `"schemaVersion": 2`. There is no v1 `version` string.
+- Every decision MUST include at least one rejected alternative with a non-empty `whyNot`.
+- Run `npx @ericjdz/arkive reconcile` to report drift without writing anything.

@@ -8,7 +8,19 @@ trigger: User says "import project", "convert project to arkive", "analyze proje
 
 ## When to Use
 
-Run this to populate `arkive/architecture.json` from an existing codebase. This skill reconstructs the project's architectural history by analyzing when files were introduced and what they represent.
+Run this to populate `arkive/architecture.json` from an existing codebase. This skill reconstructs the project's architectural *history* by analyzing when files were introduced and what they represent.
+
+## What this skill produces, and what it does not
+
+It produces **history and intent**: `history[]` entries carrying the original timestamps, `stack` entries, and the `decisions[]` the code makes evident.
+
+It does not produce `nodes[]` and `edges[]`. Those are derived:
+
+```bash
+npx @ericjdz/arkive reconcile --apply
+```
+
+Deriving structure is not a shortcut available to this skill. A `module` node written from a file listing has no `rule` and no `evidence`, so it is an assertion with nothing behind it, and it starts drifting the moment the next file lands.
 
 ## Precondition
 
@@ -99,38 +111,39 @@ Wait for user confirmation before proceeding.
 For EACH phase:
 
 1. **Read all files introduced in that phase.**
-2. **Identify architectural elements:**
-   - New services (frontend, backend, database, etc.)
-   - New connections between services
+2. **Identify what the code reveals about intent:**
    - Stack additions (languages, frameworks, databases, infrastructure)
    - Architectural decisions evident from the code
-3. **Update arkive/architecture.json:**
-   - Call `update_architecture` (MCP) or edit directly with discovered services, connections, stack entries.
+   - A deployable boundary the code implies — a Dockerfile, a serverless config, a workspace package — which is a `service` node you *author*, because no rule will emit one for an artefact it merely found
+3. **Update `arkive/architecture.json`:**
+   - Call `update_architecture` (MCP) with `stack` entries, any `service` / `datastore` nodes you can justify, and the `decisions` this phase reveals.
+   - Every element you author carries `"provenance": { "derived": false, "authoredBy": "agent" }`. A node with no provenance is refused; an element claiming `derived: true` without `evidence` is refused too.
    - Use the phase's ORIGINAL timestamp, not the current time.
 4. **Record decisions:**
-   - Call `record_decision` for choices evident in the code.
+   - Call `record_decision` for choices evident in the code. Send `subjects` naming the nodes the decision explains; omit them and the decision is recorded unattached, which `arkive reconcile` reports.
    - Example: `express` in package.json → Decision: "Express.js for HTTP server", rationale from package.json context, alternatives: ["Fastify", "Koa"]
    - If rationale is unknown: `"Pre-existing choice — rationale not documented"`
    - If alternatives weren't evaluated: `[{ name: "Not evaluated", whyNot: "No evidence of alternatives considered" }]`
 5. **Report progress:**
    ```
    Phase 3/18 complete: "Authentication system"
-   — Added 2 services: auth-service, session-store
-   — Added 1 connection: auth-service -> session-store (TCP/Redis)
    — Recorded 1 decision: JWT for session tokens
+   — Added 2 stack entries: jsonwebtoken
    ```
+6. **After the last phase**, run `npx @ericjdz/arkive reconcile --apply` to derive the module and import graph from the code.
 
 #### 8. Finalize
 
 After all phases:
-1. Call `check_drift` to verify consistency.
-2. Report final summary:
+1. Run `npx @ericjdz/arkive reconcile --apply` if you have not already.
+2. Run `npx @ericjdz/arkive reconcile` (no `--apply`) and report.
+3. Report final summary:
    ```
    Import complete.
    — 18 phases processed
-   — 12 services, 8 connections, 5 decisions recorded
-   — History spans 2025-01-10 to 2025-06-30
-   — Drift check: 0 issues
+   — history spans 2025-01-10 to 2025-06-30
+   — 5 decisions recorded
+   — 412 module nodes, 87 external nodes, 1,204 imports edges derived at 99.1% coverage
    ```
 
 ### Resumption
@@ -154,12 +167,14 @@ If the session is interrupted mid-import:
    - alternatives: `[{ name: "Not evaluated", whyNot: "No evidence of alternatives considered" }]`
 5. Do NOT summarize multiple phases into one. Each phase is a discrete unit of work.
 6. History entries for import phases MUST use action `"import_phase"` and include the phase number in the summary.
-7. After completing all phases, you MUST call `check_drift` and report any inconsistencies.
+7. After completing all phases, you MUST run `arkive reconcile --apply` so the derived half matches the code, then run `arkive reconcile` and report any findings.
 
 ## MUST NOT
 
 - Do NOT start processing without user confirmation of the phase summary
 - Do NOT use current timestamps for historical phases
-- Do NOT invent services, connections, or decisions not evident in the code
+- Do NOT write `nodes[]` entries for files or packages you found by listing directories. Run `reconcile --apply` — it emits those with the `rule` and the `file:line` they came from
+- Do NOT write `services[]`, `connections[]`, or `relatedServices`. They are a derived view of `nodes[]` / `edges[]`, regenerated from the graph on every write
+- Do NOT invent `evidence`. An `evidence` entry you did not read is worse than none
 - Do NOT skip phases or process them out of order
 - Do NOT reprocess phases that are already in the history

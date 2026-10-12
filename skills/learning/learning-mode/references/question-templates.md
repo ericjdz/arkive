@@ -42,38 +42,50 @@ What happens when "User sends a message"? Arrange the steps:
 
 ## Topology Questions (Multiple Choice)
 
-**Template:** Which services depend on {service.name}?
+**Template:** Which component depends on {node.name}?
 
-**Correct answer:** List of services whose `dependencies` array includes this service's ID.
+**Correct answer:** The nodes that reach `{node.id}` by traversing `edges` outward from it — `imports`, `calls`, `reads`, `writes`. Use `from` → `to`.
 
-**Wrong answers:** Services that do NOT depend on this service.
+**Wrong answers:** Nodes that do NOT reach it. Do not offer `kind: "external"` nodes as plausible answers for an internal dependency question — every module imports something third-party and the answer stops being discriminating.
 
-**Example from chat app:**
+**Example:**
 ```
-Which services depend on PostgreSQL?
+Which components depend on the datastore node?
 
-A) REST API, WebSocket Server ✅
-B) Web Client
-C) No other services
+A) schema module, analysis module ✅
+B) viewer
+C) Nothing — it is only written by hand
 ```
 
-## Connection Questions (Multiple Choice)
+## Edge Questions (Multiple Choice)
 
-**Template:** What protocol does the connection from {from} to {to} use?
+**Template:** What relationship does edge {from} → {to} represent?
 
-**Correct answer:** The connection's `protocol` field.
+**Correct answer:** The edge's `kind`, and its `label` if it has one. `label` is transport naming only (`"HTTP/REST"`, `"stdio"`) and never semantic — `kind` is the semantic answer.
 
-**Wrong answers:** Other protocols used in the project, plus generic protocols (gRPC, GraphQL, AMQP).
+**Wrong answers:** Other edge kinds used in the project, plus generic distractors (`derives_from`, `decided_by` are rarely right; `decided_by` is not stored at all).
 
-**Example from chat app:**
+**Example:**
 ```
-What protocol does the connection from web-client to websocket-server use?
+What does the edge from the http-handler to the message-bus describe?
 
-A) HTTP/REST
-B) WebSocket ✅
-C) TCP/SQL
-D) gRPC
+A) calls ✅
+B) reads
+C) derives_from
+D) writes
 ```
+
+## Provenance Questions (Multiple Choice)
+
+**Template:** How did {node.name} come to be in this graph?
+
+**Correct answers:**
+- `derived` — a rule read the sites in `provenance.evidence`. Name one of them.
+- `authored` — somebody recorded it; `provenance.authoredBy` says who.
+
+**Wrong answers:** Any answer implying a confidence score, a percentage, or a probability. There is no `confidence` field, and an invented one would be a number nobody measured.
+
+This is the one template that teaches the distinction the rest of the product rests on: structure is derived, intent is authored, and the two are not interchangeable.
 
 ## Stack Questions (Short Answer)
 

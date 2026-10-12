@@ -1,32 +1,54 @@
 <!-- arkive:start -->
 ## arkive — Architecture Tracking (MANDATORY — DO NOT SKIP)
 
-**On EVERY session start:** Read `{{architectureFile}}` FIRST. It is your cross-session memory. Do not proceed until you have read it.
+**Structure is derived. You author intent.** The module tree, the third-party packages, and the import graph are read out of the code by static analysis. Run `npx @ericjdz/arkive reconcile --apply` and let it write `nodes[]` and `edges[]`, each carrying `"provenance": { "derived": true, "rule": "...", "evidence": ["file:line"] }`.
 
-**After EVERY major change:** Update `{{architectureFile}}` IMMEDIATELY — not at the end, not later, NOW. Use MCP tools or direct edit. Append a history entry.
+**On EVERY session start:** Read `{{architectureFile}}` FIRST — or `architecture://session-context` if MCP is connected. It is your cross-session memory: the decisions, the rationale, the rejected alternatives. Do not proceed until you have read it. Read it for context; when it and the code disagree, the code is right and `reconcile --apply` is the fix.
 
-**Before claiming ANY task is complete:** Verify `{{architectureFile}}` reflects ALL changes made this session. If it doesn't, you are not done.
+**After EVERY major change:** Run `npx @ericjdz/arkive reconcile --apply` IMMEDIATELY — not at the end, not later, NOW. Then record what the scan cannot know and append a history entry.
+
+**Before claiming ANY task is complete:** Re-run `npx @ericjdz/arkive reconcile --apply`. Confirm the derived half matches the code and the authored half carries every choice you made. If it doesn't, you are not done.
 
 ### What counts as a major change (update architecture for ALL of these):
-- Adding or removing a service, component, or module
+- Adding or removing a service, datastore, component, or module
 - Installing a new framework, library, or significant dependency
 - Changing communication protocols or API boundaries
 - Modifying infrastructure or deployment configuration
 - Refactoring module boundaries or file structure
-- Making any architectural decision (record with `record_decision`)
+- Making any architectural decision (record it with `record_decision`)
+
+### What you write, and what you derive:
+
+| Derive — never hand-write | Author — nothing else can observe it |
+|---|---|
+| `nodes[]` for modules and external packages | `summary` — what a node is *for* |
+| `edges[]` of kind `imports` / `calls` | `owner` — a person decided this |
+| Anything the scan can cite a `file:line` for | `stack`, `dataFlows` |
+| | `service` / `datastore` / `endpoint` nodes — boundaries the code does not declare |
+| | `derives_from` edges, and `note` on any element |
+| | `decisions[]` — the artifact this product exists to preserve |
 
 ### How to update:
-1. **MCP tools (preferred):** `update_architecture` to add/modify services, connections, stack. `record_decision` for decisions.
-2. **Direct edit:** Edit `{{architectureFile}}` following the schema. Always update `project.lastUpdated` and append to `history`.
-3. **Verify:** `npx @ericjdz/arkive reconcile` to detect drift.
+1. **Derive:** `npx @ericjdz/arkive reconcile --apply`.
+2. **Author:** MCP tools — `update_architecture` for `nodes`, `edges`, `decisions`, `dataFlows`, `stack`; `record_decision` for a choice. A decision sent in the same call as the nodes it explains attaches to all of them automatically. Fall back to editing `{{architectureFile}}` directly — give authored elements `"provenance": { "derived": false, "authoredBy": "agent" }`.
+3. **Verify:** `npx @ericjdz/arkive reconcile` reports drift without writing anything.
+
+### Fields that are not yours to write:
+`services[]`, `connections[]`, and `decisions[].relatedServices` are a **derived view** recomputed from `nodes[]` / `edges[]` on every read and rewritten from the graph on every write. Anything you put in them is replaced on the next write, silently. Send `nodes` and `edges`.
+
+A decision attaches with `subjects: [{ "kind": "node" | "edge", "ref": "<id>" }]` — it can name a relationship as well as a component.
+
+There is **no `confidence` field.** It was declared and read but written by no code path; a number an LLM assigns to itself is not evidence. `evidence: ["file:line"]` is.
+
+The document's discriminator is `"schemaVersion": 2`. There is no v1 `version` string, and a document carrying one is a v1 file this build refuses rather than a document you can edit.
 
 ### Enforcement:
-- If you create a new file or directory that represents a service/component → update architecture
+- If you create a new file or directory that represents a module → run `reconcile --apply`
 - If you run `npm install <package>` → update `stack` in architecture
-- If you chose between two approaches → record the decision with `record_decision`
-- If you skip updating → the next session will have no memory of your changes
+- If you chose between two approaches → record the decision with `record_decision`, including the alternative you rejected and why
+- If you skip this → the next session will have no memory of your changes
 
-**MCP tools:** `update_architecture`, `record_decision`, `check_drift`, `list_prompts`, `claim_next_prompt`, `ack_prompt`
-**CLI:** `npx @ericjdz/arkive status` · `npx @ericjdz/arkive reconcile`
+**MCP tools:** `update_architecture`, `record_decision`, `why_does_this_exist`, `check_drift`, `list_prompts`, `claim_next_prompt`, `ack_prompt`
+**CLI:** `npx @ericjdz/arkive status` · `npx @ericjdz/arkive reconcile` · `npx @ericjdz/arkive watch`
 **Docs:** https://github.com/ericjdz/arkive
 <!-- arkive:end -->

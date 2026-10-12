@@ -17,13 +17,13 @@ Learning Mode is **opt-in**. It activates when:
 
 After every architecture update (any change to `arkive/architecture.json`), you MUST:
 
-1. **Identify what changed**: What services, decisions, connections, or data flows were added or modified?
+1. **Identify what changed**: What decisions, nodes, edges, or data flows were added or modified? Ignore the derived half — a `reconcile --apply` that adds 200 module nodes taught the user nothing, and quizzing them on it is punishment for running the tool.
 
 2. **Generate ONE comprehension question**: Use the templates in `references/question-templates.md`. Priority order:
-   - Questions about NEW decisions (highest — user just accepted an AI decision)
+   - Questions about NEW decisions (highest — the user just accepted an AI decision)
    - Questions about modified data flows
-   - Questions about new service dependencies
-   - Questions about connection protocols
+   - Questions about a node's `summary` or `owner`
+   - Questions about a boundary the code does not declare (a `service`, a `datastore`, an `endpoint`)
 
 3. **Wait for the user's answer**: Do NOT proceed with the next task until the user answers.
 
