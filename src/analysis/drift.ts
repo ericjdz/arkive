@@ -67,8 +67,14 @@ export type DriftScan = Pick<
    * Optional so a caller holding only the summary shape still type-checks. When
    * present it lets the module rules confirm a `module` node's `path` against
    * the filesystem; when absent they fall back to the tombstone alone.
+   *
+   * Directory nodes are checked against `directoryIndex`, never this one. A
+   * directory path is never a member of `fileIndex`, so checking it there
+   * reported every directory as deleted.
    */
   fileIndex?: ReadonlySet<string>;
+  /** Every discovered directory, repo-relative. Required to check a `module:dir:` node. */
+  directoryIndex?: ReadonlySet<string>;
 };
 
 export interface DriftReport {
@@ -282,11 +288,24 @@ export function detectDrift(
     if (node.kind !== "module" || node.provenance?.derived !== true) continue;
 
     const tombstoned = node.deletedAt !== undefined;
+    // A directory node's path is a directory; a file node's is a file. They
+    // live in different indexes, and checking a directory against `fileIndex`
+    // is always false - which made every directory node report itself
+    // vanished, permanently, at `critical` severity. Measured on this
+    // repository: 41 nodes, 41 false criticals, every one of them a directory
+    // that `directoryIndex` confirmed still exists.
+    //
+    // That is the same failure class as the scanner reporting "in sync" on a
+    // tree it never read: a check that manufactures false alarms is as
+    // damaging as one that manufactures false confidence, because both train
+    // the user to ignore it.
+    const isDirNode = node.id.startsWith("module:dir:");
+    const index = isDirNode ? scan.directoryIndex : scan.fileIndex;
     const missingOnDisk =
-      scan.fileIndex !== undefined &&
+      index !== undefined &&
       typeof node.path === "string" &&
       node.path.length > 0 &&
-      !scan.fileIndex.has(node.path);
+      !index.has(node.path);
 
     if (!tombstoned && !missingOnDisk) continue;
 
