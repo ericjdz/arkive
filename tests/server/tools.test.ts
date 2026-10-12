@@ -25,7 +25,7 @@ describe("MCP tool handlers", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("declares 8 tools by name", () => {
+  it("declares 9 tools by name", () => {
     expect(ARCHITECTURE_TOOLS.map((t) => t.name).sort()).toEqual([
       "ack_prompt",
       "check_drift",
@@ -35,6 +35,7 @@ describe("MCP tool handlers", () => {
       "record_decision",
       "scaffold_project",
       "update_architecture",
+      "why_does_this_exist",
     ]);
   });
 
@@ -247,7 +248,7 @@ describe("MCP tool handlers", () => {
         decision: "PostgreSQL",
         rationale: "Relational data fits the domain",
         alternatives: [{ name: "MongoDB", whyNot: "Document model adds complexity" }],
-        relatedServices: [],
+        subjects: [],
       });
       expect(result.isError).toBeFalsy();
 
@@ -264,11 +265,11 @@ describe("MCP tool handlers", () => {
     it("auto-increments decision IDs", async () => {
       await handleRecordDecision(tempDir, {
         topic: "A", decision: "X", rationale: "r1",
-        alternatives: [{ name: "Y", whyNot: "z" }], relatedServices: [],
+        alternatives: [{ name: "Y", whyNot: "z" }], subjects: [],
       });
       await handleRecordDecision(tempDir, {
         topic: "B", decision: "X", rationale: "r2",
-        alternatives: [{ name: "Y", whyNot: "z" }], relatedServices: [],
+        alternatives: [{ name: "Y", whyNot: "z" }], subjects: [],
       });
       const reread = readArchitecture(tempDir);
       if (!reread.success) throw new Error(reread.error);
@@ -276,15 +277,37 @@ describe("MCP tool handlers", () => {
       expect(ids).toEqual(["dec-001", "dec-002"]);
     });
 
-    it("returns isError when relatedServices reference unknown ids", async () => {
+    it("returns isError when subjects reference an unknown node", async () => {
       const result = await handleRecordDecision(tempDir, {
         topic: "T",
         decision: "D",
         rationale: "R",
         alternatives: [{ name: "A", whyNot: "B" }],
-        relatedServices: ["nonexistent"],
+        subjects: [{ kind: "node", ref: "nonexistent" }],
       });
       expect(result.isError).toBe(true);
+      expect((result.content[0] as { text: string }).text).toContain("nonexistent");
+    });
+
+    it("refuses v1 `relatedServices` and names the field that replaced it", async () => {
+      // The field is *declared* in the input schema purely so this refusal is
+      // loud. A silent strip would drop the subjects between the call and the
+      // file, which is the exact failure this product exists to prevent.
+      const result = await handleRecordDecision(tempDir, {
+        topic: "T",
+        decision: "D",
+        rationale: "R",
+        alternatives: [{ name: "A", whyNot: "B" }],
+        relatedServices: ["web"],
+      });
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("relatedServices");
+      expect(text).toContain("subjects");
+      // Nothing was written.
+      const reread = readArchitecture(tempDir);
+      if (!reread.success) throw new Error(reread.error);
+      expect(reread.data.decisions).toHaveLength(0);
     });
   });
 

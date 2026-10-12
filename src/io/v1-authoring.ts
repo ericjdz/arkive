@@ -34,6 +34,15 @@ import type { ProjectedConnection, ProjectedService } from "./project.js";
  *   made a mistake, and the v1 contract already refused it
  *   (`Connection references unknown service "ghost"`). Preserving it would turn
  *   a typo into a dangling edge that every later `reconcile` reports forever.
+ *
+ * ### One exception lives here
+ *
+ * `removeNode` is the **v2** removal path and has nothing to do with v1. It
+ * lives in this file because the fold needs it: `foldV1ViewOntoGraph` and
+ * `handleUpdateArchitecture` both have to perform ADR-0001:129-137 identically,
+ * and two implementations of "remove a node and record the cascade" is how they
+ * would drift. It is exported rather than inlined so the MCP surface stops
+ * going through the v1 projection to delete a graph-native node.
  */
 
 /** v1 `ServiceType` → v2 `NodeKind`. Lossy in both directions; see ADR-0001. */
@@ -187,6 +196,84 @@ export interface FoldResult {
   removals: Array<{ id: string; droppedEdges: number }>;
 }
 
+export interface NodeRemoval {
+  graph: ArchitectureDocumentV2;
+  /**
+   * `null` when the id named nothing live — an id that never existed, or a node
+   * that is already a tombstone. Removal is **idempotent** rather than an
+   * error: a caller removing the same node twice has not done a second removal,
+   * and reporting one would double-count the cascade.
+   */
+  removed: { id: string; droppedEdges: number } | null;
+}
+
+/**
+ * `removeNode` — ADR-0001:129-137, the v2 removal path.
+ *
+ * In **one** call, on an in-memory copy, and therefore inside the single
+ * transactional write `writeArchitecture` performs: set `nodes[id].deletedAt`,
+ * drop every edge where `from` or `to` is `id`, leave every decision and every
+ * `subjects` entry alone, and append a `history` entry naming the node and the
+ * exact count of edges dropped.
+ *
+ * Three properties are load-bearing and each was got wrong somewhere:
+ *
+ * - **Nothing is hard-deleted.** A decision whose subject is this node must
+ *   still resolve to a tombstone rather than to nothing, or ADR-0001's "removing
+ *   a node cannot destroy rationale" is a claim and not a mechanism. The
+ *   subject ref is deliberately not cleaned up here.
+ * - **The edge cascade is counted and reported.** ADR-0001:134 contrasts this
+ *   with v1's cascade, which "already removes connections and dependency
+ *   entries when a service id is removed — but that cascade is silent". A
+ *   silent tombstone is a tombstone nobody ever cleans up.
+ * - **It is pure.** The input document is not mutated, so a caller can compute
+ *   a removal and decide not to write it.
+ *
+ * `decided_by` edges would be dropped by the endpoint sweep if any were ever
+ * stored. They are a projection (ADR-0001:78-88), so there are none; the rule
+ * is written as one sweep because "edges that reference the node" is the
+ * invariant, not "edges of most kinds".
+ */
+export function removeNode(
+  graph: ArchitectureDocumentV2,
+  id: string,
+  now: string = new Date().toISOString()
+): NodeRemoval {
+  const target = graph.nodes.find((node) => node.id === id);
+  if (target === undefined || target.deletedAt !== undefined) {
+    return { graph, removed: null };
+  }
+
+  const nodes = graph.nodes.map((node) =>
+    node.id === id ? { ...node, deletedAt: now } : node
+  );
+  const edges: GraphEdge[] = [];
+  let dropped = 0;
+  for (const edge of graph.edges) {
+    if (edge.from === id || edge.to === id) {
+      dropped += 1;
+      continue;
+    }
+    edges.push(edge);
+  }
+
+  const history = [
+    ...graph.history,
+    {
+      timestamp: now,
+      action: "remove_node",
+      summary:
+        `Removed node "${id}" (${dropped} ${dropped === 1 ? "edge" : "edges"} dropped). ` +
+        `Decisions and their subjects were left untouched.`,
+    },
+  ];
+
+  return {
+    graph: { ...graph, nodes, edges, history },
+    removed: { id, droppedEdges: dropped },
+  };
+}
+
 function edgeKey(kind: string, from: string, to: string, label: string): string {
   return `${kind}:${from}->${to}:${label}`;
 }
@@ -237,16 +324,29 @@ export function foldV1ViewOntoGraph(
   services: readonly ProjectedService[],
   connections: readonly ProjectedConnection[]
 ): FoldResult {
-  const nodes: GraphNode[] = graph.nodes.map((node) => ({ ...node }));
-  const edges: GraphEdge[] = graph.edges.map((edge) => ({ ...edge }));
   const removals: Array<{ id: string; droppedEdges: number }> = [];
 
   // --- nodes ----------------------------------------------------------------
   const wantedIds = new Set(services.map((service) => service.id));
 
-  for (const node of nodes) {
-    if (node.deletedAt !== undefined) continue;
-    if (wantedIds.has(node.id)) continue;
+  // Node removal is not re-implemented here. `removeNode` is ADR-0001:129-137
+  // and is the v2 path `update_architecture` calls directly; folding the same
+  // transaction twice is how the two paths drift, and the recorded cascade is
+  // the part that matters most.
+  const removable = graph.nodes
+    .filter(
+      (node) =>
+        node.deletedAt === undefined &&
+        node.legacyType !== undefined &&
+        !wantedIds.has(node.id)
+    )
+    .map((node) => node.id);
+
+  let nodes: GraphNode[] = graph.nodes.map((node) => ({ ...node }));
+  let edges: GraphEdge[] = graph.edges.map((edge) => ({ ...edge }));
+  let history = graph.history;
+
+  for (const id of removable) {
     // A node is only removable through the deprecated view if the v1 document
     // could have produced it — that is, if it carries the `legacyType` the
     // migration (or a previous v1 edit) recorded.
@@ -257,18 +357,12 @@ export function foldV1ViewOntoGraph(
     // next write. A derived view that can delete its own source is the exact
     // "hand-editable derived field is a drift source" failure issue 0004 §4
     // warns about. Nodes authored natively in v2 are graph-native and
-    // untouchable from here; removeNode() is the v2 removal path (0005/0008).
-    if (node.legacyType === undefined) continue;
-
-    node.deletedAt = new Date().toISOString();
-    let dropped = 0;
-    for (let i = edges.length - 1; i >= 0; i -= 1) {
-      if (edges[i].from === node.id || edges[i].to === node.id) {
-        edges.splice(i, 1);
-        dropped += 1;
-      }
-    }
-    removals.push({ id: node.id, droppedEdges: dropped });
+    // untouchable from here; `removeNode` is the v2 removal path.
+    const removal = removeNode({ ...graph, nodes, edges, history }, id);
+    nodes = removal.graph.nodes;
+    edges = removal.graph.edges;
+    history = removal.graph.history;
+    if (removal.removed !== null) removals.push(removal.removed);
   }
 
   for (const service of services) {
@@ -340,10 +434,20 @@ export function foldV1ViewOntoGraph(
     const edge = edges[i];
     if (edge.kind !== "imports") continue;
     const key = `${edge.from}->${edge.to}`;
-    if (edge.legacyEdge === undefined) continue; // graph-native: leave it alone
+    // **Satisfaction and deletion are different questions, and conflating them
+    // duplicated every derived edge.**
+    //
+    // `legacyEdge` is a permission to *delete*. A graph-native edge — one
+    // `deriveModules` produced with `file:line` evidence — has none, so it can
+    // never be dropped here. But the projection lists it as a
+    // `Service.dependencies[]` entry whatever produced it, so it also has to be
+    // allowed to *satisfy* the desired import. Skipping it entirely left the
+    // desire unsatisfied and the fold minted a second edge between the same two
+    // nodes on every write that carried a v1 view — so a single
+    // `update_architecture` call after `arkive derive` inflated the graph.
     if (desiredImports.has(key) && !satisfiedImports.has(key)) {
       satisfiedImports.add(key);
-    } else {
+    } else if (edge.legacyEdge !== undefined) {
       edges.splice(i, 1);
     }
   }
@@ -406,29 +510,8 @@ export function foldV1ViewOntoGraph(
     }
   }
 
-  // ADR-0001:106-117 — the cascade is recorded. A silent tombstone is a
-  // tombstone nobody ever cleans up.
-  let history = graph.history;
-  if (removals.length > 0) {
-    const now = new Date().toISOString();
-    const summary = removals
-      .map((removal) =>
-        removal.droppedEdges === 1
-          ? `${removal.id} (1 edge dropped)`
-          : `${removal.id} (${removal.droppedEdges} edges dropped)`
-      )
-      .join(", ");
-    history = [
-      ...history,
-      {
-        timestamp: now,
-        action: "remove_node",
-        summary:
-          `Removed ${removals.length} node(s): ${summary}. ` +
-          `Decisions and their subjects were left untouched.`,
-      },
-    ];
-  }
+  // ADR-0001:106-117 — the cascade is recorded, once per node, by `removeNode`.
+  // A silent tombstone is a tombstone nobody ever cleans up.
 
   return {
     graph: { ...graph, schemaVersion: CURRENT_SCHEMA_VERSION, nodes, edges, history },
