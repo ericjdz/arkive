@@ -220,6 +220,35 @@ function describeGraphReport(
     lines.push(`  languages: ${detail}`);
   }
 
+  /**
+   * The structure half, on its own line.
+   *
+   * The headline `coverage` is the minimum of the import and structure passes,
+   * so a schema that failed to parse is already counted. What the headline
+   * cannot express is the case where a language has no structure extractor at
+   * all: a polyglot repository reads as fully covered because its *imports*
+   * all parsed, and the shape graph silently contains nothing for the 900
+   * Python files it just walked past.
+   *
+   * Whether that should lower the headline is a judgement call, and this file
+   * deliberately does not make it - a polyglot repository reporting 8% is a
+   * number users learn to ignore, which is the same failure as a number that
+   * lies. What is not a judgement call is that the gap gets printed. "Is it
+   * covered" and "which files were not" are different questions, and a number
+   * without its composition is half an answer.
+   */
+  const shapes = derivation.nodes.filter((node) => node.kind === "datastructure").length;
+  if (shapes > 0 || derivation.structureCoverage < 1) {
+    const byFormat = Object.entries(derivation.structures.byFormat ?? {})
+      .map(([format, stats]) => `${format} ${stats.structures}`)
+      .join("; ");
+    lines.push(
+      `  data structures: ${shapes} shape(s) at ` +
+        `${(derivation.structureCoverage * 100).toFixed(1)}% structure coverage` +
+        (byFormat ? ` (${byFormat})` : "")
+    );
+  }
+
   if (derivation.unresolved.length > 0) {
     lines.push(
       `  unresolved: ${derivation.unresolved.length} import site(s) name a module that is not on disk.`

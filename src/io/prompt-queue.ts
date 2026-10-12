@@ -16,8 +16,25 @@ export const DEFAULT_CLAIM_LEASE_MS = 10 * 60 * 1000;
 /** A lock older than this belongs to a process that died holding it. */
 const LOCK_STALE_MS = 30 * 1000;
 
-/** Total time a caller will wait for the lock before giving up. */
-const LOCK_TIMEOUT_MS = 5 * 1000;
+/**
+ * Total time a caller will wait for the lock before giving up.
+ *
+ * **Derived from the staleness window, deliberately.** A lock younger than
+ * `LOCK_STALE_MS` is by this file's own definition still legitimately held —
+ * `acquireQueueLock` will not reclaim it until then. A waiter that gave up
+ * sooner could therefore abandon a perfectly healthy lock and report
+ * contention where there was none.
+ *
+ * That was not theoretical. At 5s, eight concurrent writers on a loaded
+ * machine put the last of them past the deadline for a critical section that
+ * is two fsyncs long, so the test failed intermittently while passing 4/4 in
+ * isolation. The symptom looked like a lost-update race. It was a waiter
+ * giving up on a lock nobody had abandoned.
+ *
+ * Computing it from `LOCK_STALE_MS` rather than writing a number keeps the
+ * invariant true if either constant is ever changed.
+ */
+const LOCK_TIMEOUT_MS = LOCK_STALE_MS + 10_000;
 
 const LOCK_POLL_MS = 5;
 
