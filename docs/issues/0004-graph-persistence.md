@@ -1,6 +1,6 @@
 # 0004 — Graph persistence and projections
 
-status: open
+status: done
 stream: graph
 blocks: 0005, 0006, 0008
 blocked_by: 0003, 0013

@@ -1,6 +1,6 @@
 # 0011 — Harness hook substrate
 
-status: open
+status: done
 stream: enforce
 blocks: 0009
 blocked_by: 0004

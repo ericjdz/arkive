@@ -1,6 +1,6 @@
 # 0006 — Data structure extraction
 
-status: open
+status: done
 stream: derive
 blocked_by: 0004
 

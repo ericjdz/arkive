@@ -1,6 +1,6 @@
 # 0019 — Teach v2, not v1
 
-status: open
+status: done
 stream: docs
 priority: high
 blocked_by: 0005, 0006

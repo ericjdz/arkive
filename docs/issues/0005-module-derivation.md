@@ -1,6 +1,6 @@
 # 0005 — Module derivation engine
 
-status: open
+status: done
 stream: derive
 blocks: 0007, 0014
 blocked_by: 0004

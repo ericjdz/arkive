@@ -1,6 +1,6 @@
 # 0003 — Graph schema v2
 
-status: open
+status: done
 stream: graph
 blocks: 0004, 0005, 0006, 0008, 0010
 blocked_by: 0001, 0002

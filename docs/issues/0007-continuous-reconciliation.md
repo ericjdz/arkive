@@ -1,6 +1,6 @@
 # 0007 — Continuous reconciliation
 
-status: open
+status: done
 stream: derive
 blocked_by: 0005
 

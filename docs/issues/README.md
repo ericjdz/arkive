@@ -24,24 +24,28 @@ Status: `open` · `in-flight` · `blocked` · `done`
 
 | # | Title | Stream | Status | Blocks |
 |---|---|---|---|---|
-| 0001 | Toolchain and CI green | foundations | in-flight | 0003, 0013, 0016 |
-| 0002 | Vision and ADR set | docs | in-flight | 0003 |
-| 0003 | Graph schema v2 | graph | open | 0004, 0005, 0006, 0008, 0010 |
-| 0004 | Graph persistence and projections | graph | open | 0005, 0006, 0008 |
-| 0005 | Module derivation engine | derive | open | 0007, 0014 |
-| 0006 | Data structure extraction | derive | open | — |
-| 0007 | Continuous reconciliation | derive | open | — |
-| 0008 | Decision attachment to graph | record | open | 0009 |
-| 0009 | Layered walkthrough engine | comprehend | open | 0010, 0015 |
+| 0001 | Toolchain and CI green | foundations | done | — |
+| 0002 | Vision and ADR set | docs | done | — |
+| 0003 | Graph schema v2 | graph | done | 0004, 0005, 0006, 0008, 0010 |
+| 0004 | Graph persistence and projections | graph | done | 0005, 0006, 0008 |
+| 0005 | Module derivation engine | derive | done | 0007, 0014 |
+| 0006 | Data structure extraction | derive | done | 0014 |
+| 0007 | Continuous reconciliation | derive | done | 0014 |
+| 0008 | Decision attachment to graph | record | done | 0009 |
+| 0009 | Layered walkthrough engine | comprehend | **open — next** | 0010, 0015 |
 | 0010 | Viewer re-architecture | view | open | — |
-| 0011 | Harness hook substrate | enforce | open | 0009 |
-| 0012 | Session context budget | context | open | — |
-| 0013 | Data integrity | integrity | open | 0004 |
-| 0014 | Self-dogfood arkive | meta | open | 0005, 0006, 0008 |
+| 0011 | Harness hook substrate | enforce | done | 0009 |
+| 0012 | Session context budget | context | done | — |
+| 0013 | Data integrity | integrity | done | 0004 |
+| 0014 | Self-dogfood arkive | meta | open | — |
 | 0015 | Retire quiz learning mode | comprehend | open | 0009 |
 | 0016 | Viewer server trust boundary | security | done | 0017 |
-| 0017 | Close the auth follow-ups from 0016 | security | open | — |
-| 0018 | Viewer build hygiene | view | open | 0010 |
+| 0017 | Close the auth follow-ups from 0016 | security | done | — |
+| 0018 | Viewer build hygiene | view | open, low | 0010 |
+| 0019 | Teach v2, not v1 | docs | done | — |
+
+`0001` and `0002` have no issue files — they were the foundations and ADR
+waves. Their scope is captured in `docs/VISION.md` and `docs/adr/`.
 
 ## Critical path
 

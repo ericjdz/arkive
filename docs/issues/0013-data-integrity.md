@@ -1,6 +1,6 @@
 # 0013 — Data integrity
 
-status: open
+status: done
 stream: integrity
 blocks: 0004
 blocked_by: 0001, 0002

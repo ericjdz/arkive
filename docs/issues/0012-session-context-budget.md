@@ -1,6 +1,6 @@
 # 0012 — Session context budget
 
-status: open
+status: done
 stream: context
 blocked_by: 0004
 

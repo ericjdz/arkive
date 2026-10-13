@@ -1,6 +1,6 @@
 # 0016 — Viewer server trust boundary
 
-status: open
+status: done
 stream: security
 blocked_by: 0001
 
