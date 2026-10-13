@@ -225,15 +225,21 @@ program
 
 program
   .command("export")
-  .description("Export architecture as markdown or Mermaid diagram")
+  .description("Export architecture as markdown, Mermaid diagram, or self-contained HTML graph")
   .option("-d, --dir <path>", "Project directory containing arkive/architecture.json", ".")
-  .option("-f, --format <format>", "Output format: markdown or mermaid", "markdown")
-  .option("-o, --output <file>", "Write to file instead of stdout")
-  .action((options) => {
+  .option("-f, --format <format>", "Output format: markdown, mermaid, or html", "markdown")
+  .option("-o, --output <file>", "Write to file instead of stdout (html defaults to arkive/graph.html)")
+  .argument("[format]", "Output format: markdown, mermaid, or html (overrides --format)")
+  .action((format: string | undefined, options) => {
     const dir = resolve(options.dir);
+    const resolved = (format ?? options.format) as "markdown" | "mermaid" | "html";
+    if (format !== undefined && !["markdown", "mermaid", "html"].includes(resolved)) {
+      console.error(`Unknown format: ${format} (expected markdown, mermaid, or html)`);
+      process.exit(1);
+    }
     exportArchitecture({
       dir,
-      format: options.format as "markdown" | "mermaid",
+      format: resolved,
       output: options.output ? resolve(options.output) : undefined,
     });
   });

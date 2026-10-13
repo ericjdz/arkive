@@ -1,11 +1,13 @@
-import { writeFileSync } from "node:fs";
+import { writeFileSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
 import { readArchitecture } from "../../io/architecture-file.js";
-import { generateMarkdown } from "../../viewer/src/utils/markdown.js";
-import { generateMermaid } from "../../viewer/src/utils/mermaid.js";
+import { generateMarkdown } from "../../export/markdown.js";
+import { generateMermaid } from "../../export/mermaid.js";
+import { generateHtmlGraph } from "../../export/html.js";
 
 export interface ExportOptions {
   dir: string;
-  format: "markdown" | "mermaid";
+  format: "markdown" | "mermaid" | "html";
   output?: string;
 }
 
@@ -21,6 +23,18 @@ export function exportArchitecture(options: ExportOptions): void {
   // `nodes`/`edges`, so nothing here reaches into the graph or invents fields
   // the projection already provides.
   const arch = read.data;
+
+  if (options.format === "html") {
+    const content = generateHtmlGraph(arch);
+    // An HTML artifact to stdout is a wall of markup nobody asked for; the
+    // default is the file the viewer serves, `arkive/graph.html`.
+    const outPath = options.output ?? join(options.dir, "arkive", "graph.html");
+    mkdirSync(join(options.dir, "arkive"), { recursive: true });
+    writeFileSync(outPath, content, "utf-8");
+    console.log(`Exported html to ${outPath}`);
+    return;
+  }
+
   let content: string;
 
   if (options.format === "mermaid") {

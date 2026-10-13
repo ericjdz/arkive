@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateMermaid } from "../../src/viewer/src/utils/mermaid.js";
+import { generateMermaid } from "../../src/export/mermaid.js";
 
 const CHAT_APP = {
   services: [

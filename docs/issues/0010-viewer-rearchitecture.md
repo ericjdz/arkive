@@ -1,6 +1,6 @@
 # 0010 — Viewer re-architecture
 
-status: open
+status: done
 stream: view
 blocked_by: 0009
 adr: docs/adr/0004-lightweight-viewer-re-engineered-downward.md

@@ -1,6 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { createServer, type Server } from "node:http";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import express from "express";
@@ -8,9 +7,6 @@ import { architecturePath, readArchitecture } from "../../io/architecture-file.j
 import { readPromptQueue, addPrompt, writePromptQueue } from "../../io/prompt-queue.js";
 import { readProgress, writeProgress } from "../../learning/progress.js";
 import { startStdioServer } from "../../server/index.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 /**
  * The viewer server holds a developer's architecture document, a prompt queue
@@ -288,23 +284,24 @@ export function createViewerServer(dir: string): ViewerServer {
     }, 100);
   });
 
-  const viewerDir = resolve(__dirname, "../viewer");
-  if (existsSync(viewerDir)) {
-    const indexPath = join(viewerDir, "index.html");
-    const sendIndex = (_req: express.Request, res: express.Response) => {
-      if (!existsSync(indexPath)) {
-        res.status(404).send("Viewer not built. Run `npm run build:viewer` first.");
-        return;
-      }
-      res.type("html").send(readFileSync(indexPath, "utf-8"));
-    };
-    app.use(express.static(viewerDir, { index: false }));
-    app.get("/index.html", sendIndex);
-    app.get("/", sendIndex);
-    app.use((_req, res) => {
-      sendIndex(_req, res);
-    });
-  }
+  // The build-free viewer artifact (ADR-0004): one self-contained HTML file
+  // written by `arkive export html`. Served as a plain document — no static
+  // directory, no build output to mirror. The trust boundary above is
+  // untouched: these GET routes carry no token, and every /api/* route still
+  // 401s without one.
+  const artifactPath = join(dir, "arkive", "graph.html");
+  const sendArtifact = (_req: express.Request, res: express.Response) => {
+    if (!existsSync(artifactPath)) {
+      res
+        .status(404)
+        .send("Viewer artifact not found. Run `arkive export html` first.");
+      return;
+    }
+    res.type("html").send(readFileSync(artifactPath, "utf-8"));
+  };
+  app.get("/index.html", sendArtifact);
+  app.get("/graph.html", sendArtifact);
+  app.get("/", sendArtifact);
 
   return { app, server: enforceLoopbackBind(httpServer), token };
 }

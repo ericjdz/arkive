@@ -59,14 +59,12 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:cli": "tsup",
-    "build:viewer": "vite build --config src/viewer/vite.config.ts",
     "pretest": "npm run lint",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:perf": "vitest run --config vitest.perf.config.ts",
-    "lint": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p src/viewer/tsconfig.json",
+    "lint": "tsc --noEmit -p tsconfig.json",
     "lint:types": "tsc --noEmit -p tsconfig.json",
-    "lint:viewer": "tsc --noEmit -p src/viewer/tsconfig.json",
     "prepublishOnly": "npm run build && npx tsx scripts/prepublish.ts"
   },
   "dependencies": {

@@ -12,7 +12,7 @@
 
 AI coding agents (Claude Code, Cursor, Copilot, Codex, OpenCode) build entire projects from a single prompt. You ship fast — but you can't explain why your project uses Postgres over Mongo, microservices over a monolith, or REST over GraphQL. The agent decided. You accepted. Across sessions, the agent has no memory of what was built and re-derives (or hallucinates) the architecture every time.
 
-arkive solves both problems with one artifact: a structured `arkive/architecture.json` that lives in your repo. The agent reads it on session start (instant onboarding, no context rot), updates it after every major change (always-current docs), and you browse it in an interactive web viewer (finally understand your own project).
+arkive solves both problems with one artifact: a structured `arkive/architecture.json` that lives in your repo. The agent reads it on session start (instant onboarding, no context rot), updates it after every major change (always-current docs), and you browse it in a single-file graph viewer (finally understand your own project).
 
 ## Quick Start
 
@@ -59,8 +59,7 @@ Install arkive for architecture tracking in this project. Read the instructions 
 - **Derived structure, authored intent** — the module tree, the dependency set, and the import graph are read out of the code by static analysis. Your agent records what the code cannot say: what a component is *for*, who owns it, and what was chosen over what.
 - **Provenance you can open** — every node and edge carries either the rule that derived it and the `file:line` it read, or the name of whoever authored it.
 - **MCP server** — agents pull live architecture context via the Model Context Protocol (stdio + HTTP).
-- **Interactive web viewer** — six views: System Topology, Data Flow, Decision Log, Component Tree, Stack Overview, Learning Mode.
-- **Prompt queue** — select nodes in the viewer, write scoped architecture prompts, and your AI agent consumes them via MCP or clipboard.
+- **Single-file graph viewer** — `arkive export html` writes one self-contained `arkive/graph.html`: topology with deterministic layout, node selection (edges by kind, data shapes, decisions with provenance), text filter, and `?node=<id>` deep links. No build step, no runtime dependencies, opens from `file://`.
 - **Decisions are first-class** — every architectural choice records what was chosen, why, what was rejected, and which nodes and edges it explains.
 - **Honest diagnostics** — `arkive reconcile` reports what derivation would change and what a human's claim no longer supports, and prints the scan's own coverage so a partial scan never reads as a clean bill of health.
 - **Continuous reconciliation** — `arkive watch` re-derives on every change.
@@ -70,13 +69,11 @@ Install arkive for architecture tracking in this project. Read the instructions 
 
 ## Prompt Queue
 
-The prompt queue lets you direct your AI agent from the viewer.
+The prompt queue lets you direct your AI agent with scoped architecture prompts.
 
-1. Open the viewer (`npx @ericjdz/arkive serve`)
-2. Click any node to open its detail panel
-3. Write an architecture change prompt scoped to that node
-4. Click "Copy All" to paste into your agent's chat, or let the agent read `architecture://prompts` directly
-5. The agent claims prompts via the `prompts` tool (`claim`), executes them, and acknowledges with `prompts` (`ack`)
+1. Queue a prompt via the MCP `prompts` tool or `POST /api/prompts` on a running server (`npx @ericjdz/arkive serve`)
+2. Let the agent read `architecture://prompts` directly, or paste the prompt into its chat
+3. The agent claims prompts via the `prompts` tool (`claim`), executes them, and acknowledges with `prompts` (`ack`)
 
 Prompts are stored in `arkive/prompt-queue.json` and survive session resets.
 
@@ -89,13 +86,13 @@ Prompts are stored in `arkive/prompt-queue.json` and survive session resets.
 | `npx @ericjdz/arkive init --standalone` | Generate full `AGENTS.md`/`CLAUDE.md` files (for platforms without MCP) |
 | `npx @ericjdz/arkive install <platform>` | Register MCP server in your AI platform config |
 | `npx @ericjdz/arkive install-skill <platform>` | Install arkive skills for your AI platform (8 skills: architecture tracking, init, import, view, prompt queue, learning, decisions, reconciliation) |
-| `npx @ericjdz/arkive serve` | Start the MCP server and open the web viewer |
+| `npx @ericjdz/arkive serve` | Start the MCP server and serve the graph artifact (`arkive/graph.html`) |
 | `npx @ericjdz/arkive serve --stdio` | Run the MCP server in stdio mode (for direct agent integration) |
 | `npx @ericjdz/arkive status` | Counts, schema version, drift warnings, and a conclusive/inconclusive verdict |
 | `npx @ericjdz/arkive reconcile` | Derive the graph from the code, report the delta and the authored findings, write nothing |
 | `npx @ericjdz/arkive reconcile --apply` | The same, and persist the derived half |
 | `npx @ericjdz/arkive watch` | Re-derive on every change and report the delta |
-| `npx @ericjdz/arkive export <format>` | Export as `markdown` or `mermaid` |
+| `npx @ericjdz/arkive export <format>` | Export as `markdown`, `mermaid`, or self-contained `html` (writes `arkive/graph.html`) |
 | `npx @ericjdz/arkive learn` | Open the web viewer in Learning Mode |
 | `npx @ericjdz/arkive stop` | Stop a running viewer |
 | `npx @ericjdz/arkive hooks` | Install the git hooks (not installed by `init`) |

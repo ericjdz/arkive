@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateMarkdown } from "../../src/viewer/src/utils/markdown.js";
+import { generateMarkdown } from "../../src/export/markdown.js";
 
 const CHAT_APP = {
   version: "1.0.0",

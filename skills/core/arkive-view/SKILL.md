@@ -1,55 +1,82 @@
 ---
 name: arkive-view
-description: Open the arkive web viewer to browse the project's architecture interactively.
+description: Render the arkive architecture graph as a single self-contained HTML file and open it.
 trigger: User says "show architecture", "open arkive", "view architecture", "arkive viewer", or invokes /arkive-view.
 ---
 
-# /arkive-view — Open Architecture Viewer
+# /arkive-view — Open Architecture Graph
 
 ## When to Use
 
-Run this when the user wants to visually browse the project's architecture.
+Run this when the user wants to see the project's architecture. The viewer
+is one self-contained file — no build step, no dev server, no dependencies.
 
 ## Flow
 
 ### 1. Verify architecture exists
 
-Check that `arkive/architecture.json` exists in the arkive/ directory. If not, inform the user and suggest `/arkive-init`.
+Check that `arkive/architecture.json` exists. If not, inform the user and suggest `/arkive-init`.
 
-### 2. Start the viewer
+### 2. Generate the artifact
+
+```bash
+npx @ericjdz/arkive export html
+```
+
+This writes `arkive/graph.html` (use `--output <file>` to put it elsewhere).
+Re-run it whenever the graph changes — the file is a snapshot, and a stale
+snapshot is worse than none. It is git-ignored by default; do not commit it.
+
+### 3. Open it
+
+**From disk (preferred):** open `arkive/graph.html` directly — it works from
+`file://`, with pan, zoom, text filter, and node selection built in.
+
+**From the server:** if the user wants a URL (e.g. to share),
+
+```bash
+npx @ericjdz/arkive serve --no-open
+```
+
+then open the printed URL. The server serves the artifact at `/` and
+`/graph.html`, but only if `arkive/graph.html` exists — otherwise it answers
+404 with "Run `arkive export html` first." The URL it prints carries a
+per-run access token in its fragment — open it as given.
 
 **If MCP `open_viewer` tool is available:**
 Call `open_viewer` with default port. It returns the URL and auto-opens the browser.
 
-**If MCP is not available:**
-```bash
-npx @ericjdz/arkive serve
-```
-
-The `serve` command auto-opens the browser by default. Use `--no-open` to suppress. The default port is `4567` (`--port <n>` to change it), and the URL it prints carries a per-run access token in its fragment — open it as given.
-
-### 3. Present to user
+### 4. Present to user
 
 Tell the user:
 
-> "Architecture viewer is running at **http://localhost:4567** and should have opened in your browser.
+> "Architecture graph is ready — open **arkive/graph.html** in your browser.
 >
-> Available views:
-> - **System Topology** — interactive graph of components and how they connect
-> - **Data Flow** — step-by-step user-facing flows
-> - **Decision Log** — all architectural decisions with rationale and rejected alternatives
-> - **Component Tree** — hierarchical component view
-> - **Stack Overview** — technology stack summary
-> - **Learning Mode** — Socratic quizzes on architectural decisions
+> What you get:
+> - **Topology** — every node and edge, laid out deterministically
+> - **Node selection** — kind, inbound/outbound edges grouped by kind, data
+>   shapes, and the decisions behind the node with their provenance
+>   (authored vs derived, evidence, caveats)
+> - **Text filter** — narrows nodes by name or id
+> - **Deep links** — `?node=<id>` opens the graph with that node selected,
+>   so the agent can hand you a URL to a decision's context
 >
-> To stop the viewer, click the **Stop** button in the viewer header, or run `npx @ericjdz/arkive stop`."
+> What it does not do: prompt queue, learning, editing, decision authoring.
+> Those live in the agent conversation and the document, not the file."
 
-### 4. If the graph looks empty
+### 5. If the graph looks empty
 
-The viewer renders the derived view of `nodes[]` / `edges[]`, so an empty topology means the derived half has never been persisted — not that the project has no architecture. Run `npx @ericjdz/arkive reconcile --apply` and restart the viewer.
+The artifact renders `nodes[]` / `edges[]`, so an empty topology means the
+derived half has never been persisted — not that the project has no
+architecture. Run `npx @ericjdz/arkive reconcile --apply`, re-run
+`npx @ericjdz/arkive export html`, and reopen the file.
 
 ## MUST NOT
 
-- Do NOT start multiple viewer instances on the same port
-- Do NOT leave the viewer running without telling the user how to stop it
-- Do NOT edit `services[]` or `connections[]` to make a view show what the user expected. They are a computed projection of `nodes[]` / `edges[]` and are rewritten from the graph on every write.
+- Do NOT start multiple servers on the same port
+- Do NOT leave a server running without telling the user how to stop it
+  (`npx @ericjdz/arkive stop`)
+- Do NOT edit `services[]` or `connections[]` to make the graph show what
+  the user expected. They are a computed projection of `nodes[]` / `edges[]`
+  and are rewritten from the graph on every write.
+- Do NOT commit `arkive/graph.html`. Regenerate it instead.

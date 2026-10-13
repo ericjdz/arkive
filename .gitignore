@@ -3,6 +3,10 @@ dist/
 *.tsbuildinfo
 promo-video/
 
+# Generated viewer artifact (`arkive export html`). A snapshot, not source:
+# regenerating it is sub-second, and a committed copy drifts silently.
+arkive/graph.html
+
 # Installed skill copies (`init` copies skills/ here per platform). They are
 # regenerable install output that duplicates committed source — committing
 # them would let the copies drift from skills/ without any check noticing.
