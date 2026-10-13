@@ -186,7 +186,7 @@ On EVERY session start, BEFORE any other action:
 1. Check if arkive/architecture.json exists in the project.
 2. If it exists: read it completely. This is your cross-session memory. Do NOT re-derive architecture from code.
 3. If it does not exist: inform the user that arkive is not initialized. Suggest running arkive init.
-4. Check if arkive/prompt-queue.json exists. If it has pending prompts, inform the user: "There are N pending architecture prompts from the viewer. Use list_prompts to see them, or claim_next_prompt to start executing."
+4. Check if arkive/prompt-queue.json exists. If it has pending prompts, inform the user: "There are N pending architecture prompts from the viewer. Use the prompts tool with action "list" to see them, or action "claim" to start executing."
 
 ## post_major_change
 After ANY major change (adding/removing services, changing protocols, new frameworks, infrastructure changes, module boundary refactors):

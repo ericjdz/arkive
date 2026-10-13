@@ -254,18 +254,89 @@ export const OpenViewerInputSchema = z.object({
   port: z.number().optional().default(4567).describe("Port to serve the viewer on"),
 });
 
+/**
+ * @deprecated Consolidated into {@link PromptsInputSchema} (`prompts` tool,
+ * issue 0009). Kept so existing imports keep compiling; no longer registered.
+ */
 export const ListPromptsInputSchema = z.object({
   status: z.enum(["pending", "claimed", "done", "failed"]).optional().describe("Filter by status (omit for all)"),
 });
 
+/**
+ * @deprecated Consolidated into {@link PromptsInputSchema} (`prompts` tool,
+ * issue 0009). Kept so existing imports keep compiling; no longer registered.
+ */
 export const ClaimNextPromptInputSchema = z.object({
   agent: z.string().optional().describe("Agent identifier claiming the prompt"),
 });
 
+/**
+ * @deprecated Consolidated into {@link PromptsInputSchema} (`prompts` tool,
+ * issue 0009). Kept so existing imports keep compiling; no longer registered.
+ */
 export const AckPromptInputSchema = z.object({
   promptId: z.string().min(1).describe("ID of the prompt to acknowledge"),
   outcome: z.enum(["done", "failed"]).describe("Whether the prompt was completed or failed"),
 });
+
+/**
+ * The consolidated prompt-queue tool (issue 0009).
+ *
+ * Three prompt-queue tools became one `prompts` tool with an `action`
+ * discriminator. Every behavior is preserved: `list` keeps the optional status
+ * filter, `claim` keeps the optional agent and stays atomic via the
+ * prompt-queue CAS, `ack` routes `done` to `ackPrompt` and `failed` to
+ * `failPrompt`, and an empty queue claims nothing (`claimed: false`).
+ */
+export const PromptsInputSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("list"),
+    status: z.enum(["pending", "claimed", "done", "failed"]).optional().describe("Filter by status (omit for all)"),
+  }),
+  z.object({
+    action: z.literal("claim"),
+    agent: z.string().optional().describe("Agent identifier claiming the prompt"),
+  }),
+  z.object({
+    action: z.literal("ack"),
+    promptId: z.string().min(1).describe("ID of the prompt to acknowledge"),
+    outcome: z.enum(["done", "failed"]).describe("Whether the prompt was completed or failed"),
+  }),
+]);
+
+/**
+ * The walkthrough tool (issue 0009, ADR-0003 §The mechanism).
+ *
+ * Three traversal primitives, each a pure query over the graph:
+ * `topology` (no ref — every node and edge, no prose), `open` (one node or
+ * edge into its inbound/outbound edges, module children, data shapes, and
+ * `decided_by` decisions), and `trace` (a path through real edges, annotated
+ * with the edge kind at each hop — never invented).
+ *
+ * `why_does_this_exist` stays a separate tool: it is `decisionsAbout`, not a
+ * walkthrough traversal. `dataShapes` is part of `open`, not a separate tool.
+ */
+export const WalkthroughInputSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("topology"),
+  }),
+  z.object({
+    action: z.literal("open"),
+    ref: z.string().min(1).describe("Node or edge id to open"),
+    depth: z
+      .number()
+      .int()
+      .min(1)
+      .max(3)
+      .default(1)
+      .describe("Directory hops below ref to include as children (default 1, max 3)"),
+  }),
+  z.object({
+    action: z.literal("trace"),
+    entryRef: z.string().min(1).describe("Node id the path starts at"),
+    exitRef: z.string().min(1).describe("Node id the path ends at"),
+  }),
+]);
 
 export interface ToolDescriptor {
   name: string;
@@ -308,22 +379,13 @@ export const ARCHITECTURE_TOOLS: ToolDescriptor[] = [
       "Start the arkive web viewer if not already running. Returns the URL for the user to open; the returned URL carries a per-run access token in its fragment and must be opened as-is.",
   },
   {
-    name: "list_prompts",
-    title: "List Prompts",
+    name: "prompts",
+    title: "Prompts",
     description:
-      "List prompts queued by the user from the architecture viewer. Returns all prompts or filtered by status.",
-  },
-  {
-    name: "claim_next_prompt",
-    title: "Claim Next Prompt",
-    description:
-      "Atomically claim the next pending prompt from the queue. Returns the prompt with its target services and marks it as claimed.",
-  },
-  {
-    name: "ack_prompt",
-    title: "Acknowledge Prompt",
-    description:
-      "Mark a claimed prompt as done or failed after processing.",
+      "List, claim, and acknowledge user-queued prompts from the architecture viewer. " +
+      "Action `list` returns prompts with an optional status filter; `claim` atomically claims " +
+      "the next pending prompt (empty queue returns claimed:false); `ack` marks a claimed prompt " +
+      "as done or failed.",
   },
   {
     name: "why_does_this_exist",
@@ -332,6 +394,16 @@ export const ARCHITECTURE_TOOLS: ToolDescriptor[] = [
       "Resolve a node id to the decisions that explain it: rationale, rejected alternatives, and the " +
       "provenance of every claim — derived by a rule with evidence, or authored, or no longer " +
       "resolving. A decision on a parent path is found from its module children.",
+  },
+  {
+    name: "walkthrough",
+    title: "Walkthrough",
+    description:
+      "Layered walkthrough queries over the architecture graph (ADR-0003). Action `topology` " +
+      "returns every node and edge with no prose; `open` opens one node or edge into its inbound " +
+      "and outbound edges by kind, module children, data shapes, and decided_by decisions; " +
+      "`trace` returns a path through real edges between two nodes, annotated with the edge kind " +
+      "at each hop. Pure queries — never invents nodes, edges, or paths.",
   },
 ];
 
@@ -1101,10 +1173,254 @@ export async function handleAckPrompt(
   return jsonResult({ ok: true, promptId: input.promptId, outcome: input.outcome });
 }
 
+/**
+ * The consolidated prompt-queue handler (issue 0009).
+ *
+ * Dispatches on the `action` discriminator to the three prompt operations
+ * above, whose behaviors are unchanged. Takes raw input and validates it
+ * against {@link PromptsInputSchema} itself, so a caller that sends an
+ * unknown action or an `ack` without a `promptId` gets an `isError` result
+ * rather than an SDK-level rejection.
+ */
+export async function handlePrompts(dir: string, raw: unknown): Promise<CallToolResult> {
+  const parsed = PromptsInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return errorResult(
+      `Invalid prompts input: ${parsed.error.issues.map((issue) => issue.message).join("; ")}`
+    );
+  }
+  const input = parsed.data;
+  switch (input.action) {
+    case "list":
+      return handleListPrompts(dir, { status: input.status });
+    case "claim":
+      return handleClaimNextPrompt(dir, { agent: input.agent });
+    case "ack":
+      return handleAckPrompt(dir, { promptId: input.promptId, outcome: input.outcome });
+  }
+}
+
+// --- walkthrough ------------------------------------------------------------
+//
+// Issue 0009, ADR-0003 §The mechanism. The `walkthrough` tool is a thin
+// transport shell: it reads the architecture document and delegates each
+// action to the walkthrough engine (`src/walkthrough/`) through the narrow
+// interface below.
+//
+// The engine speaks domain results (`{ found: true, ... }` /
+// `{ found: false, ... }`), not the transport union — `asEngineResult`
+// translates a miss into `{ success: false }` so a bad ref surfaces as
+// `isError`, and `flattenWalkthroughGroups` renders the engine's
+// kind-grouped edges as the flat arrays the MCP contract promises.
+
+export type WalkthroughEngineResult =
+  | { success: true; data: unknown }
+  | { success: false; error: string };
+
+/** The narrow interface the `walkthrough` tool delegates through. */
+export interface WalkthroughEngine {
+  topology(doc: ArchitectureDocument): WalkthroughEngineResult;
+  open(doc: ArchitectureDocument, ref: string, depth: number): WalkthroughEngineResult;
+  trace(doc: ArchitectureDocument, entryRef: string, exitRef: string): WalkthroughEngineResult;
+}
+
+interface WalkthroughEngineModule {
+  topology?: (doc: ArchitectureDocument) => unknown;
+  open?: (doc: ArchitectureDocument, ref: string, depth: number) => unknown;
+  trace?: (doc: ArchitectureDocument, entryRef: string, exitRef: string) => unknown;
+  walkthroughEngine?: WalkthroughEngine;
+  default?: WalkthroughEngine | WalkthroughEngineModule;
+}
+
+let walkthroughEngineOverride: WalkthroughEngine | null = null;
+
+/**
+ * Test seam for the pending engine wiring. Tests inject a stub so the
+ * delegation is real even while `src/walkthrough/index.js` does not exist.
+ * Pass `null` to restore lazy loading.
+ */
+export function __setWalkthroughEngineForTests(engine: WalkthroughEngine | null): void {
+  walkthroughEngineOverride = engine;
+}
+
+/** Normalize whatever the engine returns into the result union. */
+function asEngineResult(value: unknown): WalkthroughEngineResult {
+  if (typeof value === "object" && value !== null && "success" in value) {
+    const record = value as { success: unknown; data?: unknown; error?: unknown };
+    if (record.success === true) return { success: true, data: record.data };
+    if (record.success === false) {
+      return {
+        success: false,
+        error:
+          typeof record.error === "string"
+            ? record.error
+            : "walkthrough engine returned an error with no message",
+      };
+    }
+  }
+  // The engine's domain misses carry no `success` key: `{ found: false }`
+  // with the explanation in `reason` (trace) or `notes` (open). A miss is an
+  // MCP error, never a successful empty answer — without this branch a bad
+  // ref surfaced as success with no `isError`, which is the "invented path"
+  // failure 0009 exists to prevent.
+  if (typeof value === "object" && value !== null && "found" in value) {
+    const record = value as { found: unknown; reason?: unknown; notes?: unknown };
+    if (record.found === false) {
+      const parts: string[] = [];
+      if (typeof record.reason === "string" && record.reason.length > 0) parts.push(record.reason);
+      if (Array.isArray(record.notes)) {
+        for (const note of record.notes) {
+          if (typeof note === "string" && note.length > 0) parts.push(note);
+        }
+      }
+      return {
+        success: false,
+        error:
+          parts.length > 0
+            ? parts.join(" ")
+            : "walkthrough engine found nothing for this query — refusing to invent one",
+      };
+    }
+  }
+  return { success: true, data: value };
+}
+
+function isWalkthroughEngine(candidate: unknown): candidate is WalkthroughEngine {
+  if (typeof candidate !== "object" || candidate === null) return false;
+  const record = candidate as Record<string, unknown>;
+  return (
+    typeof record.topology === "function" &&
+    typeof record.open === "function" &&
+    typeof record.trace === "function"
+  );
+}
+
+async function loadWalkthroughEngine(): Promise<WalkthroughEngine> {
+  if (walkthroughEngineOverride) return walkthroughEngineOverride;
+  // The engine is a sibling module compiled into the same build — a failed
+  // import is a broken build, and failing loudly beats serving a stopgap.
+  const WALKTHROUGH_ENGINE_MODULE = "../walkthrough/index.js";
+  const mod = (await import(WALKTHROUGH_ENGINE_MODULE)) as WalkthroughEngineModule;
+  const candidate = mod.walkthroughEngine ?? mod.default;
+  if (isWalkthroughEngine(candidate)) return candidate;
+  if (
+    typeof mod.topology === "function" &&
+    typeof mod.open === "function" &&
+    typeof mod.trace === "function"
+  ) {
+    const { topology, open, trace } = mod;
+    return {
+      topology: (doc) => asEngineResult(topology(doc)),
+      open: (doc, ref, depth) => asEngineResult(open(doc, ref, depth)),
+      trace: (doc, entryRef, exitRef) => asEngineResult(trace(doc, entryRef, exitRef)),
+    };
+  }
+  throw new Error(
+    `walkthrough engine module "${WALKTHROUGH_ENGINE_MODULE}" does not export ` +
+      `topology/open/trace (named) or a walkthroughEngine/default engine object.`
+  );
+}
+
+/**
+ * The engine groups `open` edges by kind (`Record<kind, EdgeEntry[]>`); the
+ * MCP contract is flat arrays. Flatten in place so the tool shape stays
+ * stable whatever the engine's internal grouping is — the entries themselves
+ * are untouched.
+ */
+function flattenWalkthroughGroups(data: unknown): unknown {
+  if (typeof data !== "object" || data === null) return data;
+  const record = data as Record<string, unknown>;
+  let changed = false;
+  const out = { ...record };
+  for (const key of ["inbound", "outbound"] as const) {
+    const groups = record[key];
+    if (groups === undefined || Array.isArray(groups)) continue;
+    if (typeof groups !== "object" || groups === null) continue;
+    out[key] = (Object.values(groups) as unknown[][]).flat();
+    changed = true;
+  }
+  return changed ? out : data;
+}
+
+/**
+ * The walkthrough handler (issue 0009).
+ *
+ * Validates raw input against {@link WalkthroughInputSchema} (so `open`
+ * without a `ref`, or with `depth` above 3, is an `isError` result), reads the
+ * architecture document, and delegates to the walkthrough engine loaded by
+ * {@link loadWalkthroughEngine}. Engine errors surface as `isError` — a bad
+ * ref never produces an invented path.
+ */
+export async function handleWalkthrough(dir: string, raw: unknown): Promise<CallToolResult> {
+  const parsed = WalkthroughInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return errorResult(
+      `Invalid walkthrough input: ${parsed.error.issues.map((issue) => issue.message).join("; ")}`
+    );
+  }
+  const read = readArchitecture(dir);
+  if (!read.success) return errorResult(read.error);
+
+  const engine = await loadWalkthroughEngine();
+  const input = parsed.data;
+  const result =
+    input.action === "topology"
+      ? engine.topology(read.data)
+      : input.action === "open"
+        ? engine.open(read.data, input.ref, input.depth)
+        : engine.trace(read.data, input.entryRef, input.exitRef);
+  if (!result.success) return errorResult(result.error);
+  return jsonResult(flattenWalkthroughGroups(result.data));
+}
+
+/**
+ * Description for a registered tool, looked up by name rather than by
+ * position. `ARCHITECTURE_TOOLS` is the single list of names; indexing it
+ * positionally made every consolidation a renumbering exercise.
+ */
+function toolDescription(name: string): string {
+  const found = ARCHITECTURE_TOOLS.find((tool) => tool.name === name);
+  if (!found) throw new Error(`Unknown tool "${name}" — add it to ARCHITECTURE_TOOLS first.`);
+  return found.description;
+}
+
+/**
+ * Flat parameter shapes for the two action-discriminated tools.
+ *
+ * The SDK registers a record of fields, not a discriminated union, so each
+ * tool declares every field its actions accept as optional here and the
+ * handler validates the discriminator combination itself (a missing `ref` on
+ * `open`, or a missing `promptId` on `ack`, is an `isError` result).
+ */
+const PromptsToolParams = {
+  action: z.enum(["list", "claim", "ack"]).describe("Which prompt-queue operation to run"),
+  status: z
+    .enum(["pending", "claimed", "done", "failed"])
+    .optional()
+    .describe("list: filter by status (omit for all)"),
+  agent: z.string().optional().describe("claim: agent identifier claiming the prompt"),
+  promptId: z.string().optional().describe("ack: ID of the prompt to acknowledge"),
+  outcome: z
+    .enum(["done", "failed"])
+    .optional()
+    .describe("ack: whether the prompt was completed or failed"),
+};
+
+const WalkthroughToolParams = {
+  action: z.enum(["topology", "open", "trace"]).describe("Which walkthrough query to run"),
+  ref: z.string().optional().describe("open: node or edge id to open"),
+  depth: z
+    .number()
+    .optional()
+    .describe("open: directory hops below ref to include as children (default 1, max 3)"),
+  entryRef: z.string().optional().describe("trace: node id the path starts at"),
+  exitRef: z.string().optional().describe("trace: node id the path ends at"),
+};
+
 export function registerTools(server: McpServer, dir: string): void {
   server.tool(
     "update_architecture",
-    ARCHITECTURE_TOOLS[0].description,
+    toolDescription("update_architecture"),
     UpdateArchitectureInputSchema.shape,
     async (args) => {
       const result = await handleUpdateArchitecture(dir, args as unknown as z.infer<typeof UpdateArchitectureInputSchema>);
@@ -1114,7 +1430,7 @@ export function registerTools(server: McpServer, dir: string): void {
 
   server.tool(
     "record_decision",
-    ARCHITECTURE_TOOLS[1].description,
+    toolDescription("record_decision"),
     RecordDecisionInputSchema.shape,
     async (args) => {
       const result = await handleRecordDecision(dir, args as unknown as z.infer<typeof RecordDecisionInputSchema>);
@@ -1124,7 +1440,7 @@ export function registerTools(server: McpServer, dir: string): void {
 
   server.tool(
     "check_drift",
-    ARCHITECTURE_TOOLS[2].description,
+    toolDescription("check_drift"),
     CheckDriftInputSchema.shape,
     async () => {
       const result = await handleCheckDrift(dir);
@@ -1134,7 +1450,7 @@ export function registerTools(server: McpServer, dir: string): void {
 
   server.tool(
     "scaffold_project",
-    ARCHITECTURE_TOOLS[3].description,
+    toolDescription("scaffold_project"),
     ScaffoldProjectInputSchema.shape,
     async (args) => {
       const result = await handleScaffoldProject(args as unknown as z.input<typeof ScaffoldProjectInputSchema>);
@@ -1144,7 +1460,7 @@ export function registerTools(server: McpServer, dir: string): void {
 
   server.tool(
     "open_viewer",
-    ARCHITECTURE_TOOLS[4].description,
+    toolDescription("open_viewer"),
     OpenViewerInputSchema.shape,
     async (args) => {
       const result = await handleOpenViewer(dir, args as unknown as z.input<typeof OpenViewerInputSchema>);
@@ -1153,44 +1469,34 @@ export function registerTools(server: McpServer, dir: string): void {
   );
 
   server.tool(
-    "list_prompts",
-    ARCHITECTURE_TOOLS[5].description,
-    ListPromptsInputSchema.shape,
+    "prompts",
+    toolDescription("prompts"),
+    PromptsToolParams,
     async (args) => {
-      const result = await handleListPrompts(dir, args as unknown as z.infer<typeof ListPromptsInputSchema>);
-      return result;
-    }
-  );
-
-  server.tool(
-    "claim_next_prompt",
-    ARCHITECTURE_TOOLS[6].description,
-    ClaimNextPromptInputSchema.shape,
-    async (args) => {
-      const result = await handleClaimNextPrompt(dir, args as unknown as z.infer<typeof ClaimNextPromptInputSchema>);
-      return result;
-    }
-  );
-
-  server.tool(
-    "ack_prompt",
-    ARCHITECTURE_TOOLS[7].description,
-    AckPromptInputSchema.shape,
-    async (args) => {
-      const result = await handleAckPrompt(dir, args as unknown as z.infer<typeof AckPromptInputSchema>);
+      const result = await handlePrompts(dir, args);
       return result;
     }
   );
 
   server.tool(
     "why_does_this_exist",
-    ARCHITECTURE_TOOLS[8].description,
+    toolDescription("why_does_this_exist"),
     WhyDoesThisExistInputSchema.shape,
     async (args) => {
       const result = await handleWhyDoesThisExist(
         dir,
         args as unknown as z.infer<typeof WhyDoesThisExistInputSchema>
       );
+      return result;
+    }
+  );
+
+  server.tool(
+    "walkthrough",
+    toolDescription("walkthrough"),
+    WalkthroughToolParams,
+    async (args) => {
+      const result = await handleWalkthrough(dir, args);
       return result;
     }
   );

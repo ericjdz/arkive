@@ -76,7 +76,7 @@ The prompt queue lets you direct your AI agent from the viewer.
 2. Click any node to open its detail panel
 3. Write an architecture change prompt scoped to that node
 4. Click "Copy All" to paste into your agent's chat, or let the agent read `architecture://prompts` directly
-5. The agent claims prompts via `claim_next_prompt`, executes them, and acknowledges with `ack_prompt`
+5. The agent claims prompts via the `prompts` tool (`claim`), executes them, and acknowledges with `prompts` (`ack`)
 
 Prompts are stored in `arkive/prompt-queue.json` and survive session resets.
 
@@ -294,9 +294,8 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | npx -y @eric
 ```
 
 `status` must report `Schema: v2` and a **conclusive** verdict. The MCP response
-should list nine tools: `update_architecture`, `record_decision`, `check_drift`,
-`scaffold_project`, `open_viewer`, `list_prompts`, `claim_next_prompt`,
-`ack_prompt`, `why_does_this_exist`.
+should list eight tools: `update_architecture`, `record_decision`, `check_drift`,
+`scaffold_project`, `open_viewer`, `prompts`, `why_does_this_exist`, `walkthrough`.
 
 ### Step 4: Derive the structure, then record the intent
 
@@ -475,7 +474,7 @@ npx @ericjdz/arkive status
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | npx -y @ericjdz/arkive serve --stdio
 ```
 
-The MCP response should list nine tools: `update_architecture`, `record_decision`, `check_drift`, `scaffold_project`, `open_viewer`, `list_prompts`, `claim_next_prompt`, `ack_prompt`, `why_does_this_exist`.
+The MCP response should list eight tools: `update_architecture`, `record_decision`, `check_drift`, `scaffold_project`, `open_viewer`, `prompts`, `why_does_this_exist`, `walkthrough`.
 
 ### Fallback (no MCP)
 
@@ -496,9 +495,8 @@ If MCP registration is not possible in your environment, arkive still works:
 | `check_drift` | Static analysis comparing `arkive/architecture.json` against `package.json` and source imports. Returns mismatches, plus the scan's own coverage so a partial scan is never reported as "in sync". |
 | `scaffold_project` | Generate a project scaffold from the architecture document. |
 | `open_viewer` | Open the web viewer in the default browser. The returned URL carries a per-run access token in its fragment and must be opened as given. |
-| `list_prompts` | List queued architecture prompts from the viewer. Optionally filter by status. |
-| `claim_next_prompt` | Atomically claim the oldest pending prompt. Returns prompt text and the node ids it is scoped to. |
-| `ack_prompt` | Mark a claimed prompt as done or failed after execution. |
+| `prompts` | Queued architecture prompts from the viewer, one tool with three actions: `list` (optionally filter by status), `claim` (atomically claim the oldest pending prompt; returns prompt text and the node ids it is scoped to), `ack` (mark a claimed prompt as done or failed after execution). |
+| `walkthrough` | Layered architectural walkthrough over the graph, one tool with three actions: `topology` (every node and edge, no prose), `open` (one node or edge into inbound/outbound edges by kind, children, data shapes, decisions; `depth` default 1, max 3), `trace` (a path through real edges, annotated per hop — a bad ref or a missing path is an error, never an invented answer). |
 
 ### MCP Resources Reference
 

@@ -1,10 +1,10 @@
 # 0009 — Layered walkthrough engine
 
-status: open
+status: done
 stream: comprehend
 blocks: 0010, 0015
 blocked_by: 0008, 0011
-adr: docs/adr/0003-replace-quiz-with-agent-led-walkthrough.md
+adr: docs/adr/0003-agent-led-layered-walkthrough.md
 
 ## Context
 

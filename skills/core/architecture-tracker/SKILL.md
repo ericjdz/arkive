@@ -200,9 +200,9 @@ Users can queue architecture change prompts from the web viewer, scoped to speci
 
 ### MCP Tools
 
-- `list_prompts` — List all queued prompts (optionally filter by status: pending, claimed, done, failed)
-- `claim_next_prompt` — Atomically claim the oldest pending prompt. Returns the prompt text and target node IDs.
-- `ack_prompt` — Mark a claimed prompt as done or failed after execution.
+- `prompts` with action `list` — List all queued prompts (optionally filter by status: pending, claimed, done, failed)
+- `prompts` with action `claim` — Atomically claim the oldest pending prompt. Returns the prompt text and target node IDs.
+- `prompts` with action `ack` — Mark a claimed prompt as done or failed after execution.
 
 ### MCP Resource
 
@@ -213,9 +213,9 @@ Users can queue architecture change prompts from the web viewer, scoped to speci
 1. User opens the viewer (`arkive serve`) and selects nodes
 2. User writes prompts scoped to those nodes
 3. User clicks "Copy All" to paste into agent chat, OR the agent reads `architecture://prompts`
-4. Agent calls `claim_next_prompt` to get the next prompt
+4. Agent calls `prompts` with action `claim` to get the next prompt
 5. Agent executes the prompt, running `reconcile --apply` and recording decisions as needed
-6. Agent calls `ack_prompt` with outcome "done" or "failed"
+6. Agent calls `prompts` with action `ack` and outcome "done" or "failed"
 7. Repeat until queue is empty
 
 ## Reference

@@ -15,7 +15,7 @@ Run this when the user has queued architecture change prompts from the arkive we
 ### 1. Check for pending prompts
 
 **If MCP is available:**
-Call `list_prompts` with status filter `pending`. If no pending prompts, inform the user and stop.
+Call `prompts` with action `list` and status filter `pending`. If no pending prompts, inform the user and stop.
 
 **If MCP is not available:**
 Read `arkive/prompt-queue.json` directly. Filter entries with `"status": "pending"`.
@@ -24,7 +24,7 @@ Read `arkive/prompt-queue.json` directly. Filter entries with `"status": "pendin
 
 Loop until no pending prompts remain:
 
-1. Call `claim_next_prompt` — this atomically claims the oldest pending prompt and returns:
+1. Call `prompts` with action `claim` — this atomically claims the oldest pending prompt and returns:
    - `id` — the prompt ID
    - `prompt` — the text of the architecture change request
    - `targetServices` — array of node ids this prompt is scoped to (the tool's field name predates v2; the ids are node ids)
@@ -33,7 +33,7 @@ Loop until no pending prompts remain:
    - If it requests a structural change (a new module, a removed dependency, a new package) → make the code change first, then `npx @ericjdz/arkive reconcile --apply`. The derived half comes from the code; do not hand-edit `nodes[]` / `edges[]`.
    - If it requests a boundary, a `summary`, `owner`, or a data flow → `update_architecture`, with `"provenance": { "derived": false, "authoredBy": "agent" }`
    - If it requests an architectural decision → `record_decision`, with `subjects` naming the nodes/edges it explains and at least one rejected alternative with a non-empty `whyNot`
-4. Call `ack_prompt` with the prompt `id` and outcome:
+4. Call `prompts` with action `ack`, the prompt `id` and outcome:
    - `"done"` — if successfully executed
    - `"failed"` — if the prompt cannot be executed (explain why in the message)
 5. Move to the next prompt
@@ -48,7 +48,7 @@ After draining the queue, tell the user:
 ## MUST DO
 
 - Process prompts **one at a time** in FIFO order — do not skip or reorder
-- Always `ack_prompt` after each prompt, even if it failed
+- Always call `prompts` with action `ack` after each prompt, even if it failed
 - Run `reconcile --apply` after any prompt that changed the code's structure
 - Append a `history` entry for each architectural change
 

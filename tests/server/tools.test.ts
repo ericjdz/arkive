@@ -25,16 +25,19 @@ describe("MCP tool handlers", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("declares 9 tools by name", () => {
+  it("declares 8 tools by name", () => {
+    // Issue 0009 consolidates: the list_prompts / claim_next_prompt / ack_prompt
+    // trio is one `prompts` tool, and the walkthrough traversals are one
+    // `walkthrough` tool. 9 - 3 + 1 + 1 = 8, never a tenth.
+    expect(ARCHITECTURE_TOOLS).toHaveLength(8);
     expect(ARCHITECTURE_TOOLS.map((t) => t.name).sort()).toEqual([
-      "ack_prompt",
       "check_drift",
-      "claim_next_prompt",
-      "list_prompts",
       "open_viewer",
+      "prompts",
       "record_decision",
       "scaffold_project",
       "update_architecture",
+      "walkthrough",
       "why_does_this_exist",
     ]);
   });

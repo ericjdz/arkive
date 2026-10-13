@@ -6,6 +6,10 @@ trigger: User asks "why did we choose X?", "why this database?", "why not use Y?
 
 # Explain Decisions
 
+> Reference narration for the walkthrough's `decisionsAbout` step. See
+> `skills/walkthrough/SKILL.md` for the walkthrough procedure and
+> `docs/walkthrough-contract.md` for the frozen data shapes.
+
 ## Behavior
 
 1. **Read architecture data**:

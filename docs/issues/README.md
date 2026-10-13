@@ -32,8 +32,8 @@ Status: `open` · `in-flight` · `blocked` · `done`
 | 0006 | Data structure extraction | derive | done | 0014 |
 | 0007 | Continuous reconciliation | derive | done | 0014 |
 | 0008 | Decision attachment to graph | record | done | 0009 |
-| 0009 | Layered walkthrough engine | comprehend | **open — next** | 0010, 0015 |
-| 0010 | Viewer re-architecture | view | open | — |
+| 0009 | Layered walkthrough engine | comprehend | done | 0010, 0015 |
+| 0010 | Viewer re-architecture | view | open — next | — |
 | 0011 | Harness hook substrate | enforce | done | 0009 |
 | 0012 | Session context budget | context | done | — |
 | 0013 | Data integrity | integrity | done | 0004 |
@@ -76,6 +76,26 @@ re-litigated later.
   (`dist/viewer/index.html`, `dist/viewer/assets/index-*.js`). The *directory
   contents* observation was accurate — only stray `.d.ts` files were present at
   that moment — but the causal claim was not. Split out as `0018`.
+- **"`src/walkthrough/index.js` does not exist yet, so the fallback engine is
+  live"** (reported by the 0009 server agent about the parallel engine agent).
+  **False at wave end.** The engine module had landed with its named
+  `topology` / `open` / `trace` exports; the passing `topology` / `trace`
+  tests were already serving the real engine. Stale observation of parallel
+  work in flight, not a wiring gap. The fallback (`src/server/tools.ts`) is
+  removed; the loader fails loudly on a missing engine.
+- **"`src/walkthrough/levels.ts` references an undefined `toDecisionEntry`,
+  and `tests/walkthrough/` has implicit-`any` errors"** (same report).
+  **False.** `tsc --noEmit` on both projects was clean with those files
+  present. Same staleness as above.
+- **"The 5 failing `tool-consolidation` walkthrough tests fail on items in the
+  server agent's owned files"** (reported by the 0009 engine agent).
+  **True, and a real seam bug, not an ownership dispute.** The engine speaks
+  `{ found: false }` domain misses; the transport normaliser
+  (`asEngineResult`) wrapped every non-`success` object as success, so bad
+  refs surfaced without `isError`, and the engine groups `open` edges by
+  kind while the MCP contract is flat arrays. Fixed in integration:
+  `found: false` translates to `isError`, grouped edges flatten at the
+  transport boundary, engine untouched.
 
 ## Parallelism constraints
 
