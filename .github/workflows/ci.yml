@@ -61,3 +61,10 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Architecture drift gate
+        # Issue 0014: the repository's own architecture check runs in CI.
+        # `reconcile` exits non-zero on critical drift (and on an
+        # inconclusive scan), so real drift fails the build; warnings print
+        # but do not fail. Run via tsx so the gate has no build dependency.
+        run: npx tsx src/cli/index.ts reconcile

@@ -37,7 +37,7 @@ Status: `open` · `in-flight` · `blocked` · `done`
 | 0011 | Harness hook substrate | enforce | done | 0009 |
 | 0012 | Session context budget | context | done | — |
 | 0013 | Data integrity | integrity | done | 0004 |
-| 0014 | Self-dogfood arkive | meta | open | — |
+| 0014 | Self-dogfood arkive | meta | done | — |
 | 0015 | Retire quiz learning mode | comprehend | open | 0009 |
 | 0016 | Viewer server trust boundary | security | done | 0017 |
 | 0017 | Close the auth follow-ups from 0016 | security | done | — |

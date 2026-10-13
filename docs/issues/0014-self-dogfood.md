@@ -1,6 +1,6 @@
 # 0014 — Self-dogfood arkive
 
-status: open
+status: done
 stream: meta
 blocked_by: 0005, 0006, 0008
 adr: docs/adr/0006-data-integrity-is-a-product-feature.md

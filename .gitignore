@@ -3,6 +3,14 @@ dist/
 *.tsbuildinfo
 promo-video/
 
+# Installed skill copies (`init` copies skills/ here per platform). They are
+# regenerable install output that duplicates committed source — committing
+# them would let the copies drift from skills/ without any check noticing.
+# `.mcp.json`, `.cursor/rules/`, and `opencode.json` ARE committed: small
+# pointer configs, not content copies.
+.claude/skills/
+.opencode/skills/
+
 # NOTE: docs/ was previously ignored here, which is why the original Plan 1-6
 # planning documents were never committed and are now unrecoverable. It is
 # intentionally no longer ignored. See docs/legacy-architecture.md.

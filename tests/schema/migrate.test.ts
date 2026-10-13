@@ -477,9 +477,19 @@ describe("migrateDocument — the chain", () => {
  *
  * `arkive/legacy-architecture.json` is the same document, tracked so the fixture
  * under `tests/fixtures/62066bc/` is not the only copy.
+ *
+ * The `arkive/architecture.json` row tracks the live dogfood document (issue
+ * 0014): exact counts churn with every structural change, so that row asserts
+ * preservation plus the invariants that must never regress — a derived graph
+ * at scale and a non-empty decision log with real rejected alternatives —
+ * instead of pinned numbers. Update the minimums only if the product's own
+ * scale honestly changes them.
  */
-const REAL_DOCUMENTS = [
-  { path: "arkive/architecture.json", services: 3, decisions: 0 },
+const REAL_DOCUMENTS: Array<
+  | { path: string; services: number; decisions: number }
+  | { path: string; minNodes: number; minDecisions: number }
+> = [
+  { path: "arkive/architecture.json", minNodes: 400, minDecisions: 1 },
   { path: "arkive/legacy-architecture.json", services: 7, decisions: 4 },
   { path: "tests/fixtures/62066bc/legacy-root-architecture.json", services: 7, decisions: 4 },
   { path: "tests/fixtures/62066bc/orphan-arkive-architecture.json", services: 3, decisions: 0 },
@@ -510,9 +520,23 @@ describe("migrate(1) -> 2 — against the real documents", () => {
         expect(decisionIds.has(decision.id), `decision ${decision.id} lost`).toBe(true);
       }
 
-      expect(result.data.nodes).toHaveLength(document.services);
-      expect(result.data.decisions).toHaveLength(document.decisions);
-    });
+      if ("services" in document && "decisions" in document) {
+        expect(result.data.nodes).toHaveLength(document.services);
+        expect(result.data.decisions).toHaveLength(document.decisions);
+      } else {
+      // Live dogfood document: counts float with the repo, but the 0014
+      // invariants hold — a derived graph at scale, a non-empty log, and a
+      // real rejected alternative behind every decision.
+      expect(result.data.nodes.length).toBeGreaterThanOrEqual(document.minNodes);
+      expect(result.data.decisions.length).toBeGreaterThanOrEqual(document.minDecisions);
+      for (const d of result.data.decisions) {
+        expect(
+          d.alternatives.some((a) => a.whyNot.trim().length > 0),
+          `decision ${d.id} names no rejected alternative`
+        ).toBe(true);
+      }
+    }
+  });
 
     it(`preserves every rejected alternative in ${document.path}`, () => {
       if (!available) return;

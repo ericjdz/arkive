@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "arkive": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@ericjdz/arkive",
+        "serve",
+        "--stdio"
+      ]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "mcp": {
+    "arkive": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@ericjdz/arkive",
+        "serve",
+        "--stdio"
+      ],
+      "enabled": true
+    }
+  }
+}
