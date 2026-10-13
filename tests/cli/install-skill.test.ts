@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { installSkills, resolveSkillDir } from "../../src/cli/commands/install-skill.js";
@@ -29,6 +29,38 @@ describe("install-skill command", () => {
     expect(existsSync(join(result.skillDir, "arkive-view", "SKILL.md"))).toBe(true);
     expect(existsSync(join(result.skillDir, "architecture-tracker", "SKILL.md"))).toBe(true);
     expect(existsSync(join(result.skillDir, "process-prompts", "SKILL.md"))).toBe(true);
+    // Issue 0014 dogfood: the walkthrough skill shipped in 0009 but was never
+    // installed — the process-prompts omission c4df919 had to repair, repeated.
+    expect(existsSync(join(result.skillDir, "walkthrough", "SKILL.md"))).toBe(true);
+  });
+
+  it("installs every skill the repo ships (registry matches source)", () => {
+    // A shipped skill that is never installed is silent loss of the exact
+    // kind c4df919 repaired for process-prompts. Enumerate the source tree
+    // (top level plus one layer down) and require the install set to match.
+    const skillsRoot = join(__dirname, "..", "..", "skills");
+    const source: string[] = [];
+    for (const entry of readdirSync(skillsRoot, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const inner = join(skillsRoot, entry.name);
+      if (existsSync(join(inner, "SKILL.md"))) {
+        source.push(entry.name);
+        continue;
+      }
+      for (const sub of readdirSync(inner, { withFileTypes: true })) {
+        if (sub.isDirectory() && existsSync(join(inner, sub.name, "SKILL.md"))) {
+          source.push(sub.name);
+        }
+      }
+    }
+    expect(source.length).toBeGreaterThan(0);
+
+    const result = installSkills({
+      platform: "opencode",
+      targetDir: tempDir,
+    });
+    expect(readdirSync(result.skillDir).sort()).toEqual(source.sort());
+    expect(result.skillsCopied).toBe(source.length);
   });
 
   it("injects skill content into instruction file for cursor", () => {

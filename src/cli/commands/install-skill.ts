@@ -18,6 +18,11 @@ const SKILL_NAMES = [
   "explain-decisions",
   // Maintenance skills
   "reconciliation",
+  // Walkthrough (issue 0009). Lives at skills/walkthrough/ rather than under
+  // a layer directory, so findSkillDir falls back to the skills root.
+  // A shipped skill that is never installed is the process-prompts omission
+  // c4df919 had to repair after the fact; the registry is the install list.
+  "walkthrough",
 ];
 
 type SkillPlatform = "claude-code" | "opencode" | "cursor" | "vscode" | "windsurf" | "cline" | "claude-desktop";
@@ -64,7 +69,7 @@ function getSkillsRootDir(): string {
   throw new Error("Could not find arkive skills directory. Is the package installed correctly?");
 }
 
-/** Search all subdirectories (core/, learning/, maintenance/) for a skill by name. */
+/** Search the layer subdirectories (core/, learning/, maintenance/) for a skill by name, then the skills root itself. */
 function findSkillDir(skillName: string): string | null {
   const root = getSkillsRootDir();
   const subdirs = ["core", "learning", "maintenance"];
@@ -74,6 +79,14 @@ function findSkillDir(skillName: string): string | null {
     if (existsSync(candidate)) {
       return candidate;
     }
+  }
+
+  // Top-level skills (e.g. skills/walkthrough/) sit outside any layer
+  // taxonomy. Subdirectories win on collision so existing lookups cannot
+  // change meaning.
+  const topLevel = join(root, skillName);
+  if (existsSync(topLevel)) {
+    return topLevel;
   }
 
   return null;
