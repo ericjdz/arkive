@@ -142,33 +142,16 @@ describe("vanished-module — config-excluded paths are out of scope, not vanish
     );
   }
 
-  it("does not report an excluded file as vanished when derivation stops reproducing it", () => {
-    // Yesterday's graph (whole tree walked) against today's scan (src/db
-    // excluded): the merge tombstones what the new scope cannot reproduce,
-    // exactly as `reconcile --apply` does on a real run.
+  it("does not report a live node under an excluded path as vanished", () => {
+    // The discriminating case for the carve-out: the node is LIVE (no merge
+    // has tombstoned anything) and its path is absent from the index purely
+    // because the walk was told not to look. Without the carve-out this is
+    // exactly the missingOnDisk signal and fires critical.
     const docBefore = documentFor(dir);
-    const graphBefore = docBefore as unknown as {
-      nodes: GraphNode[];
-      edges: GraphEdge[];
-    };
     excludeDb();
     const scanAfter = scanProject(dir);
-    const merged = mergeDerived(
-      { nodes: graphBefore.nodes, edges: graphBefore.edges },
-      deriveFromScan(scanAfter)
-    );
 
-    const tombstoned = merged.nodes.filter((n) => n.deletedAt !== undefined);
-    expect(tombstoned.length).toBeGreaterThan(0);
-
-    const report = detectDrift(
-      {
-        ...(docBefore as unknown as Record<string, unknown>),
-        nodes: merged.nodes,
-        edges: merged.edges,
-      } as never,
-      scanAfter as never
-    );
+    const report = detectDrift(docBefore, scanAfter as never);
     const vanished = report.warnings.filter((w) => w.kind === "vanished-module");
     expect(vanished).toEqual([]);
   });
@@ -188,5 +171,57 @@ describe("vanished-module — config-excluded paths are out of scope, not vanish
     expect(subjects.some((s) => s.includes("index.ts"))).toBe(true);
     // And the excluded subtree stays silent throughout.
     expect(subjects.some((s) => s.includes("db"))).toBe(false);
+  });
+});
+
+describe("vanished-module — a tombstone is the record, not a fresh alarm", () => {
+  let dir: string;
+
+  beforeAll(() => {
+    dir = buildRepo();
+  });
+
+  afterAll(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("goes silent once reconcile records the disappearance as a tombstone", () => {
+    // Full lifecycle: delete the file (unrecorded disappearance → critical),
+    // then merge as `reconcile --apply` does (recorded tombstone → silent).
+    // A tombstone re-alarming forever would make every reviewed deletion a
+    // permanent critical no deliberate action clears — removal is
+    // tombstone-only by design, and re-removing a tombstone is a no-op.
+    const docBefore = documentFor(dir);
+
+    rmSync(join(dir, "src", "db", "pool.ts"), { force: true });
+
+    const scanAfter = scanProject(dir);
+    const before = detectDrift(docBefore, scanAfter as never);
+    expect(
+      before.warnings
+        .filter((w) => w.kind === "vanished-module")
+        .map((w) => String(w.subject))
+        .some((s) => s.includes("pool.ts"))
+    ).toBe(true);
+
+    const merged = mergeDerived(
+      {
+        nodes: (docBefore as unknown as { nodes: GraphNode[] }).nodes,
+        edges: (docBefore as unknown as { edges: GraphEdge[] }).edges,
+      },
+      deriveFromScan(scanAfter)
+    );
+    const tombstoned = merged.nodes.filter((n) => n.deletedAt !== undefined);
+    expect(tombstoned.length).toBeGreaterThan(0);
+
+    const after = detectDrift(
+      {
+        ...(docBefore as unknown as Record<string, unknown>),
+        nodes: merged.nodes,
+        edges: merged.edges,
+      } as never,
+      scanAfter as never
+    );
+    expect(after.warnings.filter((w) => w.kind === "vanished-module")).toEqual([]);
   });
 });

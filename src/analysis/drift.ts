@@ -288,9 +288,21 @@ export function detectDrift(
   // sync" on trees it had never opened, so a missing module is precisely the
   // class of fact that used to go unreported.
   //
-  // It fires on two signals, because they catch different failures: a tombstone
-  // means derivation ran and found nothing, while a path that is absent from
-  // the file index catches a document written by a build that never tombstoned.
+  // It fires on exactly one signal: a LIVE node whose path is absent from the
+  // file index. That is an unrecorded disappearance — the thing nobody has
+  // looked at yet — and `reconcile --apply` is what records it, by tombstoning
+  // the node with a visible report and a history entry.
+  //
+  // It deliberately does NOT fire on nodes that are already tombstoned. A
+  // tombstone IS the record of a disappearance: firing `critical` on it every
+  // run adds no information (nothing changed since the run that recorded it)
+  // and manufactures a permanent alarm no deliberate action can clear —
+  // removal is tombstone-only by design (ADR-0001:129-137), and re-removing a
+  // tombstone is a no-op. A check that alarms forever trains the user to
+  // ignore it, which is the same failure as reporting "in sync" on a tree it
+  // never read (see the directory-index note below). The tombstone stays in
+  // the document so decisions keep resolving to it; `whyDoesThisExist`
+  // reports tombstoned claims as such.
   const moduleNodes = Array.isArray(asGraph.nodes) ? asGraph.nodes : [];
   // Paths the walk was told not to examine are out of scope, not vanished.
   // `arkive.config.json` `exclude` (and `--exclude`) removes a path from the
@@ -335,7 +347,10 @@ export function detectDrift(
       node.path.length > 0 &&
       !index.has(node.path);
 
-    if (!tombstoned && !missingOnDisk) continue;
+    // Only the unrecorded disappearance alarms. A tombstone is the recorded
+    // state (see the rule header); re-alarming on it would make every
+    // reviewed deletion a permanent critical no deliberate action clears.
+    if (tombstoned || !missingOnDisk) continue;
 
     warnings.push({
       kind: "vanished-module",
@@ -343,13 +358,13 @@ export function detectDrift(
       subject: node.id,
       message:
         `Derived module "${node.path ?? node.id}" no longer exists. ` +
-        (tombstoned
-          ? `It was tombstoned at ${node.deletedAt}; the file is gone from the tree.`
-          : `"${node.path}" is not in the scanned file index.`) +
+        `"${node.path}" is not in the scanned file index.` +
         ` It was derived by rule "${node.provenance?.rule ?? "(unknown)"}" from ` +
         `${(node.provenance?.evidence ?? []).slice(0, 3).join(", ") || "(no evidence)"}.`,
       suggestion:
-        `If the module was deleted on purpose, remove or retire the node deliberately. ` +
+        `If the module was deleted on purpose, run reconcile --apply to retire ` +
+        `the node deliberately (tombstone, counted and reported — the alarm ` +
+        `clears because the disappearance is then recorded). ` +
         `If it was moved, re-point the node at its new path. Do not do nothing: a graph ` +
         `that still contains a module nobody can open is not a graph of this repository.`,
     });
