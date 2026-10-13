@@ -1,5 +1,6 @@
 import type { Architecture } from "../schema/types.js";
 import type { ScanResult } from "./scanner.js";
+import { withinFilters } from "./scanner.js";
 
 /**
  * Drift detection.
@@ -75,6 +76,13 @@ export type DriftScan = Pick<
   fileIndex?: ReadonlySet<string>;
   /** Every discovered directory, repo-relative. Required to check a `module:dir:` node. */
   directoryIndex?: ReadonlySet<string>;
+  /**
+   * The effective include/exclude the walk ran with (`ScanResult.filters`).
+   * Optional so a caller holding only the summary shape still type-checks —
+   * the vanished-module rule treats an absent filter set as "whole tree",
+   * which is exactly what a filterless scan walked.
+   */
+  filters?: { include: readonly string[]; exclude: readonly string[] };
 };
 
 export interface DriftReport {
@@ -284,8 +292,28 @@ export function detectDrift(
   // means derivation ran and found nothing, while a path that is absent from
   // the file index catches a document written by a build that never tombstoned.
   const moduleNodes = Array.isArray(asGraph.nodes) ? asGraph.nodes : [];
+  // Paths the walk was told not to examine are out of scope, not vanished.
+  // `arkive.config.json` `exclude` (and `--exclude`) removes a path from the
+  // file and directory indexes by construction, so without this carve-out
+  // every excluded file with a derived node reported itself deleted,
+  // permanently, at `critical` severity — the same false-positive class as
+  // the directory nodes above, wearing config clothes. Measured on this
+  // repository (issue 0014 dogfood): excluding `bin` (a 2-line shim whose
+  // only import points at gitignored build output) produced 2 standing
+  // criticals for files that exist. The exclusion itself is reported in
+  // `scanNotes` on every run, so skipping the rule loses nothing silent.
+  const filters = scan.filters;
   for (const node of moduleNodes) {
     if (node.kind !== "module" || node.provenance?.derived !== true) continue;
+
+    if (
+      filters !== undefined &&
+      typeof node.path === "string" &&
+      node.path.length > 0 &&
+      !withinFilters(node.path, filters.include, filters.exclude)
+    ) {
+      continue;
+    }
 
     const tombstoned = node.deletedAt !== undefined;
     // A directory node's path is a directory; a file node's is a file. They

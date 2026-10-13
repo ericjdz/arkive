@@ -3,8 +3,9 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { scanProject } from "../../src/analysis/scanner.js";
-import { deriveFromScan } from "../../src/analysis/derive.js";
+import { deriveFromScan, mergeDerived } from "../../src/analysis/derive.js";
 import { detectDrift } from "../../src/analysis/drift.js";
+import type { GraphEdge, GraphNode } from "../../src/schema/graph.js";
 
 /**
  * Regression: `vanished-module` fired on every directory node, forever.
@@ -114,5 +115,78 @@ describe("vanished-module — directories are not files", () => {
     expect(subjects.some((s) => s.includes("pool.ts"))).toBe(true);
     // The directory that still exists is still not reported.
     expect(subjects).not.toContain("module:dir:src/db");
+  });
+});
+
+describe("vanished-module — config-excluded paths are out of scope, not vanished", () => {
+  let dir: string;
+
+  beforeAll(() => {
+    dir = buildRepo();
+  });
+
+  afterAll(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  // The user told the walk not to look here. `src/db` is excluded by
+  // explicit configuration, reported in `scanNotes` on every run — it is
+  // out of scope, not evidence of deletion. Written after the "yesterday"
+  // derivation in each test, mirroring a user who excludes a path that
+  // already has derived nodes.
+  function excludeDb(): void {
+    writeFileSync(
+      join(dir, "arkive.config.json"),
+      JSON.stringify({ exclude: ["src/db"] }),
+      "utf-8"
+    );
+  }
+
+  it("does not report an excluded file as vanished when derivation stops reproducing it", () => {
+    // Yesterday's graph (whole tree walked) against today's scan (src/db
+    // excluded): the merge tombstones what the new scope cannot reproduce,
+    // exactly as `reconcile --apply` does on a real run.
+    const docBefore = documentFor(dir);
+    const graphBefore = docBefore as unknown as {
+      nodes: GraphNode[];
+      edges: GraphEdge[];
+    };
+    excludeDb();
+    const scanAfter = scanProject(dir);
+    const merged = mergeDerived(
+      { nodes: graphBefore.nodes, edges: graphBefore.edges },
+      deriveFromScan(scanAfter)
+    );
+
+    const tombstoned = merged.nodes.filter((n) => n.deletedAt !== undefined);
+    expect(tombstoned.length).toBeGreaterThan(0);
+
+    const report = detectDrift(
+      {
+        ...(docBefore as unknown as Record<string, unknown>),
+        nodes: merged.nodes,
+        edges: merged.edges,
+      } as never,
+      scanAfter as never
+    );
+    const vanished = report.warnings.filter((w) => w.kind === "vanished-module");
+    expect(vanished).toEqual([]);
+  });
+
+  it("still reports a genuinely deleted file outside the exclusion", () => {
+    // The carve-out is scoped to the excluded prefixes, not a disable: a
+    // deletion elsewhere in the tree must still fire at critical.
+    const docBefore = documentFor(dir);
+    excludeDb();
+
+    rmSync(join(dir, "src", "index.ts"), { force: true });
+
+    const scanAfter = scanProject(dir);
+    const report = detectDrift(docBefore, scanAfter as never);
+    const vanished = report.warnings.filter((w) => w.kind === "vanished-module");
+    const subjects = vanished.map((w) => String(w.subject));
+    expect(subjects.some((s) => s.includes("index.ts"))).toBe(true);
+    // And the excluded subtree stays silent throughout.
+    expect(subjects.some((s) => s.includes("db"))).toBe(false);
   });
 });
