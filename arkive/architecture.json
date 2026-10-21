@@ -4,7 +4,7 @@
     "name": "arkive",
     "description": "A living architecture document for AI-built projects.",
     "created": "2026-05-07T00:00:00.000Z",
-    "lastUpdated": "2026-10-13T18:32:06.409Z"
+    "lastUpdated": "2026-10-21T11:04:05.561Z"
   },
   "stack": {
     "language": [
@@ -14,8 +14,7 @@
       "Node.js"
     ],
     "framework": [
-      "Vite",
-      "React"
+      "Express"
     ],
     "database": [],
     "infrastructure": [
@@ -28,7 +27,6 @@
       "kind": "service",
       "name": "Architecture store",
       "summary": "Local JSON document that stores the tracked architecture state.",
-      "tech": "arkive/architecture.json",
       "provenance": {
         "derived": false,
         "authoredBy": "agent"
@@ -2507,19 +2505,19 @@
           "name": "platform",
           "type": "string",
           "optional": false,
-          "line": 198
+          "line": 197
         },
         {
           "name": "targetDir",
           "type": "string",
           "optional": false,
-          "line": 199
+          "line": 198
         },
         {
           "name": "global",
           "type": "boolean",
           "optional": true,
-          "line": 200
+          "line": 199
         }
       ],
       "structureForm": "interface",
@@ -2529,7 +2527,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/cli/commands/install-skill.ts:197"
+          "src/cli/commands/install-skill.ts:196"
         ]
       }
     },
@@ -2544,19 +2542,19 @@
           "name": "skillDir",
           "type": "string",
           "optional": false,
-          "line": 31
+          "line": 30
         },
         {
           "name": "skillsCopied",
           "type": "number",
           "optional": false,
-          "line": 32
+          "line": 31
         },
         {
           "name": "method",
           "type": "string",
           "optional": false,
-          "line": 33,
+          "line": 32,
           "literals": 2
         }
       ],
@@ -2567,7 +2565,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/cli/commands/install-skill.ts:30"
+          "src/cli/commands/install-skill.ts:29"
         ]
       }
     },
@@ -4066,19 +4064,19 @@
           "name": "subject",
           "type": "Provenance|null",
           "optional": false,
-          "line": 296
+          "line": 303
         },
         {
           "name": "evidence",
           "type": "string[]",
           "optional": false,
-          "line": 298
+          "line": 305
         },
         {
           "name": "recorded",
           "type": "AuthoredProvenance|null",
           "optional": false,
-          "line": 300
+          "line": 307
         }
       ],
       "structureForm": "interface",
@@ -4092,7 +4090,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/io/decisions.ts:294"
+          "src/io/decisions.ts:301"
         ]
       }
     },
@@ -4161,50 +4159,50 @@
           "name": "subject",
           "type": "DecisionSubject",
           "optional": false,
-          "line": 305
+          "line": 312
         },
         {
           "name": "attachedTo",
           "type": "{kind: string|string;id: string}|null",
           "optional": false,
-          "line": 307,
+          "line": 314,
           "literals": 2
         },
         {
           "name": "resolution",
           "type": "SubjectResolution",
           "optional": false,
-          "line": 308
+          "line": 315
         },
         {
           "name": "via",
           "type": "ClaimVia",
           "optional": false,
-          "line": 309
+          "line": 316
         },
         {
           "name": "depth",
           "type": "number",
           "optional": false,
-          "line": 311
+          "line": 318
         },
         {
           "name": "provenance",
           "type": "ClaimProvenance",
           "optional": false,
-          "line": 312
+          "line": 319
         },
         {
           "name": "gate",
           "type": "ClaimGate",
           "optional": false,
-          "line": 313
+          "line": 320
         },
         {
           "name": "caveats",
           "type": "string[]",
           "optional": false,
-          "line": 314
+          "line": 321
         }
       ],
       "structureForm": "interface",
@@ -4221,7 +4219,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/io/decisions.ts:303"
+          "src/io/decisions.ts:310"
         ]
       }
     },
@@ -4285,25 +4283,25 @@
           "name": "decision",
           "type": "GraphDecision",
           "optional": false,
-          "line": 318
+          "line": 325
         },
         {
           "name": "rejectedAlternatives",
           "type": "GraphAlternative[]",
           "optional": false,
-          "line": 320
+          "line": 327
         },
         {
           "name": "observation",
           "type": "boolean",
           "optional": false,
-          "line": 322
+          "line": 329
         },
         {
           "name": "claim",
           "type": "ResolvedClaim",
           "optional": false,
-          "line": 323
+          "line": 330
         }
       ],
       "structureForm": "interface",
@@ -4318,7 +4316,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/io/decisions.ts:317"
+          "src/io/decisions.ts:324"
         ]
       }
     },
@@ -4333,32 +4331,32 @@
           "name": "node",
           "type": "{id: string;kind: GraphNode[string];name: string;summary: string;path?: string;live: boolean;removedAt?: string;provenance: Provenance;}|null",
           "optional": false,
-          "line": 327,
+          "line": 334,
           "literals": 1
         },
         {
           "name": "found",
           "type": "boolean",
           "optional": false,
-          "line": 339
+          "line": 346
         },
         {
           "name": "claims",
           "type": "WhyClaim[]",
           "optional": false,
-          "line": 340
+          "line": 347
         },
         {
           "name": "summary",
           "type": "{direct: number;inherited: number;incident: number;gates: Record<ClaimGate,number>;unresolvedSubjects: number;}",
           "optional": false,
-          "line": 341
+          "line": 348
         },
         {
           "name": "notes",
           "type": "string[]",
           "optional": false,
-          "line": 348
+          "line": 355
         }
       ],
       "structureForm": "interface",
@@ -4374,7 +4372,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/io/decisions.ts:326"
+          "src/io/decisions.ts:333"
         ]
       }
     },
@@ -4910,7 +4908,8 @@
         "evidence": [
           "src/learning/concepts.ts:4"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/learning/types.ts::BaseQuestion",
@@ -4975,7 +4974,8 @@
         "evidence": [
           "src/learning/types.ts:18"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/learning/types.ts::Choice",
@@ -5012,7 +5012,8 @@
         "evidence": [
           "src/learning/types.ts:28"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/learning/types.ts::ConceptMastery",
@@ -5070,7 +5071,8 @@
         "evidence": [
           "src/learning/types.ts:73"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/learning/types.ts::ConnectionSourceRef",
@@ -5108,7 +5110,8 @@
         "evidence": [
           "src/learning/types.ts:5"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/learning/types.ts::DataFlowSourceRef",
@@ -5140,7 +5143,8 @@
         "evidence": [
           "src/learning/types.ts:6"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/learning/types.ts::DecisionSourceRef",
@@ -5172,7 +5176,8 @@
         "evidence": [
           "src/learning/types.ts:3"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/learning/types.ts::LearningProgress",
@@ -5230,7 +5235,8 @@
         "evidence": [
           "src/learning/types.ts:82"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/learning/types.ts::MultipleChoiceQuestion",
@@ -5265,7 +5271,8 @@
         "evidence": [
           "src/learning/types.ts:34"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/learning/types.ts::OrderingItem",
@@ -5296,7 +5303,8 @@
         "evidence": [
           "src/learning/types.ts:44"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/learning/types.ts::OrderingQuestion",
@@ -5337,7 +5345,8 @@
         "evidence": [
           "src/learning/types.ts:49"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/learning/types.ts::ServiceSourceRef",
@@ -5369,7 +5378,8 @@
         "evidence": [
           "src/learning/types.ts:4"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/learning/types.ts::ShortAnswerQuestion",
@@ -5401,7 +5411,8 @@
         "evidence": [
           "src/learning/types.ts:39"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "datastructure:src/manifests/validate.ts::MarketplaceManifestSchema",
@@ -7145,39 +7156,39 @@
           "name": "subject",
           "type": "DecisionSubject",
           "optional": false,
-          "line": 488
+          "line": 505
         },
         {
           "name": "resolution",
           "type": "string",
           "optional": false,
-          "line": 489,
+          "line": 506,
           "literals": 3
         },
         {
           "name": "gate",
           "type": "ClaimGate",
           "optional": false,
-          "line": 491
+          "line": 508
         },
         {
           "name": "element",
           "type": "{kind: string|string;id: string;name?: string}|null",
           "optional": false,
-          "line": 493,
+          "line": 510,
           "literals": 2
         },
         {
           "name": "evidence",
           "type": "string[]",
           "optional": false,
-          "line": 495
+          "line": 512
         },
         {
           "name": "caveats",
           "type": "string[]",
           "optional": false,
-          "line": 497
+          "line": 514
         }
       ],
       "structureForm": "interface",
@@ -7191,7 +7202,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/server/tools.ts:487"
+          "src/server/tools.ts:504"
         ]
       }
     },
@@ -7337,7 +7348,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/server/tools.ts:1221"
+          "src/server/tools.ts:1277"
         ]
       }
     },
@@ -7352,7 +7363,7 @@
           "name": "topology",
           "type": "(doc: ArchitectureDocument)=>unknown;open?:(doc: ArchitectureDocument,ref: string,depth: number)=>unknown;trace?:(doc: ArchitectureDocument,entryRef: string,exi",
           "optional": true,
-          "line": 1228
+          "line": 1284
         }
       ],
       "structureForm": "interface",
@@ -7365,7 +7376,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/server/tools.ts:1227"
+          "src/server/tools.ts:1283"
         ]
       }
     },
@@ -7498,7 +7509,6 @@
           "src/viewer/src/api/architecture.ts:4"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -7543,7 +7553,6 @@
           "src/viewer/src/api/architecture.ts:36"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -7576,7 +7585,6 @@
           "src/viewer/src/api/architecture.ts:53"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -7639,7 +7647,6 @@
           "src/viewer/src/api/architecture.ts:43"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -7684,7 +7691,6 @@
           "src/viewer/src/api/architecture.ts:58"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -7750,7 +7756,6 @@
           "src/viewer/src/api/architecture.ts:26"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -7783,7 +7788,6 @@
           "src/viewer/src/api/auth.ts:39"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -7841,7 +7845,6 @@
           "src/viewer/src/api/learning.ts:3"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -7901,7 +7904,6 @@
           "src/viewer/src/api/learning.ts:12"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -7937,7 +7939,6 @@
           "src/viewer/src/api/prompts.ts:16"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8007,7 +8008,6 @@
           "src/viewer/src/api/prompts.ts:5"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8037,7 +8037,6 @@
           "src/viewer/src/components/ConceptMap.tsx:3"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8070,7 +8069,6 @@
           "src/viewer/src/components/ConnectionEdge.tsx:4"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8100,7 +8098,6 @@
           "src/viewer/src/components/DecisionCard.tsx:3"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8150,7 +8147,6 @@
           "src/viewer/src/components/DetailPanel.tsx:4"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8180,7 +8176,6 @@
           "src/viewer/src/components/ProgressTracker.tsx:4"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8219,7 +8214,6 @@
           "src/viewer/src/components/PromptInput.tsx:4"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8261,7 +8255,6 @@
           "src/viewer/src/components/PromptQueuePanel.tsx:4"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8297,7 +8290,6 @@
           "src/viewer/src/components/QuestionCard.tsx:10"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8339,7 +8331,6 @@
           "src/viewer/src/components/QuizPanel.tsx:6"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8372,7 +8363,6 @@
           "src/viewer/src/components/SearchBar.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8423,7 +8413,6 @@
           "src/viewer/src/components/ServiceNode.tsx:4"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8459,7 +8448,6 @@
           "src/viewer/src/components/ViewSwitcher.tsx:3"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8503,7 +8491,6 @@
           "src/viewer/src/hooks/useArchitecture.ts:5"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8558,7 +8545,6 @@
           "src/viewer/src/hooks/useArchitecture.ts:11"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8607,7 +8593,6 @@
           "src/viewer/src/hooks/useLearning.ts:10"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8655,7 +8640,6 @@
           "src/viewer/src/hooks/usePromptQueue.ts:11"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8688,7 +8672,6 @@
           "src/viewer/src/utils/layout.ts:9"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8727,7 +8710,6 @@
           "src/viewer/src/utils/layout.ts:3"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8796,7 +8778,6 @@
           "src/viewer/src/utils/markdown.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8841,7 +8822,6 @@
           "src/viewer/src/utils/mermaid.ts:10"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8874,7 +8854,6 @@
           "src/viewer/src/utils/mermaid.ts:17"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8931,7 +8910,6 @@
           "src/viewer/src/utils/mermaid.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8968,7 +8946,6 @@
           "src/viewer/src/views/DataFlowView.tsx:4"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -8998,7 +8975,6 @@
           "src/viewer/src/views/DecisionLogView.tsx:4"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -9041,7 +9017,6 @@
           "src/viewer/src/views/LearningView.tsx:8"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -9092,7 +9067,6 @@
           "src/viewer/src/views/StackView.tsx:4"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -9129,7 +9103,6 @@
           "src/viewer/src/views/StackView.tsx:12"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -9179,7 +9152,6 @@
           "src/viewer/src/views/TopologyView.tsx:19"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -9209,7 +9181,6 @@
           "src/viewer/src/views/TreeView.tsx:4"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10122,7 +10093,6 @@
           "tests/viewer/topology.test.tsx:9"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10142,7 +10112,6 @@
           "tests/viewer/viewer-session.test.ts:23"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10181,7 +10150,6 @@
           "tests/viewer/stack-view.test.tsx:3"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10197,7 +10165,6 @@
           "src/viewer/vite.config.ts:2"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10218,7 +10185,6 @@
           "src/viewer/src/views/TopologyView.tsx:2"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10231,9 +10197,7 @@
         "derived": true,
         "rule": "ts-js/external-node",
         "evidence": [
-          "src/cli/commands/learn.ts:1",
-          "src/cli/index.ts:2",
-          "tests/cli/learn.test.ts:3"
+          "src/cli/index.ts:2"
         ]
       }
     },
@@ -10250,7 +10214,6 @@
           "src/viewer/src/utils/layout.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10312,7 +10275,6 @@
           "tests/viewer/tree-view.test.tsx:3"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10333,7 +10295,6 @@
           "tests/viewer/tree-view.test.tsx:4"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10363,7 +10324,6 @@
           "src/viewer/vite.config.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10398,11 +10358,9 @@
           "tests/cli/inject.test.ts:1",
           "tests/cli/install-skill.test.ts:1",
           "tests/cli/install.test.ts:1",
-          "tests/cli/learn.test.ts:1",
           "tests/cli/reconcile-honesty.test.ts:1",
           "tests/cli/reconcile.test.ts:1",
           "tests/cli/serve-http.test.ts:1",
-          "tests/cli/serve-learning.test.ts:1",
           "tests/cli/serve-prompts.test.ts:1",
           "tests/cli/serve-security.test.ts:1",
           "tests/cli/serve-stdio.test.ts:1",
@@ -10434,11 +10392,6 @@
           "tests/io/prompt-queue.test.ts:1",
           "tests/io/snapshots.test.ts:1",
           "tests/io/v1-authoring.test.ts:1",
-          "tests/learning/concepts.test.ts:1",
-          "tests/learning/integration.test.ts:1",
-          "tests/learning/progress.test.ts:1",
-          "tests/learning/questions.test.ts:1",
-          "tests/learning/types.test.ts:1",
           "tests/manifests/plugin-manifest.test.ts:1",
           "tests/package/npm-pack.test.ts:1",
           "tests/package/package-json.test.ts:1",
@@ -10744,7 +10697,8 @@
         "evidence": [
           "src/learning/"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:dir:src/manifests",
@@ -10815,7 +10769,6 @@
           "src/viewer/"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10831,7 +10784,6 @@
           "src/viewer/src/"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10847,7 +10799,6 @@
           "src/viewer/src/api/"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10863,7 +10814,6 @@
           "src/viewer/src/components/"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10879,7 +10829,6 @@
           "src/viewer/src/hooks/"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10895,7 +10844,6 @@
           "src/viewer/src/utils/"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -10911,7 +10859,6 @@
           "src/viewer/src/views/"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -11066,7 +11013,8 @@
         "evidence": [
           "tests/learning/"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:dir:tests/manifests",
@@ -11165,7 +11113,6 @@
           "tests/viewer/"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -11615,7 +11562,8 @@
         "evidence": [
           "src/cli/commands/learn.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:src/cli/commands/reconcile.ts",
@@ -12080,7 +12028,8 @@
         "evidence": [
           "src/learning/concepts.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:src/learning/progress.shared.ts",
@@ -12095,7 +12044,8 @@
         "evidence": [
           "src/learning/progress.shared.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:src/learning/progress.ts",
@@ -12110,7 +12060,8 @@
         "evidence": [
           "src/learning/progress.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:src/learning/questions.ts",
@@ -12125,7 +12076,8 @@
         "evidence": [
           "src/learning/questions.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:src/learning/types.ts",
@@ -12140,7 +12092,8 @@
         "evidence": [
           "src/learning/types.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:src/manifests/validate.ts",
@@ -12396,7 +12349,6 @@
           "src/viewer/src/App.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12413,7 +12365,6 @@
           "src/viewer/src/api/architecture.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12430,7 +12381,6 @@
           "src/viewer/src/api/auth.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12447,7 +12397,6 @@
           "src/viewer/src/api/learning.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12464,7 +12413,6 @@
           "src/viewer/src/api/prompts.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12481,7 +12429,6 @@
           "src/viewer/src/components/ConceptMap.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12498,7 +12445,6 @@
           "src/viewer/src/components/ConnectionEdge.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12515,7 +12461,6 @@
           "src/viewer/src/components/DecisionCard.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12532,7 +12477,6 @@
           "src/viewer/src/components/DetailPanel.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12549,7 +12493,6 @@
           "src/viewer/src/components/ProgressTracker.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12566,7 +12509,6 @@
           "src/viewer/src/components/PromptInput.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12583,7 +12525,6 @@
           "src/viewer/src/components/PromptQueuePanel.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12600,7 +12541,6 @@
           "src/viewer/src/components/QuestionCard.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12617,7 +12557,6 @@
           "src/viewer/src/components/QuizPanel.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12634,7 +12573,6 @@
           "src/viewer/src/components/SearchBar.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12651,7 +12589,6 @@
           "src/viewer/src/components/ServiceNode.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12668,7 +12605,6 @@
           "src/viewer/src/components/ViewSwitcher.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12685,7 +12621,6 @@
           "src/viewer/src/hooks/useArchitecture.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12702,7 +12637,6 @@
           "src/viewer/src/hooks/useLearning.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12719,7 +12653,6 @@
           "src/viewer/src/hooks/usePromptQueue.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12736,7 +12669,6 @@
           "src/viewer/src/main.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12753,7 +12685,6 @@
           "src/viewer/src/utils/layout.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12770,7 +12701,6 @@
           "src/viewer/src/utils/markdown.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12787,7 +12717,6 @@
           "src/viewer/src/utils/mermaid.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12804,7 +12733,6 @@
           "src/viewer/src/views/DataFlowView.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12821,7 +12749,6 @@
           "src/viewer/src/views/DecisionLogView.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12838,7 +12765,6 @@
           "src/viewer/src/views/LearningView.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12855,7 +12781,6 @@
           "src/viewer/src/views/StackView.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12872,7 +12797,6 @@
           "src/viewer/src/views/TopologyView.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12889,7 +12813,6 @@
           "src/viewer/src/views/TreeView.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12906,7 +12829,6 @@
           "src/viewer/src/vite-env.d.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -12923,7 +12845,6 @@
           "src/viewer/vite.config.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -13359,7 +13280,8 @@
         "evidence": [
           "tests/cli/learn.test.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:tests/cli/reconcile-honesty.test.ts",
@@ -13419,7 +13341,8 @@
         "evidence": [
           "tests/cli/serve-learning.test.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:tests/cli/serve-prompts.test.ts",
@@ -13914,7 +13837,8 @@
         "evidence": [
           "tests/learning/concepts.test.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:tests/learning/integration.test.ts",
@@ -13929,7 +13853,8 @@
         "evidence": [
           "tests/learning/integration.test.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:tests/learning/progress.test.ts",
@@ -13944,7 +13869,8 @@
         "evidence": [
           "tests/learning/progress.test.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:tests/learning/questions.test.ts",
@@ -13959,7 +13885,8 @@
         "evidence": [
           "tests/learning/questions.test.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:tests/learning/types.test.ts",
@@ -13974,7 +13901,8 @@
         "evidence": [
           "tests/learning/types.test.ts:1"
         ]
-      }
+      },
+      "deletedAt": "2026-10-21T10:53:33.158Z"
     },
     {
       "id": "module:tests/manifests/plugin-manifest.test.ts",
@@ -14320,7 +14248,6 @@
           "tests/viewer/ConceptMap.test.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14337,7 +14264,6 @@
           "tests/viewer/ProgressTracker.test.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14354,7 +14280,6 @@
           "tests/viewer/QuestionCard.test.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14371,7 +14296,6 @@
           "tests/viewer/QuizPanel.test.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14388,7 +14312,6 @@
           "tests/viewer/api-auth.test.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14405,7 +14328,6 @@
           "tests/viewer/decision-log.test.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14422,7 +14344,6 @@
           "tests/viewer/hooks.test.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14439,7 +14360,6 @@
           "tests/viewer/prompt-input.test.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14456,7 +14376,6 @@
           "tests/viewer/prompt-queue-panel.test.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14473,7 +14392,6 @@
           "tests/viewer/search.test.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14490,7 +14408,6 @@
           "tests/viewer/stack-view.test.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14507,7 +14424,6 @@
           "tests/viewer/topology.test.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14524,7 +14440,6 @@
           "tests/viewer/tree-view.test.tsx:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14541,7 +14456,6 @@
           "tests/viewer/viewer-session.test.ts:1"
         ]
       },
-      "legacyType": "other",
       "deletedAt": "2026-10-13T18:32:06.401Z"
     },
     {
@@ -14638,8 +14552,8 @@
       "id": "viewer",
       "kind": "service",
       "name": "Viewer",
-      "summary": "Interactive UI for browsing architecture, decisions, and learning mode.",
-      "tech": "React + Vite",
+      "summary": "Single-file HTML graph viewer generated by `arkive export html`; node panels show edges, data shapes, and the decisions behind a node with provenance.",
+      "tech": "TypeScript",
       "provenance": {
         "derived": false,
         "authoredBy": "agent"
@@ -15398,7 +15312,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/cli/commands/install-skill.ts:197"
+          "src/cli/commands/install-skill.ts:196"
         ]
       }
     },
@@ -15412,7 +15326,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/cli/commands/install-skill.ts:30"
+          "src/cli/commands/install-skill.ts:29"
         ]
       }
     },
@@ -15860,7 +15774,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/io/decisions.ts:294"
+          "src/io/decisions.ts:301"
         ]
       }
     },
@@ -15888,7 +15802,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/io/decisions.ts:303"
+          "src/io/decisions.ts:310"
         ]
       }
     },
@@ -15916,7 +15830,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/io/decisions.ts:317"
+          "src/io/decisions.ts:324"
         ]
       }
     },
@@ -15930,7 +15844,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/io/decisions.ts:326"
+          "src/io/decisions.ts:333"
         ]
       }
     },
@@ -16127,188 +16041,6 @@
         "rule": "ts-types/datastructure-node",
         "evidence": [
           "src/io/v1-authoring.ts:199"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/concepts.ts->datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "from": "module:src/learning/concepts.ts",
-      "to": "datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/concepts.ts:4"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/types.ts->datastructure:src/learning/types.ts::BaseQuestion",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::BaseQuestion",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/types.ts:18"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/types.ts->datastructure:src/learning/types.ts::Choice",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::Choice",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/types.ts:28"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/types.ts->datastructure:src/learning/types.ts::ConceptMastery",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ConceptMastery",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/types.ts:73"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/types.ts->datastructure:src/learning/types.ts::ConnectionSourceRef",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ConnectionSourceRef",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/types.ts:5"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/types.ts->datastructure:src/learning/types.ts::DataFlowSourceRef",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::DataFlowSourceRef",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/types.ts:6"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/types.ts->datastructure:src/learning/types.ts::DecisionSourceRef",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::DecisionSourceRef",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/types.ts:3"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/types.ts->datastructure:src/learning/types.ts::LearningProgress",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/types.ts:82"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/types.ts->datastructure:src/learning/types.ts::MultipleChoiceQuestion",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::MultipleChoiceQuestion",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/types.ts:34"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/types.ts->datastructure:src/learning/types.ts::OrderingItem",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::OrderingItem",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/types.ts:44"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/types.ts->datastructure:src/learning/types.ts::OrderingQuestion",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::OrderingQuestion",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/types.ts:49"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/types.ts->datastructure:src/learning/types.ts::ServiceSourceRef",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ServiceSourceRef",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/types.ts:4"
-        ]
-      }
-    },
-    {
-      "id": "derives_from:module:src/learning/types.ts->datastructure:src/learning/types.ts::ShortAnswerQuestion",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ShortAnswerQuestion",
-      "kind": "derives_from",
-      "note": "declared in this module",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/datastructure-node",
-        "evidence": [
-          "src/learning/types.ts:39"
         ]
       }
     },
@@ -16840,7 +16572,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/server/tools.ts:487"
+          "src/server/tools.ts:504"
         ]
       }
     },
@@ -16882,7 +16614,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/server/tools.ts:1221"
+          "src/server/tools.ts:1277"
         ]
       }
     },
@@ -16896,7 +16628,7 @@
         "derived": true,
         "rule": "ts-types/datastructure-node",
         "evidence": [
-          "src/server/tools.ts:1227"
+          "src/server/tools.ts:1283"
         ]
       }
     },
@@ -17296,20 +17028,6 @@
       }
     },
     {
-      "id": "imports:module:dir:src/cli/commands->external:npm:commander",
-      "from": "module:dir:src/cli/commands",
-      "to": "external:npm:commander",
-      "kind": "imports",
-      "note": "aggregated over the files in this directory",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/cli/commands/learn.ts:1"
-        ]
-      }
-    },
-    {
       "id": "imports:module:dir:src/cli/commands->external:npm:express",
       "from": "module:dir:src/cli/commands",
       "to": "external:npm:express",
@@ -17443,20 +17161,6 @@
       }
     },
     {
-      "id": "imports:module:dir:tests/cli->external:npm:commander",
-      "from": "module:dir:tests/cli",
-      "to": "external:npm:commander",
-      "kind": "imports",
-      "note": "aggregated over the files in this directory",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/cli/learn.test.ts:3"
-        ]
-      }
-    },
-    {
       "id": "imports:module:dir:tests/cli->external:npm:vitest",
       "from": "module:dir:tests/cli",
       "to": "external:npm:vitest",
@@ -17473,11 +17177,9 @@
           "tests/cli/inject.test.ts:1",
           "tests/cli/install-skill.test.ts:1",
           "tests/cli/install.test.ts:1",
-          "tests/cli/learn.test.ts:1",
           "tests/cli/reconcile-honesty.test.ts:1",
           "tests/cli/reconcile.test.ts:1",
           "tests/cli/serve-http.test.ts:1",
-          "tests/cli/serve-learning.test.ts:1",
           "tests/cli/serve-prompts.test.ts:1",
           "tests/cli/serve-security.test.ts:1",
           "tests/cli/serve-stdio.test.ts:1",
@@ -17574,24 +17276,6 @@
           "tests/io/prompt-queue.test.ts:1",
           "tests/io/snapshots.test.ts:1",
           "tests/io/v1-authoring.test.ts:1"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:dir:tests/learning->external:npm:vitest",
-      "from": "module:dir:tests/learning",
-      "to": "external:npm:vitest",
-      "kind": "imports",
-      "note": "aggregated over the files in this directory",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/concepts.test.ts:1",
-          "tests/learning/integration.test.ts:1",
-          "tests/learning/progress.test.ts:1",
-          "tests/learning/questions.test.ts:1",
-          "tests/learning/types.test.ts:1"
         ]
       }
     },
@@ -18558,45 +18242,6 @@
       }
     },
     {
-      "id": "imports:module:src/cli/commands/learn.ts->external:npm:commander",
-      "from": "module:src/cli/commands/learn.ts",
-      "to": "external:npm:commander",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/cli/commands/learn.ts:1"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:src/cli/commands/learn.ts->module:src/cli/commands/serve.ts",
-      "from": "module:src/cli/commands/learn.ts",
-      "to": "module:src/cli/commands/serve.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/cli/commands/learn.ts:4"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:src/cli/commands/learn.ts->module:src/io/architecture-file.ts",
-      "from": "module:src/cli/commands/learn.ts",
-      "to": "module:src/io/architecture-file.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/cli/commands/learn.ts:5"
-        ]
-      }
-    },
-    {
       "id": "imports:module:src/cli/commands/reconcile.ts->module:src/analysis/derive.ts",
       "from": "module:src/cli/commands/reconcile.ts",
       "to": "module:src/analysis/derive.ts",
@@ -18688,19 +18333,6 @@
       }
     },
     {
-      "id": "imports:module:src/cli/commands/serve.ts->module:src/learning/progress.ts",
-      "from": "module:src/cli/commands/serve.ts",
-      "to": "module:src/learning/progress.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/cli/commands/serve.ts:8"
-        ]
-      }
-    },
-    {
       "id": "imports:module:src/cli/commands/serve.ts->module:src/server/index.ts",
       "from": "module:src/cli/commands/serve.ts",
       "to": "module:src/server/index.ts",
@@ -18709,7 +18341,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/cli/commands/serve.ts:9"
+          "src/cli/commands/serve.ts:8"
         ]
       }
     },
@@ -18800,7 +18432,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/cli/index.ts:9"
+          "src/cli/index.ts:8"
         ]
       }
     },
@@ -18826,7 +18458,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/cli/index.ts:15"
+          "src/cli/index.ts:14"
         ]
       }
     },
@@ -18852,7 +18484,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/cli/index.ts:14"
+          "src/cli/index.ts:13"
         ]
       }
     },
@@ -18865,21 +18497,8 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/cli/index.ts:13",
-          "src/cli/index.ts:17"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:src/cli/index.ts->module:src/cli/commands/learn.ts",
-      "from": "module:src/cli/index.ts",
-      "to": "module:src/cli/commands/learn.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/cli/index.ts:7"
+          "src/cli/index.ts:12",
+          "src/cli/index.ts:16"
         ]
       }
     },
@@ -18892,7 +18511,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/cli/index.ts:8"
+          "src/cli/index.ts:7"
         ]
       }
     },
@@ -18905,7 +18524,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/cli/index.ts:10"
+          "src/cli/index.ts:9"
         ]
       }
     },
@@ -18918,7 +18537,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/cli/index.ts:11"
+          "src/cli/index.ts:10"
         ]
       }
     },
@@ -18931,7 +18550,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/cli/index.ts:12"
+          "src/cli/index.ts:11"
         ]
       }
     },
@@ -18944,7 +18563,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/cli/index.ts:16"
+          "src/cli/index.ts:15"
         ]
       }
     },
@@ -18957,7 +18576,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/cli/index.ts:360"
+          "src/cli/index.ts:359"
         ]
       }
     },
@@ -19949,110 +19568,6 @@
       }
     },
     {
-      "id": "imports:module:src/learning/concepts.ts->module:src/learning/types.ts",
-      "from": "module:src/learning/concepts.ts",
-      "to": "module:src/learning/types.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/learning/concepts.ts:2"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:src/learning/concepts.ts->module:src/schema/types.ts",
-      "from": "module:src/learning/concepts.ts",
-      "to": "module:src/schema/types.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/learning/concepts.ts:1"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:src/learning/progress.shared.ts->module:src/learning/concepts.ts",
-      "from": "module:src/learning/progress.shared.ts",
-      "to": "module:src/learning/concepts.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/learning/progress.shared.ts:2"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:src/learning/progress.shared.ts->module:src/learning/types.ts",
-      "from": "module:src/learning/progress.shared.ts",
-      "to": "module:src/learning/types.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/learning/progress.shared.ts:1"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:src/learning/progress.ts->module:src/learning/concepts.ts",
-      "from": "module:src/learning/progress.ts",
-      "to": "module:src/learning/concepts.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/learning/progress.ts:4"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:src/learning/progress.ts->module:src/learning/types.ts",
-      "from": "module:src/learning/progress.ts",
-      "to": "module:src/learning/types.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/learning/progress.ts:3"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:src/learning/questions.ts->module:src/learning/types.ts",
-      "from": "module:src/learning/questions.ts",
-      "to": "module:src/learning/types.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/learning/questions.ts:2"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:src/learning/questions.ts->module:src/schema/types.ts",
-      "from": "module:src/learning/questions.ts",
-      "to": "module:src/schema/types.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "src/learning/questions.ts:1"
-        ]
-      }
-    },
-    {
       "id": "imports:module:src/manifests/validate.ts->external:npm:zod",
       "from": "module:src/manifests/validate.ts",
       "to": "external:npm:zod",
@@ -20522,7 +20037,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/server/tools.ts:1031"
+          "src/server/tools.ts:1087"
         ]
       }
     },
@@ -20535,7 +20050,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/server/tools.ts:1030"
+          "src/server/tools.ts:1086"
         ]
       }
     },
@@ -20548,7 +20063,7 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/server/tools.ts:1044"
+          "src/server/tools.ts:1100"
         ]
       }
     },
@@ -20561,8 +20076,8 @@
         "derived": true,
         "rule": "ts-js/import-edge",
         "evidence": [
-          "src/server/tools.ts:1106",
-          "src/server/tools.ts:1115"
+          "src/server/tools.ts:1162",
+          "src/server/tools.ts:1171"
         ]
       }
     },
@@ -22012,45 +21527,6 @@
       }
     },
     {
-      "id": "imports:module:tests/cli/learn.test.ts->external:npm:commander",
-      "from": "module:tests/cli/learn.test.ts",
-      "to": "external:npm:commander",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/cli/learn.test.ts:3"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/cli/learn.test.ts->external:npm:vitest",
-      "from": "module:tests/cli/learn.test.ts",
-      "to": "external:npm:vitest",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/cli/learn.test.ts:1"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/cli/learn.test.ts->module:src/cli/commands/learn.ts",
-      "from": "module:tests/cli/learn.test.ts",
-      "to": "module:src/cli/commands/learn.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/cli/learn.test.ts:2"
-        ]
-      }
-    },
-    {
       "id": "imports:module:tests/cli/reconcile-honesty.test.ts->external:npm:vitest",
       "from": "module:tests/cli/reconcile-honesty.test.ts",
       "to": "external:npm:vitest",
@@ -22151,32 +21627,6 @@
         "rule": "ts-js/import-edge",
         "evidence": [
           "tests/cli/serve-http.test.ts:6"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/cli/serve-learning.test.ts->external:npm:vitest",
-      "from": "module:tests/cli/serve-learning.test.ts",
-      "to": "external:npm:vitest",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/cli/serve-learning.test.ts:1"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/cli/serve-learning.test.ts->module:src/cli/commands/serve.ts",
-      "from": "module:tests/cli/serve-learning.test.ts",
-      "to": "module:src/cli/commands/serve.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/cli/serve-learning.test.ts:5"
         ]
       }
     },
@@ -23737,266 +23187,6 @@
         "rule": "ts-js/import-edge",
         "evidence": [
           "tests/io/v1-authoring.test.ts:8"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/concepts.test.ts->external:npm:vitest",
-      "from": "module:tests/learning/concepts.test.ts",
-      "to": "external:npm:vitest",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/concepts.test.ts:1"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/concepts.test.ts->module:src/learning/concepts.ts",
-      "from": "module:tests/learning/concepts.test.ts",
-      "to": "module:src/learning/concepts.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/concepts.test.ts:2"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/concepts.test.ts->module:src/schema/types.ts",
-      "from": "module:tests/learning/concepts.test.ts",
-      "to": "module:src/schema/types.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/concepts.test.ts:3"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/concepts.test.ts->module:src/schema/validate.ts",
-      "from": "module:tests/learning/concepts.test.ts",
-      "to": "module:src/schema/validate.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/concepts.test.ts:4"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/integration.test.ts->external:npm:vitest",
-      "from": "module:tests/learning/integration.test.ts",
-      "to": "external:npm:vitest",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/integration.test.ts:1"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/integration.test.ts->module:src/learning/concepts.ts",
-      "from": "module:tests/learning/integration.test.ts",
-      "to": "module:src/learning/concepts.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/integration.test.ts:3"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/integration.test.ts->module:src/learning/progress.ts",
-      "from": "module:tests/learning/integration.test.ts",
-      "to": "module:src/learning/progress.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/integration.test.ts:5"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/integration.test.ts->module:src/learning/questions.ts",
-      "from": "module:tests/learning/integration.test.ts",
-      "to": "module:src/learning/questions.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/integration.test.ts:4"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/integration.test.ts->module:src/schema/types.ts",
-      "from": "module:tests/learning/integration.test.ts",
-      "to": "module:src/schema/types.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/integration.test.ts:6"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/integration.test.ts->module:src/schema/validate.ts",
-      "from": "module:tests/learning/integration.test.ts",
-      "to": "module:src/schema/validate.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/integration.test.ts:2"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/progress.test.ts->external:npm:vitest",
-      "from": "module:tests/learning/progress.test.ts",
-      "to": "external:npm:vitest",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/progress.test.ts:1"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/progress.test.ts->module:src/learning/concepts.ts",
-      "from": "module:tests/learning/progress.test.ts",
-      "to": "module:src/learning/concepts.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/progress.test.ts:14"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/progress.test.ts->module:src/learning/progress.ts",
-      "from": "module:tests/learning/progress.test.ts",
-      "to": "module:src/learning/progress.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/progress.test.ts:5"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/progress.test.ts->module:src/learning/types.ts",
-      "from": "module:tests/learning/progress.test.ts",
-      "to": "module:src/learning/types.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/progress.test.ts:13"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/questions.test.ts->external:npm:vitest",
-      "from": "module:tests/learning/questions.test.ts",
-      "to": "external:npm:vitest",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/questions.test.ts:1"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/questions.test.ts->module:src/learning/questions.ts",
-      "from": "module:tests/learning/questions.test.ts",
-      "to": "module:src/learning/questions.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/questions.test.ts:2"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/questions.test.ts->module:src/schema/types.ts",
-      "from": "module:tests/learning/questions.test.ts",
-      "to": "module:src/schema/types.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/questions.test.ts:9"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/questions.test.ts->module:src/schema/validate.ts",
-      "from": "module:tests/learning/questions.test.ts",
-      "to": "module:src/schema/validate.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/questions.test.ts:10"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/types.test.ts->external:npm:vitest",
-      "from": "module:tests/learning/types.test.ts",
-      "to": "external:npm:vitest",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/types.test.ts:1"
-        ]
-      }
-    },
-    {
-      "id": "imports:module:tests/learning/types.test.ts->module:src/learning/types.ts",
-      "from": "module:tests/learning/types.test.ts",
-      "to": "module:src/learning/types.ts",
-      "kind": "imports",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-js/import-edge",
-        "evidence": [
-          "tests/learning/types.test.ts:2"
         ]
       }
     },
@@ -26332,7 +25522,7 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/cli/commands/install-skill.ts:203"
+          "src/cli/commands/install-skill.ts:202"
         ]
       }
     },
@@ -26389,7 +25579,7 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/cli/commands/serve.ts:309"
+          "src/cli/commands/serve.ts:286"
         ]
       }
     },
@@ -26944,7 +26134,7 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/io/decisions.ts:312"
+          "src/io/decisions.ts:319"
         ]
       }
     },
@@ -26958,7 +26148,7 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/io/decisions.ts:493"
+          "src/io/decisions.ts:500"
         ]
       }
     },
@@ -26972,7 +26162,7 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/io/decisions.ts:323"
+          "src/io/decisions.ts:330"
         ]
       }
     },
@@ -26986,7 +26176,7 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/io/decisions.ts:233"
+          "src/io/decisions.ts:240"
         ]
       }
     },
@@ -27000,8 +26190,8 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/io/decisions.ts:340",
-          "src/io/decisions.ts:375"
+          "src/io/decisions.ts:347",
+          "src/io/decisions.ts:382"
         ]
       }
     },
@@ -27211,331 +26401,6 @@
         "rule": "ts-types/shape-edge",
         "evidence": [
           "src/io/v1-authoring.ts:171"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/concepts.ts->datastructure:src/export/markdown.ts::Architecture",
-      "from": "module:src/learning/concepts.ts",
-      "to": "datastructure:src/export/markdown.ts::Architecture",
-      "kind": "reads",
-      "note": "consumes Architecture via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/concepts.ts:11"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/concepts.ts->datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "from": "module:src/learning/concepts.ts",
-      "to": "datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "kind": "reads",
-      "note": "consumes ExtractedConcept via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/concepts.ts:11",
-          "src/learning/concepts.ts:12"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/progress.shared.ts->datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "from": "module:src/learning/progress.shared.ts",
-      "to": "datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "kind": "reads",
-      "note": "consumes ExtractedConcept via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/progress.shared.ts:54"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/progress.shared.ts->datastructure:src/learning/types.ts::ConceptMastery",
-      "from": "module:src/learning/progress.shared.ts",
-      "to": "datastructure:src/learning/types.ts::ConceptMastery",
-      "kind": "reads",
-      "note": "consumes ConceptMastery via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/progress.shared.ts:58"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/progress.shared.ts->datastructure:src/learning/types.ts::LearningProgress",
-      "from": "module:src/learning/progress.shared.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "kind": "reads",
-      "note": "consumes LearningProgress via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/progress.shared.ts:17",
-          "src/learning/progress.shared.ts:53"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/progress.ts->datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "from": "module:src/learning/progress.ts",
-      "to": "datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "kind": "reads",
-      "note": "consumes ExtractedConcept via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/progress.ts:77"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/progress.ts->datastructure:src/learning/types.ts::ConceptMastery",
-      "from": "module:src/learning/progress.ts",
-      "to": "datastructure:src/learning/types.ts::ConceptMastery",
-      "kind": "reads",
-      "note": "consumes ConceptMastery via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/progress.ts:82"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/progress.ts->datastructure:src/learning/types.ts::LearningProgress",
-      "from": "module:src/learning/progress.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "kind": "reads",
-      "note": "consumes LearningProgress via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/progress.ts:15",
-          "src/learning/progress.ts:18",
-          "src/learning/progress.ts:40",
-          "src/learning/progress.ts:76",
-          "src/learning/progress.ts:9"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/questions.ts->datastructure:src/export/markdown.ts::Architecture",
-      "from": "module:src/learning/questions.ts",
-      "to": "datastructure:src/export/markdown.ts::Architecture",
-      "kind": "reads",
-      "note": "consumes Architecture via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/questions.ts:104",
-          "src/learning/questions.ts:144",
-          "src/learning/questions.ts:167",
-          "src/learning/questions.ts:20",
-          "src/learning/questions.ts:59"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/questions.ts->datastructure:src/learning/types.ts::Choice",
-      "from": "module:src/learning/questions.ts",
-      "to": "datastructure:src/learning/types.ts::Choice",
-      "kind": "reads",
-      "note": "consumes Choice via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/questions.ts:115",
-          "src/learning/questions.ts:28",
-          "src/learning/questions.ts:76"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/questions.ts->datastructure:src/learning/types.ts::MultipleChoiceQuestion",
-      "from": "module:src/learning/questions.ts",
-      "to": "datastructure:src/learning/types.ts::MultipleChoiceQuestion",
-      "kind": "reads",
-      "note": "consumes MultipleChoiceQuestion via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/questions.ts:104",
-          "src/learning/questions.ts:20",
-          "src/learning/questions.ts:59",
-          "src/learning/questions.ts:60"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/questions.ts->datastructure:src/learning/types.ts::OrderingQuestion",
-      "from": "module:src/learning/questions.ts",
-      "to": "datastructure:src/learning/types.ts::OrderingQuestion",
-      "kind": "reads",
-      "note": "consumes OrderingQuestion via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/questions.ts:144"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/types.ts->datastructure:src/learning/types.ts::BaseQuestion",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::BaseQuestion",
-      "kind": "reads",
-      "note": "consumes BaseQuestion via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/types.ts:34",
-          "src/learning/types.ts:39",
-          "src/learning/types.ts:49"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/types.ts->datastructure:src/learning/types.ts::Choice",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::Choice",
-      "kind": "reads",
-      "note": "consumes Choice via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/types.ts:36"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/types.ts->datastructure:src/learning/types.ts::ConceptMastery",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ConceptMastery",
-      "kind": "reads",
-      "note": "consumes ConceptMastery via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/types.ts:86"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/types.ts->datastructure:src/learning/types.ts::ConnectionSourceRef",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ConnectionSourceRef",
-      "kind": "reads",
-      "note": "consumes ConnectionSourceRef via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/types.ts:11"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/types.ts->datastructure:src/learning/types.ts::DataFlowSourceRef",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::DataFlowSourceRef",
-      "kind": "reads",
-      "note": "consumes DataFlowSourceRef via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/types.ts:12"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/types.ts->datastructure:src/learning/types.ts::DecisionSourceRef",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::DecisionSourceRef",
-      "kind": "reads",
-      "note": "consumes DecisionSourceRef via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/types.ts:9"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/types.ts->datastructure:src/learning/types.ts::OrderingItem",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::OrderingItem",
-      "kind": "reads",
-      "note": "consumes OrderingItem via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/types.ts:51"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/types.ts->datastructure:src/learning/types.ts::OrderingQuestion",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::OrderingQuestion",
-      "kind": "reads",
-      "note": "consumes OrderingQuestion via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/types.ts:55"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/types.ts->datastructure:src/learning/types.ts::ServiceSourceRef",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ServiceSourceRef",
-      "kind": "reads",
-      "note": "consumes ServiceSourceRef via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/types.ts:10"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:src/learning/types.ts->datastructure:src/learning/types.ts::ShortAnswerQuestion",
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ShortAnswerQuestion",
-      "kind": "reads",
-      "note": "consumes ShortAnswerQuestion via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/types.ts:55"
         ]
       }
     },
@@ -27777,14 +26642,14 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/server/tools.ts:1222",
-          "src/server/tools.ts:1223",
-          "src/server/tools.ts:1224",
-          "src/server/tools.ts:1228",
-          "src/server/tools.ts:1229",
-          "src/server/tools.ts:1230",
-          "src/server/tools.ts:586",
-          "src/server/tools.ts:953"
+          "src/server/tools.ts:1004",
+          "src/server/tools.ts:1278",
+          "src/server/tools.ts:1279",
+          "src/server/tools.ts:1280",
+          "src/server/tools.ts:1284",
+          "src/server/tools.ts:1285",
+          "src/server/tools.ts:1286",
+          "src/server/tools.ts:603"
         ]
       }
     },
@@ -27798,7 +26663,7 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/server/tools.ts:547"
+          "src/server/tools.ts:564"
         ]
       }
     },
@@ -27812,17 +26677,17 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/server/tools.ts:1017",
-          "src/server/tools.ts:1026",
-          "src/server/tools.ts:1042",
-          "src/server/tools.ts:1091",
-          "src/server/tools.ts:1134",
-          "src/server/tools.ts:1154",
-          "src/server/tools.ts:1168",
-          "src/server/tools.ts:1185",
-          "src/server/tools.ts:1354",
-          "src/server/tools.ts:582",
-          "src/server/tools.ts:942"
+          "src/server/tools.ts:1073",
+          "src/server/tools.ts:1082",
+          "src/server/tools.ts:1098",
+          "src/server/tools.ts:1147",
+          "src/server/tools.ts:1190",
+          "src/server/tools.ts:1210",
+          "src/server/tools.ts:1224",
+          "src/server/tools.ts:1241",
+          "src/server/tools.ts:1410",
+          "src/server/tools.ts:599",
+          "src/server/tools.ts:993"
         ]
       }
     },
@@ -27836,7 +26701,7 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/server/tools.ts:511"
+          "src/server/tools.ts:528"
         ]
       }
     },
@@ -27864,11 +26729,11 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/server/tools.ts:1231",
-          "src/server/tools.ts:1232",
-          "src/server/tools.ts:1235",
-          "src/server/tools.ts:1242",
-          "src/server/tools.ts:1298"
+          "src/server/tools.ts:1287",
+          "src/server/tools.ts:1288",
+          "src/server/tools.ts:1291",
+          "src/server/tools.ts:1298",
+          "src/server/tools.ts:1354"
         ]
       }
     },
@@ -27882,8 +26747,8 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/server/tools.ts:1232",
-          "src/server/tools.ts:1303"
+          "src/server/tools.ts:1288",
+          "src/server/tools.ts:1359"
         ]
       }
     },
@@ -28459,63 +27324,6 @@
       }
     },
     {
-      "id": "reads:module:tests/learning/concepts.test.ts->datastructure:src/export/markdown.ts::Architecture",
-      "from": "module:tests/learning/concepts.test.ts",
-      "to": "datastructure:src/export/markdown.ts::Architecture",
-      "kind": "reads",
-      "note": "consumes Architecture via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "tests/learning/concepts.test.ts:6"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:tests/learning/integration.test.ts->datastructure:src/export/markdown.ts::Architecture",
-      "from": "module:tests/learning/integration.test.ts",
-      "to": "datastructure:src/export/markdown.ts::Architecture",
-      "kind": "reads",
-      "note": "consumes Architecture via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "tests/learning/integration.test.ts:8"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:tests/learning/progress.test.ts->datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "from": "module:tests/learning/progress.test.ts",
-      "to": "datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "kind": "reads",
-      "note": "consumes ExtractedConcept via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "tests/learning/progress.test.ts:149",
-          "tests/learning/progress.test.ts:185"
-        ]
-      }
-    },
-    {
-      "id": "reads:module:tests/learning/questions.test.ts->datastructure:src/export/markdown.ts::Architecture",
-      "from": "module:tests/learning/questions.test.ts",
-      "to": "datastructure:src/export/markdown.ts::Architecture",
-      "kind": "reads",
-      "note": "consumes Architecture via type-reference",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "tests/learning/questions.test.ts:12"
-        ]
-      }
-    },
-    {
       "id": "reads:module:tests/schema/migrate.test.ts->datastructure:src/export/markdown.ts::Architecture",
       "from": "module:tests/schema/migrate.test.ts",
       "to": "datastructure:src/export/markdown.ts::Architecture",
@@ -29036,7 +27844,7 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/cli/commands/install-skill.ts:210"
+          "src/cli/commands/install-skill.ts:209"
         ]
       }
     },
@@ -29050,7 +27858,7 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/cli/commands/serve.ts:306"
+          "src/cli/commands/serve.ts:283"
         ]
       }
     },
@@ -29237,8 +28045,8 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/io/decisions.ts:193",
-          "src/io/decisions.ts:374"
+          "src/io/decisions.ts:200",
+          "src/io/decisions.ts:381"
         ]
       }
     },
@@ -29266,7 +28074,7 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/io/decisions.ts:362"
+          "src/io/decisions.ts:369"
         ]
       }
     },
@@ -29431,54 +28239,6 @@
       }
     },
     {
-      "id": "writes:module:src/learning/progress.shared.ts->datastructure:src/learning/types.ts::LearningProgress",
-      "from": "module:src/learning/progress.shared.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "kind": "writes",
-      "note": "constructs LearningProgress via return-literal",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/progress.shared.ts:49",
-          "src/learning/progress.shared.ts:6",
-          "src/learning/progress.shared.ts:76"
-        ]
-      }
-    },
-    {
-      "id": "writes:module:src/learning/progress.ts->datastructure:src/learning/types.ts::LearningProgress",
-      "from": "module:src/learning/progress.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "kind": "writes",
-      "note": "constructs LearningProgress via return-literal",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/progress.ts:100",
-          "src/learning/progress.ts:29",
-          "src/learning/progress.ts:72"
-        ]
-      }
-    },
-    {
-      "id": "writes:module:src/learning/questions.ts->datastructure:src/learning/types.ts::Choice",
-      "from": "module:src/learning/questions.ts",
-      "to": "datastructure:src/learning/types.ts::Choice",
-      "kind": "writes",
-      "note": "constructs Choice via annotated-literal",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "src/learning/questions.ts:108",
-          "src/learning/questions.ts:22",
-          "src/learning/questions.ts:67"
-        ]
-      }
-    },
-    {
       "id": "writes:module:src/schema/validate.ts->datastructure:src/export/markdown.ts::Architecture",
       "from": "module:src/schema/validate.ts",
       "to": "datastructure:src/export/markdown.ts::Architecture",
@@ -29588,9 +28348,9 @@
         "derived": true,
         "rule": "ts-types/shape-edge",
         "evidence": [
-          "src/server/tools.ts:512",
-          "src/server/tools.ts:827",
-          "src/server/tools.ts:956"
+          "src/server/tools.ts:1007",
+          "src/server/tools.ts:529",
+          "src/server/tools.ts:860"
         ]
       }
     },
@@ -29786,82 +28546,6 @@
           "tests/io/prompt-queue.test.ts:73",
           "tests/io/prompt-queue.test.ts:79",
           "tests/io/prompt-queue.test.ts:97"
-        ]
-      }
-    },
-    {
-      "id": "writes:module:tests/learning/progress.test.ts->datastructure:src/learning/types.ts::LearningProgress",
-      "from": "module:tests/learning/progress.test.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "kind": "writes",
-      "note": "constructs LearningProgress via annotated-literal",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "tests/learning/progress.test.ts:115",
-          "tests/learning/progress.test.ts:132",
-          "tests/learning/progress.test.ts:160",
-          "tests/learning/progress.test.ts:34",
-          "tests/learning/progress.test.ts:54",
-          "tests/learning/progress.test.ts:73",
-          "tests/learning/progress.test.ts:90"
-        ]
-      }
-    },
-    {
-      "id": "writes:module:tests/learning/types.test.ts->datastructure:src/learning/types.ts::LearningProgress",
-      "from": "module:tests/learning/types.test.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "kind": "writes",
-      "note": "constructs LearningProgress via annotated-literal",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "tests/learning/types.test.ts:77"
-        ]
-      }
-    },
-    {
-      "id": "writes:module:tests/learning/types.test.ts->datastructure:src/learning/types.ts::MultipleChoiceQuestion",
-      "from": "module:tests/learning/types.test.ts",
-      "to": "datastructure:src/learning/types.ts::MultipleChoiceQuestion",
-      "kind": "writes",
-      "note": "constructs MultipleChoiceQuestion via annotated-literal",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "tests/learning/types.test.ts:17"
-        ]
-      }
-    },
-    {
-      "id": "writes:module:tests/learning/types.test.ts->datastructure:src/learning/types.ts::OrderingQuestion",
-      "from": "module:tests/learning/types.test.ts",
-      "to": "datastructure:src/learning/types.ts::OrderingQuestion",
-      "kind": "writes",
-      "note": "constructs OrderingQuestion via annotated-literal",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "tests/learning/types.test.ts:52"
-        ]
-      }
-    },
-    {
-      "id": "writes:module:tests/learning/types.test.ts->datastructure:src/learning/types.ts::ShortAnswerQuestion",
-      "from": "module:tests/learning/types.test.ts",
-      "to": "datastructure:src/learning/types.ts::ShortAnswerQuestion",
-      "kind": "writes",
-      "note": "constructs ShortAnswerQuestion via annotated-literal",
-      "provenance": {
-        "derived": true,
-        "rule": "ts-types/shape-edge",
-        "evidence": [
-          "tests/learning/types.test.ts:37"
         ]
       }
     },
@@ -30626,6 +29310,70 @@
         }
       ],
       "relatedServices": []
+    },
+    {
+      "id": "dec-021",
+      "topic": "Keep explain-decisions as the walkthrough's decision narration",
+      "decision": "Delete skills/learning/learning-mode/ and the quiz machinery, but keep skills/learning/explain-decisions/SKILL.md as the reference narration for why_does_this_exist / decisionsAbout. It is invoked from the walkthrough, not offered as a standalone optional mode.",
+      "rationale": "ADR-0003 keeps this skill explicitly and lifts its MUST NOT list into every traversal. It carries the provenance discipline that makes an explanation honest: derived vs authored, the file:line evidence, unresolved subjects reported, and no invented confidence. It is documentation only, so it adds no quiz, mastery, or progress surface.",
+      "alternatives": [
+        {
+          "name": "Delete explain-decisions with the quiz",
+          "whyNot": "ADR-0003 names it as what is kept; the walkthrough references its narration format and MUST NOT list, and no other skill carries those provenance rules in that detail. Deleting it would either lose them or duplicate them into the walkthrough skill."
+        },
+        {
+          "name": "Move it under skills/walkthrough/ and inline it there",
+          "whyNot": "findSkillDir searches only the layer subdirectories (core, learning, maintenance) and then the skills root. A nested path under walkthrough/ would silently stop being installed, repeating the shipped-but-never-installed omission 0014 had to repair."
+        }
+      ],
+      "timestamp": "2026-10-21T10:53:48.556Z",
+      "provenance": {
+        "derived": false,
+        "authoredBy": "agent"
+      },
+      "subjects": [
+        {
+          "kind": "node",
+          "ref": "module:src/walkthrough/traversals.ts"
+        },
+        {
+          "kind": "node",
+          "ref": "module:src/server/tools.ts"
+        }
+      ],
+      "relatedServices": []
+    },
+    {
+      "id": "dec-022",
+      "topic": "`decided_by` is a claim projection that may name an edge subject",
+      "decision": "Keep decisions attachable to nodes and edges. `projectDecidedBy` stays an in-memory join whose rows are claims (subject ref -> decision id), not stored graph edges. When the subject is an edge, the row's `from` names an edge id and must not be judged by the node-only graph invariant. Edge-subject claims are surfaced by `open(edgeId)` and `why_does_this_exist`; topology never traverses or persists them.",
+      "rationale": "A relationship can have a rationale of its own - why a write goes directly instead of through a queue - and ADR-0001/ADR-0003 deliberately let `subjects` name an edge. Storing the join would put decisions in the blast radius of node deletion and make 'why is there no edge?' unanswerable, which is what the projection exists to avoid. The only rule callers need is that the join is a claim set, not a second graph.",
+      "alternatives": [
+        {
+          "name": "Allow only node subjects",
+          "whyNot": "It makes the rationale for a relationship unreachable by the subject that names it, and contradicts the schema and ADR-0003 decision to let subjects name edges."
+        },
+        {
+          "name": "Store decided_by rows or mint synthetic decision nodes",
+          "whyNot": "Storage reintroduces the deletion blast radius and the missing-edge question ADR-0001 rejected; synthetic nodes invent topology the code does not have and would appear in the viewer as fake components."
+        }
+      ],
+      "timestamp": "2026-10-21T11:03:55.437Z",
+      "provenance": {
+        "derived": false,
+        "authoredBy": "agent"
+      },
+      "subjects": [
+        {
+          "kind": "node",
+          "ref": "module:src/io/decisions.ts"
+        },
+        {
+          "kind": "node",
+          "ref": "module:src/walkthrough/levels.ts"
+        }
+      ],
+      "relatedServices": []
     }
   ],
   "dataFlows": [
@@ -30831,6 +29579,57 @@
       "timestamp": "2026-10-13T18:32:06.409Z",
       "action": "derive_refresh",
       "summary": "Derived refresh tombstoned 103 nodes this scan could not reproduce: datastructure:src/viewer/src/api/architecture.ts::Architecture, datastructure:src/viewer/src/api/architecture.ts::Connection, datastructure:src/viewer/src/api/architecture.ts::DataFlow, datastructure:src/viewer/src/api/architecture.ts::Decision, datastructure:src/viewer/src/api/architecture.ts::HistoryEntry, and 98 more. Authored nodes are never removed by derivation."
+    },
+    {
+      "timestamp": "2026-10-21T10:53:33.162Z",
+      "action": "derive_refresh",
+      "summary": "Derived refresh tombstoned 28 nodes this scan could not reproduce: datastructure:src/learning/concepts.ts::ExtractedConcept, datastructure:src/learning/types.ts::BaseQuestion, datastructure:src/learning/types.ts::Choice, datastructure:src/learning/types.ts::ConceptMastery, datastructure:src/learning/types.ts::ConnectionSourceRef, and 23 more. Authored nodes are never removed by derivation."
+    },
+    {
+      "timestamp": "2026-10-21T10:53:48.403Z",
+      "action": "update_architecture",
+      "summary": "0015: retire quiz Learning Mode; correct the viewer's authored technology"
+    },
+    {
+      "timestamp": "2026-10-21T10:53:48.556Z",
+      "action": "architecture_decision",
+      "summary": "Keep explain-decisions as the walkthrough's decision narration: Delete skills/learning/learning-mode/ and the quiz machinery, but keep skills/learning/explain-decisions/SKILL.md as the reference narration for why_does_this_exist / decisionsAbout. It is invoked from the walkthrough, not offered as a standalone optional mode.",
+      "agent": "DeepSeek V4.1 Flash"
+    },
+    {
+      "timestamp": "2026-10-21T10:56:29.690Z",
+      "action": "update_architecture",
+      "summary": "0015: correct the viewer's authored technology and summary"
+    },
+    {
+      "timestamp": "2026-10-21T10:56:36.723Z",
+      "action": "update_architecture",
+      "summary": "0015: drop retired Vite/React from stack.framework; Express is the HTTP framework",
+      "agent": "DeepSeek V4.1 Flash"
+    },
+    {
+      "timestamp": "2026-10-21T10:57:06.716Z",
+      "action": "update_architecture",
+      "summary": "0015: remove the architecture-store tech claim, which named a file rather than a technology",
+      "agent": "DeepSeek V4.1 Flash"
+    },
+    {
+      "timestamp": "2026-10-21T10:57:20.551Z",
+      "action": "update_architecture",
+      "summary": "0015: remove the architecture-store tech claim, which named a file rather than a technology",
+      "agent": "DeepSeek V4.1 Flash"
+    },
+    {
+      "timestamp": "2026-10-21T10:59:19.846Z",
+      "action": "derive_refresh",
+      "summary": "Removed 476 meaningless v1 legacyType fields stamped onto derived nodes by a stale-projection write",
+      "agent": "DeepSeek V4.1 Flash"
+    },
+    {
+      "timestamp": "2026-10-21T11:03:55.437Z",
+      "action": "architecture_decision",
+      "summary": "`decided_by` is a claim projection that may name an edge subject: Keep decisions attachable to nodes and edges. `projectDecidedBy` stays an in-memory join whose rows are claims (subject ref -> decision id), not stored graph edges. When the subject is an edge, the row's `from` names an edge id and must not be judged by the node-only graph invariant. Edge-subject claims are surfaced by `open(edgeId)` and `why_does_this_exist`; topology never traverses or persists them.",
+      "agent": "DeepSeek V4.1 Flash"
     }
   ],
   "services": [
@@ -30838,11 +29637,10 @@
       "id": "architecture-store",
       "name": "Architecture store",
       "type": "storage",
-      "technology": "arkive/architecture.json",
+      "technology": "service",
       "description": "Local JSON document that stores the tracked architecture state.",
       "dependencies": [],
       "kind": "service",
-      "tech": "arkive/architecture.json",
       "summary": "Local JSON document that stores the tracked architecture state.",
       "legacyType": "storage"
     },
@@ -33171,19 +31969,19 @@
           "name": "platform",
           "type": "string",
           "optional": false,
-          "line": 198
+          "line": 197
         },
         {
           "name": "targetDir",
           "type": "string",
           "optional": false,
-          "line": 199
+          "line": 198
         },
         {
           "name": "global",
           "type": "boolean",
           "optional": true,
-          "line": 200
+          "line": 199
         }
       ],
       "structureForm": "interface",
@@ -33205,19 +32003,19 @@
           "name": "skillDir",
           "type": "string",
           "optional": false,
-          "line": 31
+          "line": 30
         },
         {
           "name": "skillsCopied",
           "type": "number",
           "optional": false,
-          "line": 32
+          "line": 31
         },
         {
           "name": "method",
           "type": "string",
           "optional": false,
-          "line": 33,
+          "line": 32,
           "literals": 2
         }
       ],
@@ -34631,19 +33429,19 @@
           "name": "subject",
           "type": "Provenance|null",
           "optional": false,
-          "line": 296
+          "line": 303
         },
         {
           "name": "evidence",
           "type": "string[]",
           "optional": false,
-          "line": 298
+          "line": 305
         },
         {
           "name": "recorded",
           "type": "AuthoredProvenance|null",
           "optional": false,
-          "line": 300
+          "line": 307
         }
       ],
       "structureForm": "interface",
@@ -34720,50 +33518,50 @@
           "name": "subject",
           "type": "DecisionSubject",
           "optional": false,
-          "line": 305
+          "line": 312
         },
         {
           "name": "attachedTo",
           "type": "{kind: string|string;id: string}|null",
           "optional": false,
-          "line": 307,
+          "line": 314,
           "literals": 2
         },
         {
           "name": "resolution",
           "type": "SubjectResolution",
           "optional": false,
-          "line": 308
+          "line": 315
         },
         {
           "name": "via",
           "type": "ClaimVia",
           "optional": false,
-          "line": 309
+          "line": 316
         },
         {
           "name": "depth",
           "type": "number",
           "optional": false,
-          "line": 311
+          "line": 318
         },
         {
           "name": "provenance",
           "type": "ClaimProvenance",
           "optional": false,
-          "line": 312
+          "line": 319
         },
         {
           "name": "gate",
           "type": "ClaimGate",
           "optional": false,
-          "line": 313
+          "line": 320
         },
         {
           "name": "caveats",
           "type": "string[]",
           "optional": false,
-          "line": 314
+          "line": 321
         }
       ],
       "structureForm": "interface",
@@ -34838,25 +33636,25 @@
           "name": "decision",
           "type": "GraphDecision",
           "optional": false,
-          "line": 318
+          "line": 325
         },
         {
           "name": "rejectedAlternatives",
           "type": "GraphAlternative[]",
           "optional": false,
-          "line": 320
+          "line": 327
         },
         {
           "name": "observation",
           "type": "boolean",
           "optional": false,
-          "line": 322
+          "line": 329
         },
         {
           "name": "claim",
           "type": "ResolvedClaim",
           "optional": false,
-          "line": 323
+          "line": 330
         }
       ],
       "structureForm": "interface",
@@ -34883,32 +33681,32 @@
           "name": "node",
           "type": "{id: string;kind: GraphNode[string];name: string;summary: string;path?: string;live: boolean;removedAt?: string;provenance: Provenance;}|null",
           "optional": false,
-          "line": 327,
+          "line": 334,
           "literals": 1
         },
         {
           "name": "found",
           "type": "boolean",
           "optional": false,
-          "line": 339
+          "line": 346
         },
         {
           "name": "claims",
           "type": "WhyClaim[]",
           "optional": false,
-          "line": 340
+          "line": 347
         },
         {
           "name": "summary",
           "type": "{direct: number;inherited: number;incident: number;gates: Record<ClaimGate,number>;unresolvedSubjects: number;}",
           "optional": false,
-          "line": 341
+          "line": 348
         },
         {
           "name": "notes",
           "type": "string[]",
           "optional": false,
-          "line": 348
+          "line": 355
         }
       ],
       "structureForm": "interface",
@@ -35366,504 +34164,6 @@
       "shapeReferences": [
         "ArchitectureDocumentV2"
       ]
-    },
-    {
-      "id": "datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "name": "ExtractedConcept",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/concepts.ts",
-      "fields": [
-        {
-          "name": "id",
-          "type": "string",
-          "optional": false,
-          "line": 5
-        },
-        {
-          "name": "label",
-          "type": "string",
-          "optional": false,
-          "line": 6
-        },
-        {
-          "name": "category",
-          "type": "QuestionCategory",
-          "optional": false,
-          "line": 7
-        },
-        {
-          "name": "sourceId",
-          "type": "string",
-          "optional": false,
-          "line": 8
-        }
-      ],
-      "structureForm": "interface",
-      "structureExported": true,
-      "fieldCount": 4,
-      "shapeReferences": [
-        "QuestionCategory"
-      ]
-    },
-    {
-      "id": "datastructure:src/learning/types.ts::BaseQuestion",
-      "name": "BaseQuestion",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/types.ts",
-      "fields": [
-        {
-          "name": "id",
-          "type": "string",
-          "optional": false,
-          "line": 19
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "optional": false,
-          "line": 20
-        },
-        {
-          "name": "category",
-          "type": "QuestionCategory",
-          "optional": false,
-          "line": 21
-        },
-        {
-          "name": "conceptId",
-          "type": "string",
-          "optional": false,
-          "line": 22
-        },
-        {
-          "name": "question",
-          "type": "string",
-          "optional": false,
-          "line": 23
-        },
-        {
-          "name": "explanation",
-          "type": "string",
-          "optional": false,
-          "line": 24
-        },
-        {
-          "name": "sourceRef",
-          "type": "SourceRef",
-          "optional": false,
-          "line": 25
-        }
-      ],
-      "structureForm": "interface",
-      "structureExported": false,
-      "fieldCount": 7,
-      "shapeReferences": [
-        "QuestionCategory",
-        "SourceRef"
-      ]
-    },
-    {
-      "id": "datastructure:src/learning/types.ts::Choice",
-      "name": "Choice",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/types.ts",
-      "fields": [
-        {
-          "name": "id",
-          "type": "string",
-          "optional": false,
-          "line": 29
-        },
-        {
-          "name": "text",
-          "type": "string",
-          "optional": false,
-          "line": 30
-        },
-        {
-          "name": "correct",
-          "type": "boolean",
-          "optional": false,
-          "line": 31
-        }
-      ],
-      "structureForm": "interface",
-      "structureExported": true,
-      "fieldCount": 3
-    },
-    {
-      "id": "datastructure:src/learning/types.ts::ConceptMastery",
-      "name": "ConceptMastery",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/types.ts",
-      "fields": [
-        {
-          "name": "conceptId",
-          "type": "string",
-          "optional": false,
-          "line": 74
-        },
-        {
-          "name": "label",
-          "type": "string",
-          "optional": false,
-          "line": 75
-        },
-        {
-          "name": "category",
-          "type": "QuestionCategory",
-          "optional": false,
-          "line": 76
-        },
-        {
-          "name": "mastered",
-          "type": "boolean",
-          "optional": false,
-          "line": 77
-        },
-        {
-          "name": "attempts",
-          "type": "number",
-          "optional": false,
-          "line": 78
-        },
-        {
-          "name": "lastAttemptAt",
-          "type": "string",
-          "optional": false,
-          "line": 79
-        }
-      ],
-      "structureForm": "interface",
-      "structureExported": true,
-      "fieldCount": 6,
-      "shapeReferences": [
-        "QuestionCategory"
-      ]
-    },
-    {
-      "id": "datastructure:src/learning/types.ts::ConnectionSourceRef",
-      "name": "ConnectionSourceRef",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/types.ts",
-      "fields": [
-        {
-          "name": "type",
-          "type": "string",
-          "optional": false,
-          "line": 5,
-          "literals": 1
-        },
-        {
-          "name": "from",
-          "type": "string",
-          "optional": false,
-          "line": 5
-        },
-        {
-          "name": "to",
-          "type": "string",
-          "optional": false,
-          "line": 5
-        }
-      ],
-      "structureForm": "type-alias",
-      "structureExported": true,
-      "fieldCount": 3
-    },
-    {
-      "id": "datastructure:src/learning/types.ts::DataFlowSourceRef",
-      "name": "DataFlowSourceRef",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/types.ts",
-      "fields": [
-        {
-          "name": "type",
-          "type": "string",
-          "optional": false,
-          "line": 6,
-          "literals": 1
-        },
-        {
-          "name": "name",
-          "type": "string",
-          "optional": false,
-          "line": 6
-        }
-      ],
-      "structureForm": "type-alias",
-      "structureExported": true,
-      "fieldCount": 2
-    },
-    {
-      "id": "datastructure:src/learning/types.ts::DecisionSourceRef",
-      "name": "DecisionSourceRef",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/types.ts",
-      "fields": [
-        {
-          "name": "type",
-          "type": "string",
-          "optional": false,
-          "line": 3,
-          "literals": 1
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "optional": false,
-          "line": 3
-        }
-      ],
-      "structureForm": "type-alias",
-      "structureExported": true,
-      "fieldCount": 2
-    },
-    {
-      "id": "datastructure:src/learning/types.ts::LearningProgress",
-      "name": "LearningProgress",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/types.ts",
-      "fields": [
-        {
-          "name": "projectName",
-          "type": "string",
-          "optional": false,
-          "line": 83
-        },
-        {
-          "name": "startedAt",
-          "type": "string",
-          "optional": false,
-          "line": 84
-        },
-        {
-          "name": "lastActivityAt",
-          "type": "string",
-          "optional": false,
-          "line": 85
-        },
-        {
-          "name": "concepts",
-          "type": "ConceptMastery[]",
-          "optional": false,
-          "line": 86
-        },
-        {
-          "name": "totalQuestions",
-          "type": "number",
-          "optional": false,
-          "line": 87
-        },
-        {
-          "name": "correctAnswers",
-          "type": "number",
-          "optional": false,
-          "line": 88
-        }
-      ],
-      "structureForm": "interface",
-      "structureExported": true,
-      "fieldCount": 6,
-      "shapeReferences": [
-        "ConceptMastery"
-      ]
-    },
-    {
-      "id": "datastructure:src/learning/types.ts::MultipleChoiceQuestion",
-      "name": "MultipleChoiceQuestion",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/types.ts",
-      "fields": [
-        {
-          "name": "type",
-          "type": "string",
-          "optional": false,
-          "line": 35,
-          "literals": 1
-        },
-        {
-          "name": "choices",
-          "type": "Choice[]",
-          "optional": false,
-          "line": 36
-        }
-      ],
-      "structureForm": "interface",
-      "structureExported": true,
-      "fieldCount": 2,
-      "shapeReferences": [
-        "Choice"
-      ]
-    },
-    {
-      "id": "datastructure:src/learning/types.ts::OrderingItem",
-      "name": "OrderingItem",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/types.ts",
-      "fields": [
-        {
-          "name": "id",
-          "type": "string",
-          "optional": false,
-          "line": 45
-        },
-        {
-          "name": "text",
-          "type": "string",
-          "optional": false,
-          "line": 46
-        }
-      ],
-      "structureForm": "interface",
-      "structureExported": true,
-      "fieldCount": 2
-    },
-    {
-      "id": "datastructure:src/learning/types.ts::OrderingQuestion",
-      "name": "OrderingQuestion",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/types.ts",
-      "fields": [
-        {
-          "name": "type",
-          "type": "string",
-          "optional": false,
-          "line": 50,
-          "literals": 1
-        },
-        {
-          "name": "items",
-          "type": "OrderingItem[]",
-          "optional": false,
-          "line": 51
-        },
-        {
-          "name": "correctOrder",
-          "type": "string[]",
-          "optional": false,
-          "line": 52
-        }
-      ],
-      "structureForm": "interface",
-      "structureExported": true,
-      "fieldCount": 3,
-      "shapeReferences": [
-        "OrderingItem"
-      ]
-    },
-    {
-      "id": "datastructure:src/learning/types.ts::ServiceSourceRef",
-      "name": "ServiceSourceRef",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/types.ts",
-      "fields": [
-        {
-          "name": "type",
-          "type": "string",
-          "optional": false,
-          "line": 4,
-          "literals": 1
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "optional": false,
-          "line": 4
-        }
-      ],
-      "structureForm": "type-alias",
-      "structureExported": true,
-      "fieldCount": 2
-    },
-    {
-      "id": "datastructure:src/learning/types.ts::ShortAnswerQuestion",
-      "name": "ShortAnswerQuestion",
-      "type": "other",
-      "technology": "datastructure",
-      "description": "",
-      "dependencies": [],
-      "kind": "datastructure",
-      "summary": "",
-      "path": "src/learning/types.ts",
-      "fields": [
-        {
-          "name": "type",
-          "type": "string",
-          "optional": false,
-          "line": 40,
-          "literals": 1
-        },
-        {
-          "name": "acceptableAnswers",
-          "type": "string[]",
-          "optional": false,
-          "line": 41
-        }
-      ],
-      "structureForm": "interface",
-      "structureExported": true,
-      "fieldCount": 2
     },
     {
       "id": "datastructure:src/manifests/validate.ts::MarketplaceManifestSchema",
@@ -37500,39 +35800,39 @@
           "name": "subject",
           "type": "DecisionSubject",
           "optional": false,
-          "line": 488
+          "line": 505
         },
         {
           "name": "resolution",
           "type": "string",
           "optional": false,
-          "line": 489,
+          "line": 506,
           "literals": 3
         },
         {
           "name": "gate",
           "type": "ClaimGate",
           "optional": false,
-          "line": 491
+          "line": 508
         },
         {
           "name": "element",
           "type": "{kind: string|string;id: string;name?: string}|null",
           "optional": false,
-          "line": 493,
+          "line": 510,
           "literals": 2
         },
         {
           "name": "evidence",
           "type": "string[]",
           "optional": false,
-          "line": 495
+          "line": 512
         },
         {
           "name": "caveats",
           "type": "string[]",
           "optional": false,
-          "line": 497
+          "line": 514
         }
       ],
       "structureForm": "interface",
@@ -37695,7 +35995,7 @@
           "name": "topology",
           "type": "(doc: ArchitectureDocument)=>unknown;open?:(doc: ArchitectureDocument,ref: string,depth: number)=>unknown;trace?:(doc: ArchitectureDocument,entryRef: string,exi",
           "optional": true,
-          "line": 1228
+          "line": 1284
         }
       ],
       "structureForm": "interface",
@@ -38807,7 +37107,6 @@
       "technology": "module",
       "description": "",
       "dependencies": [
-        "external:npm:commander",
         "external:npm:express"
       ],
       "kind": "module",
@@ -38857,17 +37156,6 @@
       "kind": "module",
       "summary": "",
       "path": "src/io"
-    },
-    {
-      "id": "module:dir:src/learning",
-      "name": "learning",
-      "type": "other",
-      "technology": "module",
-      "description": "",
-      "dependencies": [],
-      "kind": "module",
-      "summary": "",
-      "path": "src/learning"
     },
     {
       "id": "module:dir:src/manifests",
@@ -38977,7 +37265,6 @@
       "technology": "module",
       "description": "",
       "dependencies": [
-        "external:npm:commander",
         "external:npm:vitest"
       ],
       "kind": "module",
@@ -39048,19 +37335,6 @@
       "kind": "module",
       "summary": "",
       "path": "tests/io"
-    },
-    {
-      "id": "module:dir:tests/learning",
-      "name": "learning",
-      "type": "other",
-      "technology": "module",
-      "description": "",
-      "dependencies": [
-        "external:npm:vitest"
-      ],
-      "kind": "module",
-      "summary": "",
-      "path": "tests/learning"
     },
     {
       "id": "module:dir:tests/manifests",
@@ -39573,22 +37847,6 @@
       "path": "src/cli/commands/install.ts"
     },
     {
-      "id": "module:src/cli/commands/learn.ts",
-      "name": "learn.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [
-        "external:npm:commander",
-        "module:src/cli/commands/serve.ts",
-        "module:src/io/architecture-file.ts"
-      ],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "src/cli/commands/learn.ts"
-    },
-    {
       "id": "module:src/cli/commands/reconcile.ts",
       "name": "reconcile.ts",
       "type": "other",
@@ -39615,7 +37873,6 @@
         "external:npm:express",
         "module:src/io/architecture-file.ts",
         "module:src/io/prompt-queue.ts",
-        "module:src/learning/progress.ts",
         "module:src/server/index.ts"
       ],
       "kind": "module",
@@ -39667,7 +37924,6 @@
         "module:src/cli/commands/init.ts",
         "module:src/cli/commands/install-skill.ts",
         "module:src/cli/commands/install.ts",
-        "module:src/cli/commands/learn.ts",
         "module:src/cli/commands/reconcile.ts",
         "module:src/cli/commands/serve.ts",
         "module:src/cli/commands/status.ts",
@@ -40073,78 +38329,6 @@
       "tech": "TypeScript/JavaScript",
       "summary": "",
       "path": "src/io/v1-authoring.ts"
-    },
-    {
-      "id": "module:src/learning/concepts.ts",
-      "name": "concepts.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [
-        "module:src/learning/types.ts",
-        "module:src/schema/types.ts"
-      ],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "src/learning/concepts.ts"
-    },
-    {
-      "id": "module:src/learning/progress.shared.ts",
-      "name": "progress.shared.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [
-        "module:src/learning/concepts.ts",
-        "module:src/learning/types.ts"
-      ],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "src/learning/progress.shared.ts"
-    },
-    {
-      "id": "module:src/learning/progress.ts",
-      "name": "progress.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [
-        "module:src/learning/concepts.ts",
-        "module:src/learning/types.ts"
-      ],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "src/learning/progress.ts"
-    },
-    {
-      "id": "module:src/learning/questions.ts",
-      "name": "questions.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [
-        "module:src/learning/types.ts",
-        "module:src/schema/types.ts"
-      ],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "src/learning/questions.ts"
-    },
-    {
-      "id": "module:src/learning/types.ts",
-      "name": "types.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "src/learning/types.ts"
     },
     {
       "id": "module:src/manifests/validate.ts",
@@ -40866,22 +39050,6 @@
       "path": "tests/cli/install.test.ts"
     },
     {
-      "id": "module:tests/cli/learn.test.ts",
-      "name": "learn.test.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [
-        "external:npm:commander",
-        "external:npm:vitest",
-        "module:src/cli/commands/learn.ts"
-      ],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "tests/cli/learn.test.ts"
-    },
-    {
       "id": "module:tests/cli/reconcile-honesty.test.ts",
       "name": "reconcile-honesty.test.ts",
       "type": "other",
@@ -40927,21 +39095,6 @@
       "tech": "TypeScript/JavaScript",
       "summary": "",
       "path": "tests/cli/serve-http.test.ts"
-    },
-    {
-      "id": "module:tests/cli/serve-learning.test.ts",
-      "name": "serve-learning.test.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [
-        "external:npm:vitest",
-        "module:src/cli/commands/serve.ts"
-      ],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "tests/cli/serve-learning.test.ts"
     },
     {
       "id": "module:tests/cli/serve-prompts.test.ts",
@@ -41480,91 +39633,6 @@
       "path": "tests/io/v1-authoring.test.ts"
     },
     {
-      "id": "module:tests/learning/concepts.test.ts",
-      "name": "concepts.test.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [
-        "external:npm:vitest",
-        "module:src/learning/concepts.ts",
-        "module:src/schema/types.ts",
-        "module:src/schema/validate.ts"
-      ],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "tests/learning/concepts.test.ts"
-    },
-    {
-      "id": "module:tests/learning/integration.test.ts",
-      "name": "integration.test.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [
-        "external:npm:vitest",
-        "module:src/learning/concepts.ts",
-        "module:src/learning/progress.ts",
-        "module:src/learning/questions.ts",
-        "module:src/schema/types.ts",
-        "module:src/schema/validate.ts"
-      ],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "tests/learning/integration.test.ts"
-    },
-    {
-      "id": "module:tests/learning/progress.test.ts",
-      "name": "progress.test.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [
-        "external:npm:vitest",
-        "module:src/learning/concepts.ts",
-        "module:src/learning/progress.ts",
-        "module:src/learning/types.ts"
-      ],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "tests/learning/progress.test.ts"
-    },
-    {
-      "id": "module:tests/learning/questions.test.ts",
-      "name": "questions.test.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [
-        "external:npm:vitest",
-        "module:src/learning/questions.ts",
-        "module:src/schema/types.ts",
-        "module:src/schema/validate.ts"
-      ],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "tests/learning/questions.test.ts"
-    },
-    {
-      "id": "module:tests/learning/types.test.ts",
-      "name": "types.test.ts",
-      "type": "other",
-      "technology": "TypeScript/JavaScript",
-      "description": "",
-      "dependencies": [
-        "external:npm:vitest",
-        "module:src/learning/types.ts"
-      ],
-      "kind": "module",
-      "tech": "TypeScript/JavaScript",
-      "summary": "",
-      "path": "tests/learning/types.test.ts"
-    },
-    {
       "id": "module:tests/manifests/plugin-manifest.test.ts",
       "name": "plugin-manifest.test.ts",
       "type": "other",
@@ -42016,14 +40084,14 @@
       "id": "viewer",
       "name": "Viewer",
       "type": "frontend",
-      "technology": "React + Vite",
-      "description": "Interactive UI for browsing architecture, decisions, and learning mode.",
+      "technology": "TypeScript",
+      "description": "Single-file HTML graph viewer generated by `arkive export html`; node panels show edges, data shapes, and the decisions behind a node with provenance.",
       "dependencies": [
         "architecture-store"
       ],
       "kind": "service",
-      "tech": "React + Vite",
-      "summary": "Interactive UI for browsing architecture, decisions, and learning mode.",
+      "tech": "TypeScript",
+      "summary": "Single-file HTML graph viewer generated by `arkive export html`; node panels show edges, data shapes, and the decisions behind a node with provenance.",
       "legacyType": "frontend"
     }
   ],
@@ -42770,97 +40838,6 @@
     {
       "from": "module:src/io/v1-authoring.ts",
       "to": "datastructure:src/io/v1-authoring.ts::NodeRemoval",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/concepts.ts",
-      "to": "datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::BaseQuestion",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::Choice",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ConceptMastery",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ConnectionSourceRef",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::DataFlowSourceRef",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::DecisionSourceRef",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::MultipleChoiceQuestion",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::OrderingItem",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::OrderingQuestion",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ServiceSourceRef",
-      "protocol": "derives_from",
-      "description": "declared in this module",
-      "kind": "derives_from"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ShortAnswerQuestion",
       "protocol": "derives_from",
       "description": "declared in this module",
       "kind": "derives_from"
@@ -44280,160 +42257,6 @@
       "kind": "reads"
     },
     {
-      "from": "module:src/learning/concepts.ts",
-      "to": "datastructure:src/export/markdown.ts::Architecture",
-      "protocol": "reads",
-      "description": "consumes Architecture via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/concepts.ts",
-      "to": "datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "protocol": "reads",
-      "description": "consumes ExtractedConcept via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/progress.shared.ts",
-      "to": "datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "protocol": "reads",
-      "description": "consumes ExtractedConcept via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/progress.shared.ts",
-      "to": "datastructure:src/learning/types.ts::ConceptMastery",
-      "protocol": "reads",
-      "description": "consumes ConceptMastery via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/progress.shared.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "protocol": "reads",
-      "description": "consumes LearningProgress via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/progress.ts",
-      "to": "datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "protocol": "reads",
-      "description": "consumes ExtractedConcept via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/progress.ts",
-      "to": "datastructure:src/learning/types.ts::ConceptMastery",
-      "protocol": "reads",
-      "description": "consumes ConceptMastery via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/progress.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "protocol": "reads",
-      "description": "consumes LearningProgress via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/questions.ts",
-      "to": "datastructure:src/export/markdown.ts::Architecture",
-      "protocol": "reads",
-      "description": "consumes Architecture via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/questions.ts",
-      "to": "datastructure:src/learning/types.ts::Choice",
-      "protocol": "reads",
-      "description": "consumes Choice via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/questions.ts",
-      "to": "datastructure:src/learning/types.ts::MultipleChoiceQuestion",
-      "protocol": "reads",
-      "description": "consumes MultipleChoiceQuestion via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/questions.ts",
-      "to": "datastructure:src/learning/types.ts::OrderingQuestion",
-      "protocol": "reads",
-      "description": "consumes OrderingQuestion via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::BaseQuestion",
-      "protocol": "reads",
-      "description": "consumes BaseQuestion via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::Choice",
-      "protocol": "reads",
-      "description": "consumes Choice via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ConceptMastery",
-      "protocol": "reads",
-      "description": "consumes ConceptMastery via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ConnectionSourceRef",
-      "protocol": "reads",
-      "description": "consumes ConnectionSourceRef via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::DataFlowSourceRef",
-      "protocol": "reads",
-      "description": "consumes DataFlowSourceRef via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::DecisionSourceRef",
-      "protocol": "reads",
-      "description": "consumes DecisionSourceRef via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::OrderingItem",
-      "protocol": "reads",
-      "description": "consumes OrderingItem via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::OrderingQuestion",
-      "protocol": "reads",
-      "description": "consumes OrderingQuestion via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ServiceSourceRef",
-      "protocol": "reads",
-      "description": "consumes ServiceSourceRef via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:src/learning/types.ts",
-      "to": "datastructure:src/learning/types.ts::ShortAnswerQuestion",
-      "protocol": "reads",
-      "description": "consumes ShortAnswerQuestion via type-reference",
-      "kind": "reads"
-    },
-    {
       "from": "module:src/schema/architecture.ts",
       "to": "datastructure:src/schema/architecture.ts::ProjectSchema",
       "protocol": "reads",
@@ -44837,34 +42660,6 @@
       "to": "datastructure:tests/io/prompt-queue-lease.test.ts::OnDiskPrompt",
       "protocol": "reads",
       "description": "consumes OnDiskPrompt via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:tests/learning/concepts.test.ts",
-      "to": "datastructure:src/export/markdown.ts::Architecture",
-      "protocol": "reads",
-      "description": "consumes Architecture via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:tests/learning/integration.test.ts",
-      "to": "datastructure:src/export/markdown.ts::Architecture",
-      "protocol": "reads",
-      "description": "consumes Architecture via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:tests/learning/progress.test.ts",
-      "to": "datastructure:src/learning/concepts.ts::ExtractedConcept",
-      "protocol": "reads",
-      "description": "consumes ExtractedConcept via type-reference",
-      "kind": "reads"
-    },
-    {
-      "from": "module:tests/learning/questions.test.ts",
-      "to": "datastructure:src/export/markdown.ts::Architecture",
-      "protocol": "reads",
-      "description": "consumes Architecture via type-reference",
       "kind": "reads"
     },
     {
@@ -45316,27 +43111,6 @@
       "kind": "writes"
     },
     {
-      "from": "module:src/learning/progress.shared.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "protocol": "writes",
-      "description": "constructs LearningProgress via return-literal",
-      "kind": "writes"
-    },
-    {
-      "from": "module:src/learning/progress.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "protocol": "writes",
-      "description": "constructs LearningProgress via return-literal",
-      "kind": "writes"
-    },
-    {
-      "from": "module:src/learning/questions.ts",
-      "to": "datastructure:src/learning/types.ts::Choice",
-      "protocol": "writes",
-      "description": "constructs Choice via annotated-literal",
-      "kind": "writes"
-    },
-    {
       "from": "module:src/schema/validate.ts",
       "to": "datastructure:src/export/markdown.ts::Architecture",
       "protocol": "writes",
@@ -45481,41 +43255,6 @@
       "to": "datastructure:src/schema/prompt-queue.ts::PromptQueueSchema",
       "protocol": "writes",
       "description": "constructs PromptQueueSchema via safeParse()",
-      "kind": "writes"
-    },
-    {
-      "from": "module:tests/learning/progress.test.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "protocol": "writes",
-      "description": "constructs LearningProgress via annotated-literal",
-      "kind": "writes"
-    },
-    {
-      "from": "module:tests/learning/types.test.ts",
-      "to": "datastructure:src/learning/types.ts::LearningProgress",
-      "protocol": "writes",
-      "description": "constructs LearningProgress via annotated-literal",
-      "kind": "writes"
-    },
-    {
-      "from": "module:tests/learning/types.test.ts",
-      "to": "datastructure:src/learning/types.ts::MultipleChoiceQuestion",
-      "protocol": "writes",
-      "description": "constructs MultipleChoiceQuestion via annotated-literal",
-      "kind": "writes"
-    },
-    {
-      "from": "module:tests/learning/types.test.ts",
-      "to": "datastructure:src/learning/types.ts::OrderingQuestion",
-      "protocol": "writes",
-      "description": "constructs OrderingQuestion via annotated-literal",
-      "kind": "writes"
-    },
-    {
-      "from": "module:tests/learning/types.test.ts",
-      "to": "datastructure:src/learning/types.ts::ShortAnswerQuestion",
-      "protocol": "writes",
-      "description": "constructs ShortAnswerQuestion via annotated-literal",
       "kind": "writes"
     },
     {

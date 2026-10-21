@@ -33,15 +33,15 @@ Status: `open` · `in-flight` · `blocked` · `done`
 | 0007 | Continuous reconciliation | derive | done | 0014 |
 | 0008 | Decision attachment to graph | record | done | 0009 |
 | 0009 | Layered walkthrough engine | comprehend | done | 0010, 0015 |
-| 0010 | Viewer re-architecture | view | open — next | — |
+| 0010 | Viewer re-architecture | view | done | — |
 | 0011 | Harness hook substrate | enforce | done | 0009 |
 | 0012 | Session context budget | context | done | — |
 | 0013 | Data integrity | integrity | done | 0004 |
 | 0014 | Self-dogfood arkive | meta | done | — |
-| 0015 | Retire quiz learning mode | comprehend | open | 0009 |
+| 0015 | Retire quiz learning mode | comprehend | done | 0009 |
 | 0016 | Viewer server trust boundary | security | done | 0017 |
 | 0017 | Close the auth follow-ups from 0016 | security | done | — |
-| 0018 | Viewer build hygiene | view | open, low | 0010 |
+| 0018 | Viewer build hygiene | view | done (obsolete) | 0010 |
 | 0019 | Teach v2, not v1 | docs | done | — |
 
 `0001` and `0002` have no issue files — they were the foundations and ADR
@@ -63,6 +63,10 @@ silently, and currently exposes an unauthenticated server on every interface.
 `0016` is **done**, verified with before/after evidence against a live server.
 It produced `0017`, which carries its own two follow-ups — including a live
 regression it could not fix inside its file boundary.
+
+The register is clear. `0010` closed the last critical-path item, `0015`
+removed the quiz surface, and `0018` was closed as obsolete: the Vite build and
+dev proxy it described no longer exist after 0010.
 
 ## Corrections log
 

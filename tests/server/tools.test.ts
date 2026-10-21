@@ -68,6 +68,51 @@ describe("MCP tool handlers", () => {
       }
     });
 
+    it("updates an existing authored node instead of reverting it from the stale v1 projection", async () => {
+      // Regression: `readArchitecture` returns `services` projected from the
+      // pre-call graph. Node edits do not update that copy, and
+      // `writeArchitecture` folds a stored v1 view back onto the graph. The
+      // result was an update that reported success, wrote a history entry, and
+      // silently kept the old authored values.
+      // Seed a v1-authored node, which is written with a `services[]`
+      // projection beside the graph — the shape that exposed the bug.
+      const seeded = await handleUpdateArchitecture(tempDir, {
+        summary: "Seed the viewer",
+        services: [
+          {
+            id: "viewer",
+            name: "Viewer",
+            type: "frontend",
+            technology: "React + Vite",
+            description: "Interactive React UI",
+            dependencies: [],
+          },
+        ],
+      });
+      expect(seeded.isError).toBeFalsy();
+
+      const result = await handleUpdateArchitecture(tempDir, {
+        summary: "Correct the viewer's authored half",
+        nodes: [
+          {
+            id: "viewer",
+            kind: "service",
+            name: "Viewer",
+            summary: "Single-file HTML viewer",
+            tech: "TypeScript",
+            authoredBy: "agent",
+          },
+        ],
+      });
+      expect(result.isError).toBeFalsy();
+
+      const reread = readArchitecture(tempDir);
+      if (!reread.success) throw new Error(reread.error);
+      const node = reread.data.nodes.find((candidate) => candidate.id === "viewer");
+      expect(node?.summary).toBe("Single-file HTML viewer");
+      expect(node?.tech).toBe("TypeScript");
+    });
+
     it("merges stack arrays without duplicating entries", async () => {
       const arch = createEmptyArchitecture("stack-test", "Stack test");
       arch.stack.framework = ["Next.js"];
@@ -189,6 +234,10 @@ describe("MCP tool handlers", () => {
       expect(reread.data.connections.map((c) => `${c.from}->${c.to}:${c.protocol}`)).toEqual([
         "web->api:HTTP",
       ]);
+      // The edge is the stored relationship; the connection is its projection.
+      // A removal that updates only one of them is a removal the next write
+      // undoes by re-projecting the survivor.
+      expect(reread.data.edges.map((e) => e.id)).toEqual(["calls:web->api"]);
     });
 
     it("removes a data flow by name", async () => {
@@ -263,6 +312,32 @@ describe("MCP tool handlers", () => {
       expect(
         reread.data.history.some((h) => h.action === "architecture_decision")
       ).toBe(true);
+    });
+
+    it("does not fold the stale v1 projection back onto the graph", async () => {
+      // Regression: recording a decision used to write the `services[]` copy
+      // that `readArchitecture` attached from the pre-call graph. The writer
+      // folded it back as a v1 edit, stamping a meaningless `legacyType` onto
+      // nodes the call never touched.
+      const seeded = await handleUpdateArchitecture(tempDir, {
+        summary: "seed a node",
+        nodes: [{ id: "svc", kind: "service", name: "Svc", authoredBy: "agent" }],
+      });
+      expect(seeded.isError).toBeFalsy();
+
+      const result = await handleRecordDecision(tempDir, {
+        topic: "T",
+        decision: "D",
+        rationale: "R",
+        alternatives: [{ name: "A", whyNot: "B" }],
+        subjects: [{ kind: "node", ref: "svc" }],
+      });
+      expect(result.isError).toBeFalsy();
+
+      const reread = readArchitecture(tempDir);
+      if (!reread.success) throw new Error(reread.error);
+      const node = reread.data.nodes.find((candidate) => candidate.id === "svc");
+      expect(node?.legacyType).toBeUndefined();
     });
 
     it("auto-increments decision IDs", async () => {

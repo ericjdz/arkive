@@ -181,6 +181,13 @@ function pathDepth(parentPath: string, childPath: string): number {
 /**
  * The `decided_by` join (ADR-0001:78-88).
  *
+ * A row here is a **claim**, not a graph edge. When the subject is an edge
+ * (`{ kind: "edge", ref }`), `from` names an edge id, not a node id: applying
+ * the node-only graph invariant to this array would reject a relationship that
+ * has a recorded rationale. The join is never stored and never enters topology;
+ * edge-subject claims are surfaced by `open(edgeId)` and `why_does_this_exist`.
+ * Decision `dec-022` records why this stays a projection.
+ *
  * Never persisted. Every edge here is derived on demand from
  * `decision.subjects × graph`, which is what makes a node deletion unable to
  * destroy rationale: the decision keeps its subject ref, the ref stops

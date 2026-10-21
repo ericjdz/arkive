@@ -8,14 +8,14 @@
   "plugins": [
     {
       "name": "arkive",
-      "description": "Maintain a living architecture.json across AI coding sessions. Includes MCP server, web viewer, and Learning Mode.",
+      "description": "Maintain a living architecture.json across AI coding sessions. Includes MCP server, single-file graph viewer, and agent-led walkthrough.",
       "source": {
         "type": "github",
         "repo": "arkive/arkive"
       },
       "version": "0.2.1",
       "category": "documentation",
-      "tags": ["architecture", "mcp", "learning", "ai-agent"]
+      "tags": ["architecture", "mcp", "walkthrough", "ai-agent"]
     }
   ]
 }

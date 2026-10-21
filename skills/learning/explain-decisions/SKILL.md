@@ -1,7 +1,7 @@
 ---
 name: explain-decisions
 description: Answer "why" questions about architectural choices using arkive/architecture.json.
-trigger: User asks "why did we choose X?", "why this database?", "why not use Y?", "explain the architecture", or clicks "Why this?" in the web viewer.
+trigger: User asks "why did we choose X?", "why this database?", "why not use Y?", "explain the architecture", or asks about a decision while walking the graph.
 ---
 
 # Explain Decisions

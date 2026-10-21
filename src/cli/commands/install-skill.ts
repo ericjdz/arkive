@@ -13,8 +13,7 @@ const SKILL_NAMES = [
   "arkive-import",
   "arkive-view",
   "process-prompts",
-  // Learning skills
-  "learning-mode",
+  // Decision narration (the walkthrough's decisionsAbout step)
   "explain-decisions",
   // Maintenance skills
   "reconciliation",

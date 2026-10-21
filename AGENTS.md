@@ -87,7 +87,7 @@ Add/remove a service, datastore, or external API · change communication protoco
 - `npx @ericjdz/arkive reconcile` — report drift without writing anything
 - `npx @ericjdz/arkive watch` — re-derive on every change
 - `npx @ericjdz/arkive status` — counts, schema version, drift verdict
-- `npx @ericjdz/arkive export <markdown|mermaid>` — export
+- `npx @ericjdz/arkive export <markdown|mermaid|html>` — export
 - `npx @ericjdz/arkive serve` — MCP server + web viewer
 
 ## MCP Server (if arkive is installed)
@@ -108,10 +108,11 @@ Supported platforms: `claude-desktop`, `claude-code`, `cursor`, `opencode`, `vsc
 
 ## Upgrade
 
-For MCP server, web viewer, and Learning Mode:
+For the MCP server, the single-file graph viewer, and the walkthrough skills:
 
 ```bash
 npx @ericjdz/arkive init
+npx @ericjdz/arkive export html
 npx @ericjdz/arkive serve
 ```
 

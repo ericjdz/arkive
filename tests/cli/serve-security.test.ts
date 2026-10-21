@@ -245,8 +245,6 @@ describe("viewer server trust boundary", () => {
       ["/api/prompts", "GET"],
       ["/api/prompts", "POST"],
       ["/api/prompts/p-001", "DELETE"],
-      ["/api/learning/progress", "GET"],
-      ["/api/learning/progress", "PUT"],
       ["/api/shutdown", "POST"],
     ];
     for (const [path, method] of routes) {
@@ -264,10 +262,10 @@ describe("token handoff", () => {
   });
 
   it("keeps non-secret viewer state in the query string", () => {
-    const url = viewerUrl(4567, "abc123", "mode=learning");
-    expect(url).toBe("http://localhost:4567/?mode=learning#token=abc123");
+    const url = viewerUrl(4567, "abc123", "node=service:api");
+    expect(url).toBe("http://localhost:4567/?node=service:api#token=abc123");
     // The fragment is after the query, and the query carries no secret.
-    expect(url.split("#")[0]).toBe("http://localhost:4567/?mode=learning");
+    expect(url.split("#")[0]).toBe("http://localhost:4567/?node=service:api");
   });
 
   // NOTE (0017): two cases that used to live here are gone, and the rest of

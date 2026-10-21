@@ -26,11 +26,9 @@ curl -fsSL https://raw.githubusercontent.com/ericjdz/arkive/main/scripts/install
 # Derive the structure from the code and write it
 npx @ericjdz/arkive reconcile --apply
 
-# Start the MCP server + web viewer
+# Write the single-file graph viewer, then start the MCP server
+npx @ericjdz/arkive export html
 npx @ericjdz/arkive serve
-
-# Open Learning Mode (Socratic gating)
-npx @ericjdz/arkive learn
 ```
 
 After `init`, your repo gains:
@@ -63,7 +61,7 @@ Install arkive for architecture tracking in this project. Read the instructions 
 - **Decisions are first-class** — every architectural choice records what was chosen, why, what was rejected, and which nodes and edges it explains.
 - **Honest diagnostics** — `arkive reconcile` reports what derivation would change and what a human's claim no longer supports, and prints the scan's own coverage so a partial scan never reads as a clean bill of health.
 - **Continuous reconciliation** — `arkive watch` re-derives on every change.
-- **Learning Mode** — Socratic gating that quizzes you on architectural decisions and tracks concept mastery.
+- **Agent-led walkthrough** — topology first, learner-chosen destinations, and decisions explained on descent with their provenance. No quiz, no progress bar.
 - **Multi-platform** — Claude Code (marketplace + CLAUDE.md), Cursor (.cursor/rules), Codex / OpenCode / Copilot (AGENTS.md), or any agent via the MCP server.
 - **Try before you install** — drop the standalone `CLAUDE.md` or `AGENTS.md` into any repo and your agent maintains the doc with no install.
 
@@ -85,7 +83,7 @@ Prompts are stored in `arkive/prompt-queue.json` and survive session resets.
 | `npx @ericjdz/arkive init --platform <p>` | Same as above, but explicitly specify the platform instead of auto-detecting |
 | `npx @ericjdz/arkive init --standalone` | Generate full `AGENTS.md`/`CLAUDE.md` files (for platforms without MCP) |
 | `npx @ericjdz/arkive install <platform>` | Register MCP server in your AI platform config |
-| `npx @ericjdz/arkive install-skill <platform>` | Install arkive skills for your AI platform (8 skills: architecture tracking, init, import, view, prompt queue, learning, decisions, reconciliation) |
+| `npx @ericjdz/arkive install-skill <platform>` | Install arkive skills for your AI platform (8 skills: architecture tracking, init, import, view, prompt queue, walkthrough, decisions, reconciliation) |
 | `npx @ericjdz/arkive serve` | Start the MCP server and serve the graph artifact (`arkive/graph.html`) |
 | `npx @ericjdz/arkive serve --stdio` | Run the MCP server in stdio mode (for direct agent integration) |
 | `npx @ericjdz/arkive status` | Counts, schema version, drift warnings, and a conclusive/inconclusive verdict |
@@ -93,7 +91,6 @@ Prompts are stored in `arkive/prompt-queue.json` and survive session resets.
 | `npx @ericjdz/arkive reconcile --apply` | The same, and persist the derived half |
 | `npx @ericjdz/arkive watch` | Re-derive on every change and report the delta |
 | `npx @ericjdz/arkive export <format>` | Export as `markdown`, `mermaid`, or self-contained `html` (writes `arkive/graph.html`) |
-| `npx @ericjdz/arkive learn` | Open the web viewer in Learning Mode |
 | `npx @ericjdz/arkive stop` | Stop a running viewer |
 | `npx @ericjdz/arkive hooks` | Install the git hooks (not installed by `init`) |
 | `npx @ericjdz/arkive hooks --remove` | Remove them |
@@ -273,7 +270,7 @@ This single command:
 - Injects tracking blocks into `AGENTS.md` and `CLAUDE.md` (created if missing)
 - Creates `.cursor/rules/architecture-tracker.mdc`
 - **Registers the MCP server** in the platform's config file
-- **Installs 8 arkive skills** (architecture-tracker, arkive-init, arkive-import, arkive-view, process-prompts, learning-mode, explain-decisions, reconciliation)
+- **Installs 8 arkive skills** (architecture-tracker, arkive-init, arkive-import, arkive-view, process-prompts, walkthrough, explain-decisions, reconciliation)
 - **Does not install git hooks.** Run `npx @ericjdz/arkive hooks` to opt in
 
 If files already exist, they are not overwritten. If `--platform` is omitted, arkive auto-detects by checking for `opencode.json`, `.mcp.json`, `.cursor/`, `.vscode/`, or environment variables.

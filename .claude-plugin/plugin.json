@@ -16,7 +16,7 @@
     "architecture",
     "documentation",
     "system-design",
-    "learning",
+    "walkthrough",
     "mcp"
   ],
   "skills": [
@@ -26,7 +26,6 @@
     "skills/core/arkive-view/SKILL.md",
     "skills/core/process-prompts/SKILL.md",
     "skills/maintenance/reconciliation/SKILL.md",
-    "skills/learning/learning-mode/SKILL.md",
     "skills/learning/explain-decisions/SKILL.md",
     "skills/walkthrough/SKILL.md"
   ],

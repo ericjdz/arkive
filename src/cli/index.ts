@@ -4,7 +4,6 @@ import { resolve } from "node:path";
 import { PACKAGE_VERSION } from "../version.js";
 import { initProject } from "./commands/init.js";
 import { exportArchitecture } from "./commands/export.js";
-import { createLearnCommand } from "./commands/learn.js";
 import { reconcileCommand } from "./commands/reconcile.js";
 import { describeOutcome, reconcileOnce, startWatch } from "../analysis/watch.js";
 import { serveProject } from "./commands/serve.js";
@@ -368,7 +367,5 @@ program
   .action((opts) => {
     stopViewer({ port: parseInt(opts.port, 10) });
   });
-
-program.addCommand(createLearnCommand());
 
 program.parse();

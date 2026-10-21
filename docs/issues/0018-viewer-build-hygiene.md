@@ -1,6 +1,6 @@
 # 0018 — Viewer build hygiene
 
-status: open
+status: done
 stream: view
 priority: low
 blocked_by: 0010
@@ -50,10 +50,29 @@ person to add `npm run dev` will lose an hour to it.
 Fix when the dev loop is needed: add the dev origin to the allowlist behind an
 explicit development flag, never unconditionally.
 
+## Closure
+
+Closed as **obsolete**, not as implemented. 0010 chose ADR-0004 option (b): the
+React Flow/D3/Vite viewer was deleted and replaced by a build-free, single-file
+HTML artifact from `arkive export html`. Both defects were properties of that
+build:
+
+- There is no `src/viewer/`, no `tsup` declaration emit into it, and no
+  `dist/viewer`. `npm run build` produces no viewer output to race.
+- There is no Vite dev server and no `server.proxy`, so the dev-origin
+  regression cannot occur. There is no `npm run dev` to repair.
+
+The 0016 trust boundary is unchanged and still verified: the artifact is served
+by the same loopback + token-guarded server, and the regression tests that cover
+origin checks, token handoff, and the 401 route table remain in
+`tests/cli/serve-security.test.ts`.
+
 ## Acceptance criteria
 
-- [ ] `npm run build` twice in a row produces an identical `dist/viewer` with no
-      stray declarations.
-- [ ] A dev server can talk to the viewer API, via an explicit dev-only origin
-      allowance.
-- [ ] Neither change weakens 0016's production boundary.
+- [x] *(obsolete)* `npm run build` twice in a row produces an identical
+      `dist/viewer` with no stray declarations. No `dist/viewer` is produced.
+- [x] *(obsolete)* A dev server can talk to the viewer API, via an explicit
+      dev-only origin allowance. No dev server exists.
+- [x] Neither change weakens 0016's production boundary. Verified by the
+      retained boundary tests; the server and its allowlist were not changed by
+      0010 or 0015.

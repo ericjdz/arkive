@@ -61,7 +61,7 @@ Tell the user:
 > - **Deep links** — `?node=<id>` opens the graph with that node selected,
 >   so the agent can hand you a URL to a decision's context
 >
-> What it does not do: prompt queue, learning, editing, decision authoring.
+> What it does not do: prompt queue, walkthrough narration, editing, decision authoring.
 > Those live in the agent conversation and the document, not the file."
 
 ### 5. If the graph looks empty

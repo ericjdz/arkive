@@ -25,7 +25,7 @@
     "opencode",
     "documentation",
     "system-design",
-    "learning"
+    "walkthrough"
   ],
   "bin": {
     "arkive": "bin/arkive.mjs"

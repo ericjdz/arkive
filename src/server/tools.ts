@@ -430,6 +430,23 @@ function jsonResult(body: unknown): CallToolResult {
   };
 }
 
+/**
+ * Drop the v1 view before a v2-only write.
+ *
+ * `readArchitecture` attaches `services[]` / `connections[]` projected from the
+ * graph as it was *before* the call. `writeArchitecture` treats a present copy
+ * as a v1 edit and folds it back onto the graph: existing authored-node edits
+ * revert, derived nodes acquire meaningless `legacyType` fields, and a
+ * re-described connection can mint a duplicate legacy edge. The writer
+ * regenerates both arrays from the graph, so the correct move is to drop them.
+ */
+function dropStaleProjection<T extends object>(document: T): T {
+  const payload = document as unknown as Record<string, unknown>;
+  delete payload.services;
+  delete payload.connections;
+  return document;
+}
+
 function mergeUnique(a: string[], b: string[]): string[] {
   return Array.from(new Set([...a, ...b]));
 }
@@ -743,17 +760,27 @@ export async function handleUpdateArchitecture(
     // counters would let the stale copy hand back a connection the edge sweep
     // just deleted, and `writeArchitecture` would fold it straight back onto
     // the graph — a removal that reports success and removes nothing.
-    const wanted = new Map<string, number>();
+    // One requested key names the same relationship in two representations:
+    // the stored edge and the projected v1 connection. They need independent
+    // counters. Sharing one meant the connections sweep consumed the count and
+    // the edge sweep matched nothing, so the edge survived — invisible only
+    // because `writeArchitecture` used to fold the filtered `connections[]`
+    // back over the graph and delete it there. That fold is gone for v2-only
+    // calls, and the surviving edge would re-project the "removed" connection.
+    const wantedConnections = new Map<string, number>();
+    const wantedEdges = new Map<string, number>();
     for (const key of input.removeConnectionKeys) {
-      wanted.set(key, (wanted.get(key) ?? 0) + 1);
+      const next = (wantedConnections.get(key) ?? 0) + 1;
+      wantedConnections.set(key, next);
+      wantedEdges.set(key, next);
     }
 
     const keptConnections: typeof arch.connections = [];
     for (const connection of arch.connections) {
       const key = `${connection.from}->${connection.to}:${connection.protocol}`;
-      const remaining = wanted.get(key) ?? 0;
+      const remaining = wantedConnections.get(key) ?? 0;
       if (remaining > 0) {
-        wanted.set(key, remaining - 1);
+        wantedConnections.set(key, remaining - 1);
         continue;
       }
       keptConnections.push(connection);
@@ -765,16 +792,22 @@ export async function handleUpdateArchitecture(
       // `imports` edges are `Service.dependencies[]`, not connections, so the
       // v1 key format has never addressed them.
       const key = `${edge.from}->${edge.to}:${edge.label ?? edge.kind}`;
-      const remaining = wanted.get(key) ?? 0;
+      const remaining = wantedEdges.get(key) ?? 0;
       if (remaining > 0 && edge.kind !== "imports") {
-        wanted.set(key, remaining - 1);
+        wantedEdges.set(key, remaining - 1);
         continue;
       }
       keptEdges.push(edge);
     }
     arch.edges = keptEdges;
 
-    const unmatched = [...wanted].filter(([, n]) => n > 0).map(([key]) => key);
+    const unmatched = [
+      ...new Set(
+        [...wantedConnections, ...wantedEdges]
+          .filter(([, n]) => n > 0)
+          .map(([key]) => key)
+      ),
+    ];
     if (unmatched.length > 0) {
       notes.push(
         `Nothing matched ${unmatched.map((key) => `"${key}"`).join(", ")}. Reported rather ` +
@@ -886,6 +919,24 @@ export async function handleUpdateArchitecture(
     agent: input.agent,
   });
 
+  // `readArchitecture` projected `services` / `connections` from the graph as
+  // it was *before* this call. Every node and edge edit above left that copy
+  // stale, and `writeArchitecture` folds a stored v1 view back onto the graph —
+  // so updating an existing authored node was silently reverted to its old
+  // values by the very projection it should have replaced. (Measured during
+  // 0015: a corrected `viewer` node kept `React + Vite` after the call that
+  // changed it, while the history entry said the update succeeded.)
+  //
+  // Drop the stale view and let the writer regenerate it from the edited graph.
+  // Do not set it to a fresh projection here: a present `services[]` is treated
+  // as a v1 edit and folded onto the graph, which mints duplicate legacy edges
+  // for every connection it re-describes. A caller that sent `services` /
+  // `connections` explicitly stays on the legacy fold path, where those arrays
+  // are the edit.
+  if (input.services === undefined && input.connections === undefined) {
+    dropStaleProjection(arch);
+  }
+
   const write = writeArchitecture(dir, arch);
   if (!write.success) return errorResult(write.error);
 
@@ -979,6 +1030,11 @@ export async function handleRecordDecision(
     summary: `${input.topic}: ${input.decision}`,
     agent: input.agent,
   });
+
+  // A decision adds no structure. The only graph change is the decision itself;
+  // the v1 view `readArchitecture` attached describes the pre-write graph, and a
+  // present copy would be folded back as an edit. Let the writer regenerate it.
+  dropStaleProjection(arch);
 
   const write = writeArchitecture(dir, arch);
   if (!write.success) return errorResult(write.error);

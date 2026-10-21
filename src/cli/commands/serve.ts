@@ -5,7 +5,6 @@ import { randomBytes, timingSafeEqual } from "node:crypto";
 import express from "express";
 import { architecturePath, readArchitecture } from "../../io/architecture-file.js";
 import { readPromptQueue, addPrompt, writePromptQueue } from "../../io/prompt-queue.js";
-import { readProgress, writeProgress } from "../../learning/progress.js";
 import { startStdioServer } from "../../server/index.js";
 
 /**
@@ -38,9 +37,10 @@ const LOCAL_HOSTNAMES = new Set([
   "[0:0:0:0:0:0:0:1]",
 ]);
 
-/** Methods the viewer actually uses. Notably this includes PUT, which the
- *  previous policy omitted even though `/api/learning/progress` is a PUT. */
-const ALLOWED_METHODS = "GET, POST, PUT, DELETE, OPTIONS";
+/** Methods the server actually uses: prompt queue reads/writes, architecture
+ *  reads, and the shutdown switch. There is no PUT route - the retired
+ *  learning-progress endpoint was the only one. */
+const ALLOWED_METHODS = "GET, POST, DELETE, OPTIONS";
 
 export interface ServeOptions {
   dir: string;
@@ -231,29 +231,6 @@ export function createViewerServer(dir: string): ViewerServer {
       return;
     }
     res.json({ ok: true });
-  });
-
-  app.get("/api/learning/progress", (_req, res) => {
-    const progress = readProgress(dir);
-    if (!progress) {
-      res.json(null);
-      return;
-    }
-    res.json(progress);
-  });
-
-  app.put("/api/learning/progress", (req, res) => {
-    const progress = req.body;
-    if (!progress || typeof progress !== "object") {
-      res.status(400).json({ error: "Invalid progress data" });
-      return;
-    }
-    try {
-      writeProgress(dir, progress);
-      res.json({ ok: true });
-    } catch (err) {
-      res.status(500).json({ error: (err as Error).message });
-    }
   });
 
   app.get("/api/architecture", (_req, res) => {

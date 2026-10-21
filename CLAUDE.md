@@ -251,10 +251,11 @@ Supported platforms: `claude-desktop`, `claude-code`, `cursor`, `opencode`, `vsc
 
 ## Upgrade to the Full Experience
 
-To get the MCP server (richer agent context), interactive web viewer, and Learning Mode:
+To get the MCP server (richer agent context), the single-file graph viewer, and the walkthrough skills:
 
 ```bash
 npx @ericjdz/arkive init
+npx @ericjdz/arkive export html
 npx @ericjdz/arkive serve
 ```
 
